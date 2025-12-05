@@ -12,6 +12,7 @@ CLUSTER_NAME="compass-poc"
 KSERVE_VERSION="v0.13.0"
 CERT_MANAGER_VERSION="v1.14.4"
 CLUSTER_CONFIG="config/kind-cluster.yaml"
+CONTAINER_TOOL=$(docker -v >/dev/null 2>&1 && echo docker || podman -v >/dev/null 2>&1 && echo podman || echo "")
 
 # Colors for output
 RED='\033[0;31m'
@@ -49,12 +50,19 @@ check_prerequisites() {
 
     local missing_deps=()
 
-    # Check Docker
-    if ! command -v docker &> /dev/null; then
-        missing_deps+=("docker")
-    elif ! docker info &> /dev/null; then
-        print_error "Docker is installed but not running. Please start Docker Desktop."
-        exit 1
+    # Check Docker/Podman
+    if command -v docker &> /dev/null; then
+        if ! docker info &> /dev/null; then
+            print_error "Docker is installed but not running. Please start Docker Desktop."
+            exit 1
+        fi
+    elif command -v podman &> /dev/null; then
+        if ! podman info &> /dev/null; then
+            print_error "Podman is installed but not running. Please start the Podman service."
+            exit 1
+        fi
+    else
+        missing_deps+=("docker or podman")
     fi
 
     # Check kubectl
@@ -154,12 +162,12 @@ start_cluster() {
 
     # Load vLLM simulator image into cluster
     print_step "Loading vLLM simulator image into cluster..."
-    if docker images vllm-simulator:latest --format "{{.Repository}}" | grep -q vllm-simulator; then
+    if $CONTAINER_TOOL images vllm-simulator:latest --format "{{.Repository}}" | grep -q vllm-simulator; then
         kind load docker-image vllm-simulator:latest --name "$CLUSTER_NAME"
         print_success "vLLM simulator image loaded"
     else
         print_warning "vLLM simulator image not found locally - skipping"
-        echo "  Build the simulator: cd simulator && docker build -t vllm-simulator:latest ."
+        echo "  Build the simulator: cd simulator && $CONTAINER_TOOL build -t vllm-simulator:latest ."
     fi
 
     echo ""

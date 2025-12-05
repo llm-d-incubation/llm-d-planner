@@ -504,6 +504,7 @@ Creates `vllm-simulator:latest` Docker image.
 ### Testing the Simulator Locally
 
 ```bash
+# Can use podman instead of docker
 docker run -p 8080:8080 \
   -e MODEL_NAME=mistralai/Mistral-7B-Instruct-v0.3 \
   -e GPU_TYPE=NVIDIA-L4 \
