@@ -23,10 +23,18 @@ This repository contains the architecture design for **Compass**, an open-source
   - Entity-relationship diagrams for data models
 
 - **backend/**: Python backend implementation
-  - Component modules: context_intent, recommendation, knowledge_base, orchestration, api
-  - LLM integration with Ollama client
-  - FastAPI REST endpoints with CORS support
-  - Pydantic schemas for type safety
+  - **api/**: FastAPI REST endpoints with CORS support
+  - **context_intent/**: Intent extraction, traffic profiles, Pydantic schemas
+  - **recommendation/**: Multi-criteria scoring and ranking
+    - `solution_scorer.py`: 4-dimension scoring (accuracy, price, latency, complexity)
+    - `model_evaluator.py`: Use-case fit scoring
+    - `usecase_quality_scorer.py`: Artificial Analysis benchmark integration
+    - `ranking_service.py`: 5 ranked list generation
+    - `capacity_planner.py`: GPU capacity planning with SLO filtering
+  - **knowledge_base/**: Data access (benchmark database, JSON catalogs)
+  - **orchestration/**: Workflow coordination
+  - **deployment/**: Jinja2 templates for KServe/vLLM YAML generation
+  - **llm/**: Ollama client for intent extraction
 
 - **ui/**: Streamlit UI
   - Chat interface for conversational requirement gathering
@@ -35,11 +43,18 @@ This repository contains the architecture design for **Compass**, an open-source
   - Action buttons for YAML generation and deployment
   - Monitoring dashboard with cluster status, SLO compliance, and inference testing
 
-- **data/**: Synthetic benchmark and catalog data for POC
-  - benchmarks.json: 24 model+GPU combinations with vLLM performance data
-  - model_catalog.json: 10 approved models with metadata
-  - slo_templates.json: 7 use case templates
-  - demo_scenarios.json: 3 test scenarios
+- **data/**: Benchmark and catalog data
+  - **model_catalog.json**: 47 curated models with task/domain metadata
+  - **slo_templates.json**: 9 use case templates with SLO targets
+  - **benchmarks/models/**: Model benchmark data
+    - `opensource_all_benchmarks.csv`: 204 open-source models from Artificial Analysis
+    - `model_pricing.csv`: GPU pricing data
+  - **business_context/use_case/**: Use-case specific quality scoring
+    - `weighted_scores/`: 9 CSV files with pre-ranked models per use case
+    - `configs/`: Use case configuration files (weights, SLOs, workloads)
+    - `USE_CASE_METHODOLOGY.md`: Explains benchmark weighting strategy
+  - **benchmarks_BLIS.json**: Latency/throughput benchmarks from BLIS simulator (loaded into PostgreSQL)
+  - **demo_scenarios.json**: 3 test scenarios
 
 ## Architecture Key Concepts
 
@@ -75,13 +90,14 @@ Compass is structured as a layered architecture:
 
 **Core Engines** (Vertical - Backend Services):
 1. **Intent & Specification Engine** - Transform conversation into complete deployment spec
-   - LLM-powered intent extraction (Ollama llama3.1:8b)
+   - LLM-powered intent extraction (Ollama qwen2.5:7b)
    - Use case → traffic profile mapping (4 GuideLLM standards)
    - SLO template lookup and specification generation
 2. **Recommendation Engine** - Find optimal model + GPU configurations
-   - Model selection and ranking
+   - Multi-criteria scoring (accuracy, price, latency, complexity)
    - Capacity planning (GPU count, deployment topology)
-   - SLO compliance filtering
+   - SLO compliance filtering with near-miss tolerance
+   - Ranked lists generation (5 views: best accuracy, lowest cost, etc.)
 3. **Deployment Engine** - Generate and deploy Kubernetes configs
    - YAML generation (Jinja2 templates)
    - K8s deployment lifecycle management
@@ -99,10 +115,40 @@ Compass is structured as a layered architecture:
 - **vLLM Simulator** - GPU-free development and testing
 
 ### Critical Data Collections (Knowledge Base)
-- **Model Benchmarks** (PostgreSQL): TTFT/ITL/E2E/throughput for (model, GPU, traffic_profile) combinations
+- **Model Benchmarks** (PostgreSQL): TTFT/ITL/E2E/throughput benchmarks for (model, GPU, tensor_parallel) combinations (source: BLIS simulator)
 - **Use Case SLO Templates** (JSON): 9 use cases mapped to 4 GuideLLM traffic profiles with experience-driven SLO targets
-- **Model Catalog** (JSON): 40 curated, approved models with task/domain metadata
+- **Model Catalog** (JSON): 47 curated, approved models with task/domain metadata
+- **Model Quality Scores** (CSV): Use-case specific scores from Artificial Analysis benchmarks (204 models)
+- **Use Case Configs** (JSON): Benchmark weights, SLO targets, and workload profiles per use case
 - **Deployment Outcomes** (PostgreSQL, future): Actual performance data for feedback loop
+
+### Solution Ranking System
+
+The recommendation engine uses **multi-criteria scoring** to rank configurations:
+
+**4 Scoring Dimensions** (each 0-100 scale):
+1. **Accuracy/Quality**: Use-case specific model capability from Artificial Analysis benchmarks
+   - Source: `data/business_context/use_case/weighted_scores/*.csv`
+   - Fallback: Parameter count heuristic if model not in benchmark data
+2. **Price**: Cost efficiency (inverse of monthly cost, normalized)
+3. **Latency**: SLO compliance and headroom from performance benchmark database
+4. **Complexity**: Deployment simplicity (fewer GPUs = higher score)
+
+**Default Weights**: 40% accuracy, 40% price, 10% latency, 10% complexity
+
+**5 Ranked Views**:
+- `best_accuracy`: Sorted by model capability
+- `lowest_cost`: Sorted by price efficiency
+- `lowest_latency`: Sorted by SLO headroom
+- `simplest`: Sorted by deployment complexity
+- `balanced`: Sorted by weighted composite score
+
+**Key Files**:
+- `backend/src/recommendation/solution_scorer.py` - Calculates 4 scores
+- `backend/src/recommendation/model_evaluator.py` - Legacy accuracy scoring (use-case fit)
+- `backend/src/recommendation/usecase_quality_scorer.py` - Artificial Analysis benchmark scoring
+- `backend/src/recommendation/ranking_service.py` - Generates 5 ranked lists
+- `backend/src/recommendation/capacity_planner.py` - Orchestrates scoring during capacity planning
 
 ## Working with This Repository
 
@@ -149,10 +195,11 @@ Compass is structured as a layered architecture:
 ### Common Editing Patterns
 
 **Adding a new use case template**:
-1. Add to Intent & Specification Engine's USE_CASE_TEMPLATES in docs/ARCHITECTURE.md
-2. Add corresponding entry to data/slo_templates.json
-3. Update Knowledge Base → Use Case SLO Templates schema in docs/ARCHITECTURE.md
-4. Update examples if relevant
+1. Add corresponding entry to `data/slo_templates.json`
+2. Create weighted scores CSV in `data/business_context/use_case/weighted_scores/`
+3. Add use case to `UseCaseQualityScorer.USE_CASE_FILES` in `usecase_quality_scorer.py`
+4. Update `USE_CASE_METHODOLOGY.md` with benchmark weighting rationale
+5. Update docs/ARCHITECTURE.md if needed
 
 **Adding a new SLO metric**:
 1. Update DeploymentIntent schema in Intent & Specification Engine (docs/ARCHITECTURE.md)
@@ -213,7 +260,10 @@ Signed-off-by: Your Name <your.email@example.com>
 
 - **Current Implementation Status**:
   - ✅ Project structure with synthetic data and LLM client
-  - ✅ Core recommendation engine (intent extraction, traffic profiling, model recommendation, capacity planning)
+  - ✅ Core recommendation engine (intent extraction, traffic profiling, capacity planning)
+  - ✅ Multi-criteria solution ranking with 4 scoring dimensions
+  - ✅ Use-case specific quality scoring from Artificial Analysis benchmarks
+  - ✅ 5 ranked recommendation views (best accuracy, lowest cost, etc.)
   - ✅ Orchestration workflow and FastAPI backend
   - ✅ Streamlit UI with chat interface, recommendation display, and editable specifications
   - ✅ YAML generation (KServe/vLLM/HPA/ServiceMonitor) and deployment automation
@@ -221,9 +271,9 @@ Signed-off-by: Your Name <your.email@example.com>
   - ✅ Kubernetes deployment automation and real cluster status monitoring
   - ✅ vLLM simulator for GPU-free development
   - ✅ Inference testing UI with end-to-end deployment validation
-- The Knowledge Base schemas are critical - any implementation must support all 7 collections
+- The Knowledge Base schemas are critical - any implementation must support all collections
 - SLO-driven capacity planning is the core differentiator - don't simplify this away
-- Use synthetic data in data/ directory for POC; production would use a database (e.g., PostgreSQL)
+- Use data in data/ directory for POC; production uses PostgreSQL for latency benchmarks
 - Benchmarks use vLLM default configuration with dynamic batching (no fixed batch_size)
 
 ## Simulator Mode vs Real vLLM
