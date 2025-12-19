@@ -1355,6 +1355,22 @@ if "custom_e2e" not in st.session_state:
 if "custom_qps" not in st.session_state:
     st.session_state.custom_qps = None
 
+# Ranking weights (for balanced score calculation)
+if "weight_accuracy" not in st.session_state:
+    st.session_state.weight_accuracy = 4
+if "weight_cost" not in st.session_state:
+    st.session_state.weight_cost = 4
+if "weight_latency" not in st.session_state:
+    st.session_state.weight_latency = 1
+if "weight_simplicity" not in st.session_state:
+    st.session_state.weight_simplicity = 1
+if "include_near_miss" not in st.session_state:
+    st.session_state.include_near_miss = False
+
+# Category expansion state (for inline expand/collapse of additional options)
+if "expanded_categories" not in st.session_state:
+    st.session_state.expanded_categories = set()
+
 # =============================================================================
 # DATA LOADING
 # =============================================================================
@@ -1486,41 +1502,45 @@ def get_slo_targets_for_use_case(use_case: str, priority: str = "balanced") -> d
         "recommended_hardware": priority_factor.get('recommended_hardware', 'H100_x2'),
     }
 
+
 def recommend_optimal_hardware(use_case: str, priority: str, user_hardware: str = None) -> dict:
     """Recommend optimal hardware from BLIS benchmarks based on SLO requirements.
-    
+
+    DEPRECATED: This function is kept for potential future use. The UI now uses
+    the backend API via fetch_ranked_recommendations() instead.
+
     Logic:
     - cost_saving: Find CHEAPEST hardware that meets MAX SLO (slowest acceptable)
     - low_latency: Find hardware that meets MIN SLO (fastest required)
     - balanced: Find hardware that meets MEAN of SLO range
     - high_quality: Relax latency, focus on larger models
     - high_throughput: Focus on tokens/sec capacity
-    
+
     Returns hardware recommendation with BLIS benchmark data.
     """
     # Get SLO targets
     slo_targets = get_slo_targets_for_use_case(use_case, priority)
     if not slo_targets:
         return None
-    
+
     # Get token config
     prompt_tokens = slo_targets['token_config']['prompt']
     output_tokens = slo_targets['token_config']['output']
-    
+
     # Load BLIS benchmarks
     blis_data = load_blis_benchmarks()
     if not blis_data or 'benchmarks' not in blis_data:
         return None
-    
+
     benchmarks = blis_data['benchmarks']
-    
+
     # Filter by token config
-    matching = [b for b in benchmarks 
+    matching = [b for b in benchmarks
                 if b['prompt_tokens'] == prompt_tokens and b['output_tokens'] == output_tokens]
-    
+
     if not matching:
         return None
-    
+
     # Define hardware costs (approximate monthly cost)
     # Both H100 and A100-80 are REAL BLIS benchmarks from Andre's data
     hardware_costs = {
@@ -1532,7 +1552,7 @@ def recommend_optimal_hardware(use_case: str, priority: str, user_hardware: str 
         ("A100-80", 2): {"cost": 3200, "tier": 2},
         ("A100-80", 4): {"cost": 6400, "tier": 3},
     }
-    
+
     # Determine target SLO based on priority
     if priority == "cost_saving":
         # Target MAX SLO (slowest acceptable) to use cheapest hardware
@@ -1554,7 +1574,7 @@ def recommend_optimal_hardware(use_case: str, priority: str, user_hardware: str 
         target_ttft = (slo_targets['ttft_target']['min'] + slo_targets['ttft_target']['max']) // 2
         target_e2e = (slo_targets['e2e_target']['min'] + slo_targets['e2e_target']['max']) // 2
         sort_by = "balanced"
-    
+
     # Group benchmarks by hardware config
     hw_benchmarks = {}
     for b in matching:
@@ -1562,26 +1582,26 @@ def recommend_optimal_hardware(use_case: str, priority: str, user_hardware: str 
         if hw_key not in hw_benchmarks:
             hw_benchmarks[hw_key] = []
         hw_benchmarks[hw_key].append(b)
-    
+
     # Evaluate each hardware option
     viable_options = []
     for hw_key, benches in hw_benchmarks.items():
         # Get best benchmark (lowest TTFT at reasonable RPS)
         best = min(benches, key=lambda x: x['ttft_mean'])
-        
+
         hw_cost = hardware_costs.get(hw_key, {"cost": 99999, "tier": 99})
-        
+
         # Check if meets SLO requirements
         meets_ttft = best['ttft_p95'] <= target_ttft * 1.2  # 20% buffer
         meets_e2e = best['e2e_p95'] <= target_e2e * 1.2
-        
+
         # Don't recommend hardware that's WAY faster than needed (over-provisioning)
         too_fast = False
         if priority == "cost_saving":
             # If TTFT is less than 50% of max, it's over-provisioned
             if best['ttft_mean'] < slo_targets['ttft_target']['max'] * 0.3:
                 too_fast = True
-        
+
         viable_options.append({
             "hardware": hw_key[0],
             "hardware_count": hw_key[1],
@@ -1598,14 +1618,14 @@ def recommend_optimal_hardware(use_case: str, priority: str, user_hardware: str 
             "benchmark_count": len(benches),
             "model_repo": best['model_hf_repo'],
         })
-    
+
     # Filter to only viable options (meets SLO)
     viable = [v for v in viable_options if v['meets_slo']]
-    
+
     # If no viable options, return best available
     if not viable:
         viable = viable_options
-    
+
     # Sort based on priority
     if sort_by == "cost":
         # For cost_saving: prefer cheapest that meets SLO, not over-provisioned
@@ -1618,28 +1638,32 @@ def recommend_optimal_hardware(use_case: str, priority: str, user_hardware: str 
     else:  # balanced
         # Balance cost and latency
         viable.sort(key=lambda x: (x['tier'], x['ttft_mean']))
-    
+
     if not viable:
         return None
-    
+
     best_option = viable[0]
     alternatives = viable[1:4] if len(viable) > 1 else []
-    
+
     return {
         "recommended": best_option,
         "alternatives": alternatives,
         "slo_targets": slo_targets,
-        "selection_reason": get_selection_reason(priority, best_option, slo_targets),
+        "selection_reason": _get_hardware_selection_reason(priority, best_option, slo_targets),
     }
 
-def get_selection_reason(priority: str, hw_option: dict, slo_targets: dict) -> str:
-    """Generate explanation for why this hardware was selected."""
+
+def _get_hardware_selection_reason(priority: str, hw_option: dict, slo_targets: dict) -> str:
+    """Generate explanation for why this hardware was selected.
+
+    DEPRECATED: Helper for recommend_optimal_hardware().
+    """
     hw_name = f"{hw_option['hardware']} x{hw_option['hardware_count']}"
     ttft = hw_option['ttft_mean']
     cost = hw_option['cost_monthly']
     target_max = slo_targets['ttft_target']['max']
     target_min = slo_targets['ttft_target']['min']
-    
+
     if priority == "cost_saving":
         return f"💰 {hw_name} is the cheapest option (${cost:,}/mo) that meets your SLO max ({target_max}ms TTFT). Actual TTFT: {ttft:.0f}ms - good value!"
     elif priority == "low_latency":
@@ -1650,6 +1674,452 @@ def get_selection_reason(priority: str, hw_option: dict, slo_targets: dict) -> s
         return f"⭐ {hw_name} provides headroom for larger, higher-quality models with {ttft:.0f}ms TTFT."
     else:  # balanced
         return f"⚖️ {hw_name} balances cost (${cost:,}/mo) and latency ({ttft:.0f}ms TTFT) - optimal for balanced priority."
+
+
+# =============================================================================
+# RANKED RECOMMENDATIONS (Backend API Integration)
+# =============================================================================
+
+def fetch_ranked_recommendations(
+    use_case: str,
+    user_count: int,
+    priority: str,
+    prompt_tokens: int,
+    output_tokens: int,
+    expected_qps: float,
+    ttft_p95_target_ms: int,
+    itl_p95_target_ms: int,
+    e2e_p95_target_ms: int,
+    weights: dict = None,
+    include_near_miss: bool = False,
+) -> dict | None:
+    """Fetch ranked recommendations from the backend API.
+
+    Args:
+        use_case: Use case identifier (e.g., "chatbot_conversational")
+        user_count: Number of concurrent users
+        priority: UI priority (maps to latency_requirement/budget_constraint)
+        prompt_tokens: Input prompt token count
+        output_tokens: Output generation token count
+        expected_qps: Queries per second
+        ttft_p95_target_ms: TTFT SLO target (p95)
+        itl_p95_target_ms: ITL SLO target (p95)
+        e2e_p95_target_ms: E2E SLO target (p95)
+        weights: Optional dict with accuracy, price, latency, complexity weights (0-10)
+        include_near_miss: Whether to include near-SLO configurations
+
+    Returns:
+        RankedRecommendationsResponse as dict, or None on error
+    """
+    import requests
+
+    # Map UI priority to backend latency_requirement and budget_constraint
+    priority_mapping = {
+        "low_latency": {"latency_requirement": "very_high", "budget_constraint": "flexible"},
+        "balanced": {"latency_requirement": "high", "budget_constraint": "moderate"},
+        "cost_saving": {"latency_requirement": "medium", "budget_constraint": "strict"},
+        "high_throughput": {"latency_requirement": "high", "budget_constraint": "moderate"},
+        "high_quality": {"latency_requirement": "medium", "budget_constraint": "flexible"},
+    }
+
+    mapping = priority_mapping.get(priority, priority_mapping["balanced"])
+
+    # Build request payload
+    payload = {
+        "use_case": use_case,
+        "user_count": user_count,
+        "latency_requirement": mapping["latency_requirement"],
+        "budget_constraint": mapping["budget_constraint"],
+        "prompt_tokens": prompt_tokens,
+        "output_tokens": output_tokens,
+        "expected_qps": expected_qps,
+        "ttft_p95_target_ms": ttft_p95_target_ms,
+        "itl_p95_target_ms": itl_p95_target_ms,
+        "e2e_p95_target_ms": e2e_p95_target_ms,
+        "include_near_miss": include_near_miss,
+    }
+
+    if weights:
+        payload["weights"] = weights
+
+    try:
+        response = requests.post(
+            "http://localhost:8000/api/ranked-recommend-from-spec",
+            json=payload,
+            timeout=30,
+        )
+        response.raise_for_status()
+        return response.json()
+    except requests.exceptions.RequestException as e:
+        st.error(f"Failed to fetch ranked recommendations: {e}")
+        return None
+
+
+def render_weight_controls() -> None:
+    """Render weight controls and configuration options in a collapsible section.
+
+    Updates session state directly:
+    - weight_accuracy, weight_cost, weight_latency, weight_simplicity (0-10 each)
+    - include_near_miss (bool)
+    """
+    with st.expander("⚙️ Configuration", expanded=False):
+        col1, col2 = st.columns([3, 1])
+
+        with col1:
+            st.markdown("""
+            <div style="color: rgba(255,255,255,0.7); font-size: 0.9rem; margin-bottom: 0.5rem;">
+                <strong>Ranking Weights</strong> (0-10) — adjust to customize balanced score
+            </div>
+            """, unsafe_allow_html=True)
+
+            wcol1, wcol2, wcol3, wcol4 = st.columns(4)
+
+            with wcol1:
+                accuracy = st.number_input(
+                    "Accuracy",
+                    min_value=0,
+                    max_value=10,
+                    value=st.session_state.weight_accuracy,
+                    key="input_accuracy",
+                    help="Higher = prefer more capable models"
+                )
+                if accuracy != st.session_state.weight_accuracy:
+                    st.session_state.weight_accuracy = accuracy
+
+            with wcol2:
+                cost = st.number_input(
+                    "Cost",
+                    min_value=0,
+                    max_value=10,
+                    value=st.session_state.weight_cost,
+                    key="input_cost",
+                    help="Higher = prefer cheaper configurations"
+                )
+                if cost != st.session_state.weight_cost:
+                    st.session_state.weight_cost = cost
+
+            with wcol3:
+                latency = st.number_input(
+                    "Latency",
+                    min_value=0,
+                    max_value=10,
+                    value=st.session_state.weight_latency,
+                    key="input_latency",
+                    help="Higher = prefer lower latency"
+                )
+                if latency != st.session_state.weight_latency:
+                    st.session_state.weight_latency = latency
+
+            with wcol4:
+                simplicity = st.number_input(
+                    "Simplicity",
+                    min_value=0,
+                    max_value=10,
+                    value=st.session_state.weight_simplicity,
+                    key="input_simplicity",
+                    help="Higher = prefer simpler deployments"
+                )
+                if simplicity != st.session_state.weight_simplicity:
+                    st.session_state.weight_simplicity = simplicity
+
+        with col2:
+            st.markdown("""
+            <div style="color: rgba(255,255,255,0.7); font-size: 0.9rem; margin-bottom: 0.5rem;">
+                <strong>Options</strong>
+            </div>
+            """, unsafe_allow_html=True)
+
+            include_near_miss = st.checkbox(
+                "Include near-miss configs",
+                value=st.session_state.include_near_miss,
+                key="checkbox_near_miss",
+                help="Include configurations that nearly meet SLO targets"
+            )
+            if include_near_miss != st.session_state.include_near_miss:
+                st.session_state.include_near_miss = include_near_miss
+
+            # Re-evaluate button to apply weight changes (styled as primary/blue)
+            if st.button("🔄 Re-Evaluate", key="re_evaluate_btn", type="primary", help="Apply weight changes and re-fetch recommendations"):
+                st.rerun()
+
+
+def render_recommendation_category_card(
+    category_name: str,
+    category_emoji: str,
+    category_color: str,
+    recommendations: list,
+):
+    """Render a single recommendation category card with top pick and expander.
+
+    Args:
+        category_name: Display name (e.g., "Balanced", "Best Accuracy")
+        category_emoji: Emoji for the category
+        category_color: Hex color for styling
+        recommendations: List of recommendation dicts from backend
+    """
+    if not recommendations:
+        st.markdown(f"""
+        <div style="background: var(--bg-card); padding: 1rem; border-radius: 0.75rem;
+                    border: 1px solid {category_color}40; min-height: 150px;">
+            <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem;">
+                <span style="font-size: 1.25rem;">{category_emoji}</span>
+                <span style="color: {category_color}; font-weight: 700;">{category_name}</span>
+            </div>
+            <p style="color: rgba(255,255,255,0.5); font-style: italic;">No configurations found</p>
+        </div>
+        """, unsafe_allow_html=True)
+        return
+
+    top = recommendations[0]
+    model_name = top.get("model_name", "Unknown")
+    gpu_type = top.get("gpu_config", {}).get("gpu_type", "Unknown") if isinstance(top.get("gpu_config"), dict) else "Unknown"
+    gpu_count = top.get("gpu_config", {}).get("gpu_count", 1) if isinstance(top.get("gpu_config"), dict) else 1
+    ttft = top.get("predicted_ttft_p95_ms", 0)
+    cost = top.get("cost_per_month_usd", 0)
+    meets_slo = top.get("meets_slo", False)
+    scores = top.get("scores", {})
+    balanced_score = scores.get("balanced_score", 0) if isinstance(scores, dict) else 0
+    accuracy_score = scores.get("accuracy_score", 0) if isinstance(scores, dict) else 0
+
+    slo_badge = "✅" if meets_slo else "⚠️"
+
+    st.markdown(f"""
+    <div style="background: var(--bg-card); padding: 1rem; border-radius: 0.75rem;
+                border: 1px solid {category_color}40;">
+        <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem;">
+            <span style="font-size: 1.25rem;">{category_emoji}</span>
+            <span style="color: {category_color}; font-weight: 700;">{category_name}</span>
+            <span style="margin-left: auto; font-size: 0.9rem;">{slo_badge}</span>
+        </div>
+        <div style="margin-bottom: 0.5rem;">
+            <span style="color: white; font-weight: 600; font-size: 1.1rem;">{model_name}</span>
+        </div>
+        <div style="color: rgba(255,255,255,0.7); font-size: 0.9rem; margin-bottom: 0.5rem;">
+            {gpu_count}x {gpu_type}
+        </div>
+        <div style="display: flex; gap: 1rem; font-size: 0.85rem; color: rgba(255,255,255,0.6);">
+            <span>⏱️ {ttft:.0f}ms</span>
+            <span>💰 ${cost:,.0f}/mo</span>
+        </div>
+        <div style="margin-top: 0.5rem; font-size: 0.85rem;">
+            <span style="color: {category_color};">Score: {balanced_score:.1f}</span>
+            <span style="color: rgba(255,255,255,0.5);"> | Accuracy: {accuracy_score:.0f}</span>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    # Expander for additional options
+    if len(recommendations) > 1:
+        with st.expander(f"Show {len(recommendations) - 1} more options"):
+            for rec in recommendations[1:]:
+                rec_model = rec.get("model_name", "Unknown")
+                rec_gpu_type = rec.get("gpu_config", {}).get("gpu_type", "Unknown") if isinstance(rec.get("gpu_config"), dict) else "Unknown"
+                rec_gpu_count = rec.get("gpu_config", {}).get("gpu_count", 1) if isinstance(rec.get("gpu_config"), dict) else 1
+                rec_ttft = rec.get("predicted_ttft_p95_ms", 0)
+                rec_cost = rec.get("cost_per_month_usd", 0)
+                rec_meets_slo = "✅" if rec.get("meets_slo", False) else "⚠️"
+                rec_scores = rec.get("scores", {})
+                rec_balanced = rec_scores.get("balanced_score", 0) if isinstance(rec_scores, dict) else 0
+
+                st.markdown(f"""
+                <div style="padding: 0.5rem; margin: 0.25rem 0; background: rgba(255,255,255,0.03);
+                            border-radius: 0.5rem; font-size: 0.9rem;">
+                    <span style="color: white; font-weight: 500;">{rec_meets_slo} {rec_model}</span>
+                    <span style="color: rgba(255,255,255,0.5);"> — {rec_gpu_count}x {rec_gpu_type},
+                          {rec_ttft:.0f}ms, ${rec_cost:,.0f}/mo (Score: {rec_balanced:.1f})</span>
+                </div>
+                """, unsafe_allow_html=True)
+
+
+def render_ranked_recommendations(response: dict, show_config: bool = True):
+    """Render all 5 ranked recommendation categories in a table format.
+
+    Args:
+        response: RankedRecommendationsResponse from backend
+        show_config: Whether to show the configuration controls (default True)
+    """
+    total_configs = response.get("total_configs_evaluated", 0)
+    configs_after_filters = response.get("configs_after_filters", 0)
+
+    st.markdown(
+        '<div class="section-header" style="background: linear-gradient(135deg, rgba(6, 182, 212, 0.15), rgba(16, 185, 129, 0.1)); border: 1px solid rgba(6, 182, 212, 0.2);"><span>🖥️</span> Recommended Solutions</div>',
+        unsafe_allow_html=True
+    )
+
+    # Render configuration controls right under the header
+    if show_config:
+        render_weight_controls()
+
+    st.markdown(
+        f'<div style="color: rgba(255,255,255,0.6); margin-bottom: 1rem; font-size: 0.9rem;">Evaluated <span style="color: #06b6d4; font-weight: 600;">{total_configs}</span> viable configurations, showing <span style="color: #10b981; font-weight: 600;">{configs_after_filters}</span> unique options</div>',
+        unsafe_allow_html=True
+    )
+
+    # Define categories in the requested order
+    categories = [
+        ("balanced", "Balanced", "⚖️", "#8b5cf6"),
+        ("best_accuracy", "Best Accuracy", "🎯", "#10b981"),
+        ("lowest_cost", "Lowest Cost", "💰", "#f59e0b"),
+        ("lowest_latency", "Lowest Latency", "⚡", "#06b6d4"),
+        ("simplest", "Simplest", "🎛️", "#ec4899"),
+    ]
+
+    # Helper function to format GPU config with TP and replicas
+    def format_gpu_config(gpu_config: dict) -> str:
+        if not isinstance(gpu_config, dict):
+            return "Unknown"
+        gpu_type = gpu_config.get("gpu_type", "Unknown")
+        gpu_count = gpu_config.get("gpu_count", 1)
+        tp = gpu_config.get("tensor_parallel", 1)
+        replicas = gpu_config.get("replicas", 1)
+        return f"{gpu_count}x {gpu_type} (TP={tp}, R={replicas})"
+
+    # Helper function to build a table row from a recommendation
+    def build_row(rec: dict, cat_color: str, cat_name: str = "", cat_emoji: str = "", is_top: bool = False, more_count: int = 0) -> str:
+        model_name = rec.get("model_name", "Unknown")
+        gpu_config = rec.get("gpu_config", {})
+        gpu_str = format_gpu_config(gpu_config)
+        ttft = rec.get("predicted_ttft_p95_ms", 0)
+        cost = rec.get("cost_per_month_usd", 0)
+        meets_slo = rec.get("meets_slo", False)
+        scores = rec.get("scores", {})
+        accuracy_score = scores.get("accuracy_score", 0) if isinstance(scores, dict) else 0
+        price_score = scores.get("price_score", 0) if isinstance(scores, dict) else 0
+        latency_score = scores.get("latency_score", 0) if isinstance(scores, dict) else 0
+        complexity_score = scores.get("complexity_score", 0) if isinstance(scores, dict) else 0
+        balanced_score = scores.get("balanced_score", 0) if isinstance(scores, dict) else 0
+        slo_badge = "✅" if meets_slo else "⚠️"
+
+        if is_top:
+            more_badge = f'<span style="color: rgba(255,255,255,0.4); font-size: 0.8rem; margin-left: 0.5rem;">(+{more_count})</span>' if more_count > 0 else ''
+            cat_cell = f'<td style="padding: 0.75rem 0.5rem;"><span style="color: {cat_color}; font-weight: 600;">{cat_emoji} {cat_name}</span>{more_badge}</td>'
+        else:
+            cat_cell = f'<td style="padding: 0.75rem 0.5rem; padding-left: 2rem;"><span style="color: {cat_color}40;">↳</span></td>'
+
+        return (
+            f'<tr style="border-bottom: 1px solid rgba(255,255,255,0.1);{"background: rgba(255,255,255,0.02);" if not is_top else ""}">'
+            f'{cat_cell}'
+            f'<td style="padding: 0.75rem 0.5rem; color: white; font-weight: {"500" if is_top else "400"};">{model_name}</td>'
+            f'<td style="padding: 0.75rem 0.5rem; color: rgba(255,255,255,0.8); font-size: 0.85rem;">{gpu_str}</td>'
+            f'<td style="padding: 0.75rem 0.5rem; text-align: right; color: #06b6d4;">{ttft:.0f}ms</td>'
+            f'<td style="padding: 0.75rem 0.5rem; text-align: right; color: #f59e0b;">${cost:,.0f}</td>'
+            f'<td style="padding: 0.75rem 0.5rem; text-align: center; color: #10b981;">{accuracy_score:.0f}</td>'
+            f'<td style="padding: 0.75rem 0.5rem; text-align: center; color: #f59e0b;">{price_score:.0f}</td>'
+            f'<td style="padding: 0.75rem 0.5rem; text-align: center; color: #06b6d4;">{latency_score:.0f}</td>'
+            f'<td style="padding: 0.75rem 0.5rem; text-align: center; color: #ec4899;">{complexity_score:.0f}</td>'
+            f'<td style="padding: 0.75rem 0.5rem; text-align: center; color: #8b5cf6; font-weight: 600;">{balanced_score:.1f}</td>'
+            f'<td style="padding: 0.75rem 0.5rem; text-align: center;">{slo_badge}</td>'
+            f'</tr>'
+        )
+
+    # Table header styles
+    th_style = 'style="text-align: left; padding: 0.75rem 0.5rem; color: rgba(255,255,255,0.7); font-size: 0.85rem; font-weight: 600;"'
+    th_style_right = 'style="text-align: right; padding: 0.75rem 0.5rem; color: rgba(255,255,255,0.7); font-size: 0.85rem; font-weight: 600;"'
+    th_style_center = 'style="text-align: center; padding: 0.75rem 0.5rem; color: rgba(255,255,255,0.7); font-size: 0.85rem; font-weight: 600;"'
+
+    table_header = (
+        '<thead>'
+        f'<tr style="border-bottom: 2px solid rgba(255,255,255,0.2);">'
+        f'<th {th_style}>Category</th>'
+        f'<th {th_style}>Model</th>'
+        f'<th {th_style}>GPU Config</th>'
+        f'<th {th_style_right}>TTFT (p95)</th>'
+        f'<th {th_style_right}>Cost/mo</th>'
+        f'<th {th_style_center}>🎯</th>'
+        f'<th {th_style_center}>💰</th>'
+        f'<th {th_style_center}>⚡</th>'
+        f'<th {th_style_center}>🎛️</th>'
+        f'<th {th_style_center}>⚖️</th>'
+        f'<th {th_style_center}>SLO</th>'
+        '</tr>'
+        '</thead>'
+    )
+
+    # Build ONE unified table with all categories
+    # Add a first column for expand/collapse buttons rendered as part of the Category cell
+
+    # Collect expansion state and category data
+    category_data = []
+    for cat_key, cat_name, cat_emoji, cat_color in categories:
+        recs = response.get(cat_key, [])
+        is_expanded = cat_key in st.session_state.expanded_categories
+        more_count = len(recs) - 1 if len(recs) > 1 else 0
+        category_data.append({
+            "key": cat_key,
+            "name": cat_name,
+            "emoji": cat_emoji,
+            "color": cat_color,
+            "recs": recs,
+            "is_expanded": is_expanded,
+            "more_count": more_count,
+        })
+
+    # Render expand/collapse toggle buttons in a compact row
+    # These appear above the table, one per category with expandable options
+    expandable_cats = [c for c in category_data if c["more_count"] > 0]
+    if expandable_cats:
+        st.markdown(
+            '<div style="margin-bottom: 0.5rem; display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center;">',
+            unsafe_allow_html=True
+        )
+        toggle_cols = st.columns(len(expandable_cats) + 1)
+        toggle_cols[0].markdown(
+            '<span style="color: rgba(255,255,255,0.5); font-size: 0.8rem;">Expand:</span>',
+            unsafe_allow_html=True
+        )
+        for idx, cat in enumerate(expandable_cats):
+            with toggle_cols[idx + 1]:
+                btn_label = f"−{cat['emoji']}" if cat["is_expanded"] else f"+{cat['emoji']}"
+                if st.button(
+                    btn_label,
+                    key=f"toggle_{cat['key']}",
+                    help=f"{'Collapse' if cat['is_expanded'] else 'Expand'} {cat['name']} (+{cat['more_count']})"
+                ):
+                    if cat["is_expanded"]:
+                        st.session_state.expanded_categories.discard(cat["key"])
+                    else:
+                        st.session_state.expanded_categories.add(cat["key"])
+                    st.rerun()
+
+    # Build all rows for the unified table
+    all_rows = []
+
+    for cat in category_data:
+        cat_key = cat["key"]
+        cat_name = cat["name"]
+        cat_emoji = cat["emoji"]
+        cat_color = cat["color"]
+        recs = cat["recs"]
+        is_expanded = cat["is_expanded"]
+        more_count = cat["more_count"]
+
+        if not recs:
+            # Empty category row
+            all_rows.append(
+                f'<tr style="border-bottom: 1px solid rgba(255,255,255,0.1);">'
+                f'<td style="padding: 0.75rem 0.5rem;"><span style="color: {cat_color}; font-weight: 600;">{cat_emoji} {cat_name}</span></td>'
+                f'<td colspan="10" style="padding: 0.75rem 0.5rem; color: rgba(255,255,255,0.5); font-style: italic;">No configurations found</td>'
+                f'</tr>'
+            )
+        else:
+            # Top recommendation for this category
+            all_rows.append(build_row(recs[0], cat_color, cat_name, cat_emoji, is_top=True, more_count=more_count))
+
+            # Add additional rows if expanded
+            if is_expanded and len(recs) > 1:
+                for rec in recs[1:]:
+                    all_rows.append(build_row(rec, cat_color, "", "", is_top=False, more_count=0))
+
+    # Render the single unified table
+    unified_table_html = (
+        f'<table style="width: 100%; border-collapse: collapse;">'
+        + table_header +
+        '<tbody>' + ''.join(all_rows) + '</tbody>'
+        '</table>'
+    )
+
+    st.markdown(unified_table_html, unsafe_allow_html=True)
+
 
 def get_blis_slo_for_model(model_name: str, use_case: str, hardware: str = "H100") -> dict:
     """Get REAL BLIS benchmark SLO data for a specific model and use case.
@@ -4274,128 +4744,59 @@ def render_slo_with_approval(extraction: dict, priority: str, models_df: pd.Data
 
 def render_recommendation_result(result: dict, priority: str, extraction: dict):
     """Render beautiful recommendation results with Top 5 table."""
-    
-    # Show Hardware Recommendation with SLO Comparison FIRST
-    hw_recommendation = result.get("hardware_recommendation")
-    slo_targets = result.get("slo_targets")
-    
-    if hw_recommendation and slo_targets:
-        st.markdown('<div class="section-header" style="background: linear-gradient(135deg, rgba(6, 182, 212, 0.15), rgba(16, 185, 129, 0.1)); border: 1px solid rgba(6, 182, 212, 0.2);"><span>🖥️</span> Optimal Hardware Recommendation (Based on Priority & SLO)</div>', unsafe_allow_html=True)
-        
-        recommended = hw_recommendation.get('recommended', {})
-        selection_reason = hw_recommendation.get('selection_reason', '')
-        
-        # Show selection reason
-        st.markdown(f"""
-        <div style="background: linear-gradient(135deg, rgba(6, 182, 212, 0.1), rgba(16, 185, 129, 0.05)); padding: 1rem 1.25rem; border-radius: 0.75rem; margin-bottom: 1.5rem; border-left: 4px solid #06b6d4;">
-            <p style="color: rgba(255,255,255,0.95); margin: 0; font-size: 1rem; line-height: 1.6;">
-                {selection_reason}
-            </p>
-        </div>
-        """, unsafe_allow_html=True)
-        
-        # SLO Targets vs Actual comparison
-        col1, col2 = st.columns(2)
-        
-        with col1:
-            st.markdown("""
-            <div style="background: var(--bg-card); padding: 1.25rem; border-radius: 0.75rem; border: 1px solid rgba(139, 92, 246, 0.3);">
-                <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem;">
-                    <span style="font-size: 1.5rem;">📚</span>
-                    <span style="color: #8b5cf6; font-weight: 700; font-size: 1rem;">Research-Based SLO TARGETS</span>
-                </div>
-            """, unsafe_allow_html=True)
-            
-            st.markdown(f"""
-                <div style="display: flex; flex-direction: column; gap: 0.5rem;">
-                    <div style="display: flex; justify-content: space-between; padding: 0.4rem 0; border-bottom: 1px solid rgba(255,255,255,0.1);">
-                        <span style="color: rgba(255,255,255,0.7);">⏱️ TTFT Range:</span>
-                        <span style="color: #8b5cf6; font-weight: 600;">{slo_targets['ttft_target']['min']} - {slo_targets['ttft_target']['max']}ms</span>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; padding: 0.4rem 0; border-bottom: 1px solid rgba(255,255,255,0.1);">
-                        <span style="color: rgba(255,255,255,0.7);">⚡ ITL Range:</span>
-                        <span style="color: #8b5cf6; font-weight: 600;">{slo_targets['itl_target']['min']} - {slo_targets['itl_target']['max']}ms</span>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; padding: 0.4rem 0; border-bottom: 1px solid rgba(255,255,255,0.1);">
-                        <span style="color: rgba(255,255,255,0.7);">🏁 E2E Range:</span>
-                        <span style="color: #8b5cf6; font-weight: 600;">{slo_targets['e2e_target']['min']} - {slo_targets['e2e_target']['max']}ms</span>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; padding: 0.4rem 0;">
-                        <span style="color: rgba(255,255,255,0.7);">📝 Token Config:</span>
-                        <span style="color: #f472b6; font-weight: 600;">{slo_targets['token_config']['prompt']} → {slo_targets['token_config']['output']}</span>
-                    </div>
-                </div>
-            </div>
-            """, unsafe_allow_html=True)
-        
-        with col2:
-            st.markdown(f"""
-            <div style="background: var(--bg-card); padding: 1.25rem; border-radius: 0.75rem; border: 1px solid rgba(16, 185, 129, 0.3);">
-                <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem;">
-                    <span style="font-size: 1.5rem;">📊</span>
-                    <span style="color: #10b981; font-weight: 700; font-size: 1rem;">BLIS Actual ({recommended.get('hardware', 'H100')} x{recommended.get('hardware_count', 1)})</span>
-                </div>
-                <div style="display: flex; flex-direction: column; gap: 0.5rem;">
-                    <div style="display: flex; justify-content: space-between; padding: 0.4rem 0; border-bottom: 1px solid rgba(255,255,255,0.1);">
-                        <span style="color: rgba(255,255,255,0.7);">⏱️ TTFT (P95):</span>
-                        <span style="color: #10b981; font-weight: 700;">{recommended.get('ttft_p95', 0):.0f}ms</span>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; padding: 0.4rem 0; border-bottom: 1px solid rgba(255,255,255,0.1);">
-                        <span style="color: rgba(255,255,255,0.7);">⚡ ITL (Mean):</span>
-                        <span style="color: #10b981; font-weight: 700;">{recommended.get('itl_mean', 0):.1f}ms</span>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; padding: 0.4rem 0; border-bottom: 1px solid rgba(255,255,255,0.1);">
-                        <span style="color: rgba(255,255,255,0.7);">🏁 E2E (P95):</span>
-                        <span style="color: #10b981; font-weight: 700;">{recommended.get('e2e_p95', 0):.0f}ms</span>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; padding: 0.4rem 0;">
-                        <span style="color: rgba(255,255,255,0.7);">💰 Cost/Month:</span>
-                        <span style="color: #f59e0b; font-weight: 700;">${recommended.get('cost_monthly', 0):,}</span>
-                    </div>
-                </div>
-            </div>
-            """, unsafe_allow_html=True)
-        
-        # Show SLO compliance status
-        ttft_ok = recommended.get('ttft_p95', 999) <= slo_targets['ttft_target']['max'] * 1.2
-        e2e_ok = recommended.get('e2e_p95', 99999) <= slo_targets['e2e_target']['max'] * 1.2
-        over_provisioned = recommended.get('over_provisioned', False)
-        
-        if ttft_ok and e2e_ok and not over_provisioned:
-            status_color = "#10b981"
-            status_icon = "✅"
-            status_msg = "Hardware meets SLO requirements efficiently"
-        elif ttft_ok and e2e_ok and over_provisioned:
-            status_color = "#f59e0b"
-            status_icon = "⚠️"
-            status_msg = "Hardware exceeds SLO requirements - consider cheaper option for cost_saving priority"
-        else:
-            status_color = "#f5576c"
-            status_icon = "❌"
-            status_msg = "Hardware may not meet all SLO requirements"
-        
-        st.markdown(f"""
-        <div style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; background: rgba({status_color.replace('#', '')[:2]}, {status_color.replace('#', '')[2:4]}, {status_color.replace('#', '')[4:]}, 0.1); border-radius: 0.5rem; margin: 1rem 0; border: 1px solid {status_color}40;">
-            <span style="font-size: 1.25rem;">{status_icon}</span>
-            <span style="color: {status_color}; font-weight: 600;">{status_msg}</span>
-        </div>
-        """, unsafe_allow_html=True)
-        
-        # Show alternatives if available
-        alternatives = hw_recommendation.get('alternatives', [])
-        if alternatives:
-            with st.expander("🔄 Alternative Hardware Options"):
-                for alt in alternatives[:3]:
-                    meets = "✅" if alt.get('meets_slo', False) else "⚠️"
-                    over = " (over-provisioned)" if alt.get('over_provisioned', False) else ""
-                    st.markdown(f"""
-                    <div style="padding: 0.5rem; margin: 0.25rem 0; background: rgba(255,255,255,0.03); border-radius: 0.5rem;">
-                        <span style="color: white; font-weight: 600;">{meets} {alt['hardware']} x{alt['hardware_count']}</span>
-                        <span style="color: rgba(255,255,255,0.6);"> — TTFT: {alt['ttft_p95']:.0f}ms, E2E: {alt['e2e_p95']:.0f}ms, ${alt['cost_monthly']:,}/mo{over}</span>
-                    </div>
-                    """, unsafe_allow_html=True)
-        
-        st.markdown("---")
+
+    # Get SLO targets from result
+    slo_targets = result.get("slo_targets", {})
+
+    # === Ranked Hardware Recommendations (Backend API) ===
+    # Gather data from extraction and slo_targets
+    use_case = extraction.get("use_case", "chatbot_conversational")
+    user_count = extraction.get("user_count", 1000)
+
+    # Get token config and SLO targets
+    token_config = slo_targets.get("token_config", {"prompt": 512, "output": 256})
+    prompt_tokens = token_config.get("prompt", 512)
+    output_tokens = token_config.get("output", 256)
+
+    # Get SLO target values (use max as the target)
+    ttft_target = slo_targets.get("ttft_target", {}).get("max", 200)
+    itl_target = slo_targets.get("itl_target", {}).get("max", 50)
+    e2e_target = slo_targets.get("e2e_target", {}).get("max", 5000)
+
+    # Calculate expected QPS from user count (rough estimate: ~1 query per 100 users per second)
+    expected_qps = max(1.0, user_count / 100.0)
+
+    # Get current weights and include_near_miss settings from session state
+    weights = {
+        "accuracy": st.session_state.weight_accuracy,
+        "price": st.session_state.weight_cost,
+        "latency": st.session_state.weight_latency,
+        "complexity": st.session_state.weight_simplicity,
+    }
+    include_near_miss = st.session_state.include_near_miss
+
+    # Fetch ranked recommendations from backend
+    with st.spinner("Fetching ranked recommendations from backend..."):
+        ranked_response = fetch_ranked_recommendations(
+            use_case=use_case,
+            user_count=user_count,
+            priority=priority,
+            prompt_tokens=prompt_tokens,
+            output_tokens=output_tokens,
+            expected_qps=expected_qps,
+            ttft_p95_target_ms=ttft_target,
+            itl_p95_target_ms=itl_target,
+            e2e_p95_target_ms=e2e_target,
+            weights=weights,
+            include_near_miss=include_near_miss,
+        )
+
+    if ranked_response:
+        render_ranked_recommendations(ranked_response)
+    else:
+        st.warning("Could not fetch ranked recommendations from backend. Ensure the backend is running.")
+
+    st.markdown("---")
     
     st.markdown('<div class="section-header"><span>🏆</span> Step 2: Top 5 Model Recommendations</div>', unsafe_allow_html=True)
     

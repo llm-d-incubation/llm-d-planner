@@ -355,6 +355,37 @@ class RankedRecommendationRequest(BaseModel):
     weights: BalancedWeights | None = None
 
 
+class RankedRecommendationFromSpecRequest(BaseModel):
+    """Request for ranked recommendations from pre-built specification.
+
+    Used when UI has already extracted/edited the specification and wants
+    ranked recommendations without re-running intent extraction.
+    """
+
+    # Intent fields
+    use_case: str
+    user_count: int
+    latency_requirement: str = "high"  # "very_high", "high", "medium", "low"
+    budget_constraint: str = "moderate"  # "strict", "moderate", "flexible"
+    hardware_preference: str | None = None
+
+    # Traffic profile fields
+    prompt_tokens: int
+    output_tokens: int
+    expected_qps: float
+
+    # SLO target fields
+    ttft_p95_target_ms: int
+    itl_p95_target_ms: int
+    e2e_p95_target_ms: int
+
+    # Ranking options
+    min_accuracy: int | None = None
+    max_cost: float | None = None
+    include_near_miss: bool = True
+    weights: BalancedWeights | None = None
+
+
 @app.post("/api/ranked-recommend")
 async def ranked_recommend(request: RankedRecommendationRequest):
     """
@@ -415,6 +446,101 @@ async def ranked_recommend(request: RankedRecommendationRequest):
 
     except Exception as e:
         logger.error(f"Failed to generate ranked recommendations: {e}", exc_info=True)
+        raise HTTPException(
+            status_code=500, detail=f"Failed to generate ranked recommendations: {str(e)}"
+        ) from e
+
+
+@app.post("/api/ranked-recommend-from-spec")
+async def ranked_recommend_from_spec(request: RankedRecommendationFromSpecRequest):
+    """
+    Generate ranked recommendations from pre-built specification.
+
+    This endpoint is optimized for the UI workflow where specifications
+    have already been extracted and potentially edited by the user.
+    Skips intent extraction and uses provided specs directly.
+
+    Returns 5 ranked views of deployment configurations:
+    - balanced: Weighted composite score
+    - best_accuracy: Top configs by model capability
+    - lowest_cost: Top configs by price efficiency
+    - lowest_latency: Top configs by SLO headroom
+    - simplest: Top configs by deployment simplicity
+
+    Args:
+        request: Request with pre-built specification and optional filters
+
+    Returns:
+        RankedRecommendationsResponse with 5 ranked lists
+    """
+    try:
+        logger.info(
+            f"Received ranked recommendation from spec: use_case={request.use_case}, "
+            f"user_count={request.user_count}, qps={request.expected_qps}"
+        )
+        logger.info(
+            f"  SLO targets: TTFT={request.ttft_p95_target_ms}ms, "
+            f"ITL={request.itl_p95_target_ms}ms, E2E={request.e2e_p95_target_ms}ms"
+        )
+        logger.info(
+            f"  Token config: {request.prompt_tokens} -> {request.output_tokens}"
+        )
+        if request.weights:
+            logger.info(
+                f"  Weights: A={request.weights.accuracy}, P={request.weights.price}, "
+                f"L={request.weights.latency}, C={request.weights.complexity}"
+            )
+
+        # Build specifications dict for workflow
+        specifications = {
+            "intent": {
+                "use_case": request.use_case,
+                "user_count": request.user_count,
+                "latency_requirement": request.latency_requirement,
+                "budget_constraint": request.budget_constraint,
+                "throughput_priority": "medium",
+                "domain_specialization": ["general"],
+            },
+            "traffic_profile": {
+                "prompt_tokens": request.prompt_tokens,
+                "output_tokens": request.output_tokens,
+                "expected_qps": request.expected_qps,
+            },
+            "slo_targets": {
+                "ttft_p95_target_ms": request.ttft_p95_target_ms,
+                "itl_p95_target_ms": request.itl_p95_target_ms,
+                "e2e_p95_target_ms": request.e2e_p95_target_ms,
+            },
+        }
+
+        # Convert weights to dict for workflow
+        weights_dict = None
+        if request.weights:
+            weights_dict = {
+                "accuracy": request.weights.accuracy,
+                "price": request.weights.price,
+                "latency": request.weights.latency,
+                "complexity": request.weights.complexity,
+            }
+
+        # Generate ranked recommendations from specs
+        response = workflow.generate_ranked_recommendations_from_spec(
+            specifications=specifications,
+            min_accuracy=request.min_accuracy,
+            max_cost=request.max_cost,
+            include_near_miss=request.include_near_miss,
+            weights=weights_dict,
+        )
+
+        logger.info(
+            f"Ranked recommendation from spec complete: {response.total_configs_evaluated} configs, "
+            f"{response.configs_after_filters} after filters"
+        )
+
+        return response.model_dump()
+
+    except Exception as e:
+        logger.error(f"Failed to generate ranked recommendations from spec: {e}", exc_info=True)
         raise HTTPException(
             status_code=500, detail=f"Failed to generate ranked recommendations: {str(e)}"
         ) from e
