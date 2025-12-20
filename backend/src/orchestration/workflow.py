@@ -368,3 +368,130 @@ class RecommendationWorkflow:
             total_configs_evaluated=len(all_configs),
             configs_after_filters=configs_after_filters,
         )
+
+    def generate_ranked_recommendations_from_spec(
+        self,
+        specifications: dict,
+        min_accuracy: int | None = None,
+        max_cost: float | None = None,
+        include_near_miss: bool = True,
+        weights: dict[str, int] | None = None,
+    ) -> RankedRecommendationsResponse:
+        """
+        Generate ranked recommendation lists from pre-built specifications.
+
+        This bypasses intent extraction and uses the provided specs directly.
+        Used when UI has already extracted and potentially edited the specs.
+
+        Args:
+            specifications: Dict with keys: intent, traffic_profile, slo_targets
+            min_accuracy: Minimum accuracy score filter (0-100)
+            max_cost: Maximum monthly cost filter (USD)
+            include_near_miss: Whether to include near-SLO configurations
+            weights: Optional custom weights for balanced score (0-10 scale)
+                     Keys: accuracy, price, latency, complexity
+
+        Returns:
+            RankedRecommendationsResponse with 5 ranked lists
+        """
+        from ..context_intent.schema import (
+            DeploymentIntent,
+            DeploymentSpecification,
+            SLOTargets,
+            TrafficProfile,
+        )
+
+        logger.info("Starting ranked recommendation workflow from specifications")
+
+        # Infer experience_class if not provided in intent
+        intent_data = specifications["intent"].copy()
+        if "experience_class" not in intent_data or not intent_data.get("experience_class"):
+            use_case = intent_data.get("use_case", "")
+            if use_case == "code_completion":
+                intent_data["experience_class"] = "instant"
+            elif use_case in [
+                "chatbot_conversational",
+                "code_generation_detailed",
+                "translation",
+                "content_generation",
+                "summarization_short",
+            ]:
+                intent_data["experience_class"] = "conversational"
+            elif use_case == "document_analysis_rag":
+                intent_data["experience_class"] = "interactive"
+            elif use_case == "long_document_summarization":
+                intent_data["experience_class"] = "deferred"
+            elif use_case == "research_legal_analysis":
+                intent_data["experience_class"] = "batch"
+            else:
+                intent_data["experience_class"] = "conversational"
+
+        # Parse specifications into schema objects
+        intent = DeploymentIntent(**intent_data)
+        traffic_profile = TrafficProfile(**specifications["traffic_profile"])
+        slo_targets = SLOTargets(**specifications["slo_targets"])
+
+        specification = DeploymentSpecification(
+            intent=intent,
+            traffic_profile=traffic_profile,
+            slo_targets=slo_targets,
+        )
+
+        logger.info(
+            f"Specs: {intent.use_case}, {intent.user_count} users, "
+            f"{traffic_profile.expected_qps} QPS, "
+            f"TTFT target={slo_targets.ttft_p95_target_ms}ms (p95)"
+        )
+
+        # Get ALL configurations with scores
+        logger.info("Planning capacity for all model/GPU combinations")
+        all_configs = self.capacity_planner.plan_all_capacities(
+            traffic_profile=traffic_profile,
+            slo_targets=slo_targets,
+            intent=intent,
+            model_evaluator=self.model_evaluator,
+            include_near_miss=include_near_miss,
+        )
+
+        if not all_configs:
+            logger.warning("No viable configurations found")
+            return RankedRecommendationsResponse(
+                min_accuracy_threshold=min_accuracy,
+                max_cost_ceiling=max_cost,
+                include_near_miss=include_near_miss,
+                specification=specification,
+                total_configs_evaluated=0,
+                configs_after_filters=0,
+            )
+
+        # Generate ranked lists (top 10 solutions per criterion)
+        ranking_service = RankingService()
+        ranked_lists = ranking_service.generate_ranked_lists(
+            configurations=all_configs,
+            min_accuracy=min_accuracy,
+            max_cost=max_cost,
+            top_n=10,
+            weights=weights,
+        )
+
+        # Count configs after filtering
+        configs_after_filters = ranking_service.get_unique_configs_count(ranked_lists)
+
+        logger.info(
+            f"Generated ranked recommendations from spec: {len(all_configs)} total configs, "
+            f"{configs_after_filters} after filters"
+        )
+
+        return RankedRecommendationsResponse(
+            min_accuracy_threshold=min_accuracy,
+            max_cost_ceiling=max_cost,
+            include_near_miss=include_near_miss,
+            specification=specification,
+            best_accuracy=ranked_lists["best_accuracy"],
+            lowest_cost=ranked_lists["lowest_cost"],
+            lowest_latency=ranked_lists["lowest_latency"],
+            simplest=ranked_lists["simplest"],
+            balanced=ranked_lists["balanced"],
+            total_configs_evaluated=len(all_configs),
+            configs_after_filters=configs_after_filters,
+        )
