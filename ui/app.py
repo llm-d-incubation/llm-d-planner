@@ -151,7 +151,6 @@ st.set_page_config(
 
 st.markdown("""
 <style>
-    /* Import Google Fonts - Qualifire & HuggingFace Inspired Typography */
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=DM+Sans:wght@400;500;600;700&display=swap');
     
     /* Global Styles */
@@ -444,8 +443,7 @@ st.markdown("""
         outline: none;
         box-shadow: 0 0 0 3px rgba(56, 239, 125, 0.25);
     }
-    
-    /* TOP LEADERBOARD TABLE - HuggingFace/Qualifire Inspired */
+
     .leaderboard-container {
         background: var(--bg-card);
         backdrop-filter: blur(12px);
@@ -1107,8 +1105,7 @@ st.markdown("""
         color: var(--text-secondary);
         line-height: 1.6;
     }
-    
-    /* Input Container - Qualifire-inspired clean design */
+
     .input-container {
         background: var(--bg-card);
         padding: 2.5rem;
