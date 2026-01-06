@@ -88,6 +88,8 @@ check-prereqs: ## Check if required tools are installed
 	fi
 	@docker info >/dev/null 2>&1 || (printf "$(RED)✗ Docker daemon not running$(NC). Start Docker Desktop\n" && exit 1)
 	@printf "$(GREEN)✓ Docker daemon running$(NC)\n"
+	@command -v docker-compose >/dev/null 2>&1 || docker compose version >/dev/null 2>&1 || (printf "$(RED)✗ docker compose not found$(NC). Install Docker Compose or update Docker Desktop\n" && exit 1)
+	@printf "$(GREEN)✓ docker compose found$(NC)\n"
 	@printf "$(GREEN)All prerequisites satisfied!$(NC)\n"
 
 setup-backend: ## Set up Python environment (includes backend and UI dependencies)
@@ -250,6 +252,76 @@ pull-simulator: ## Pull simulator image from Quay.io
 	docker pull $(SIMULATOR_FULL_IMAGE)
 	docker tag $(SIMULATOR_FULL_IMAGE) vllm-simulator:latest
 	@printf "$(GREEN)✓ Image pulled and tagged as vllm-simulator:latest$(NC)\n"
+
+docker-build: ## Build all Docker images
+	@printf "$(BLUE)Building all Docker images...$(NC)\n"
+	DOCKER_BUILDKIT=1 docker-compose build --parallel
+	@printf "$(GREEN)✓ All images built$(NC)\n"
+
+docker-up: ## Start all services with Docker Compose
+	@printf "$(BLUE)Starting all services with Docker Compose...$(NC)\n"
+	docker-compose up -d
+	@printf "$(GREEN)✓ All services started!$(NC)\n"
+	@printf "\n"
+	@printf "$(BLUE)Service URLs:$(NC)\n"
+	@printf "  UI:        http://localhost:8501\n"
+	@printf "  Backend:   http://localhost:8000\n"
+	@printf "  API Docs:  http://localhost:8000/docs\n"
+	@printf "  PostgreSQL: localhost:5432\n"
+	@printf "  Ollama:    http://localhost:11434\n"
+	@printf "\n"
+	@printf "$(BLUE)Logs:$(NC)\n"
+	@printf "  make docker-logs\n"
+	@printf "\n"
+	@printf "$(BLUE)Stop:$(NC)\n"
+	@printf "  make docker-down\n"
+
+docker-up-dev: ## Start all services with Docker Compose (development mode)
+	@printf "$(BLUE)Starting services in development mode...$(NC)\n"
+	docker-compose -f docker-compose.yml -f docker-compose.dev.yml up --force-recreate
+	@printf "$(GREEN)✓ Development environment started$(NC)\n"
+
+docker-down: ## Stop all Docker Compose services
+	@printf "$(BLUE)Stopping Docker Compose services...$(NC)\n"
+	docker-compose down
+	@printf "$(GREEN)✓ All services stopped$(NC)\n"
+
+docker-down-v: ## Stop and remove volumes
+	@printf "$(BLUE)Stopping services and removing volumes...$(NC)\n"
+	@printf "$(YELLOW)WARNING: This will delete all database data!$(NC)\n"
+	docker-compose down -v
+	@printf "$(GREEN)✓ Services stopped and volumes removed$(NC)\n"
+
+docker-logs: ## View logs from all Docker services
+	@docker-compose logs -f
+
+docker-logs-backend: ## View backend Docker logs
+	@docker-compose logs -f backend
+
+docker-logs-ui: ## View UI Docker logs
+	@docker-compose logs -f ui
+
+docker-ps: ## Show status of Docker Compose services
+	@docker-compose ps
+
+docker-restart: ## Restart Docker Compose services
+	@printf "$(BLUE)Restarting Docker Compose services...$(NC)\n"
+	docker-compose restart
+	@printf "$(GREEN)✓ Services restarted$(NC)\n"
+
+docker-clean: ## Remove all Docker resources
+	@printf "$(BLUE)Cleaning Docker resources...$(NC)\n"
+	docker-compose down -v --remove-orphans
+	@printf "$(GREEN)✓ Docker resources cleaned$(NC)\n"
+
+docker-shell-backend: ## Open shell in backend container
+	@docker-compose exec backend /bin/bash
+
+docker-shell-ui: ## Open shell in UI container
+	@docker-compose exec ui /bin/bash
+
+docker-shell-postgres: ## Open PostgreSQL shell in container
+	@docker-compose exec postgres psql -U compass -d compass
 
 ##@ Kubernetes Cluster
 

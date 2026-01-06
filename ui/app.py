@@ -13,6 +13,7 @@ Usage:
 """
 
 import json
+import logging
 import os
 from pathlib import Path
 
@@ -24,6 +25,14 @@ import streamlit as st
 # Configuration
 API_BASE_URL = os.getenv("API_BASE_URL", "http://localhost:8000")
 DATA_DIR = Path(__file__).parent.parent / "data"
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    datefmt="%Y-%m-%d %H:%M:%S",
+)
+logger = logging.getLogger(__name__)
+
 
 # =============================================================================
 # PAGE CONFIGURATION
@@ -1377,14 +1386,29 @@ if "expanded_categories" not in st.session_state:
 
 @st.cache_data
 def load_206_models() -> pd.DataFrame:
-    """Load all 206 models from opensource_all_benchmarks.csv."""
-    csv_path = DATA_DIR / "benchmarks" / "models" / "opensource_all_benchmarks.csv"
+    """Load all 206 models from backend API."""
     try:
-        df = pd.read_csv(csv_path)
-        df = df.dropna(subset=['Model Name'])
-        df = df[df['Model Name'].str.strip() != '']
-        return df
-    except Exception:
+        # Fetch benchmark data from backend API
+        response = requests.get(
+            f"{API_BASE_URL}/api/v1/benchmarks",
+            timeout=10
+        )
+        response.raise_for_status()
+        data = response.json()
+
+        # Convert JSON to DataFrame
+        if data.get("success") and data.get("benchmarks"):
+            df = pd.DataFrame(data["benchmarks"])
+            # Ensure Model Name column exists and is clean
+            if 'Model Name' in df.columns:
+                df = df.dropna(subset=['Model Name'])
+                df = df[df['Model Name'].str.strip() != '']
+            return df
+        else:
+            logger.warning("No benchmark data returned from API")
+            return pd.DataFrame()
+    except Exception as e:
+        logger.error(f"Failed to load benchmarks from API: {e}")
         return pd.DataFrame()
 
 @st.cache_data
@@ -1744,7 +1768,7 @@ def fetch_ranked_recommendations(
 
     try:
         response = requests.post(
-            "http://localhost:8000/api/ranked-recommend-from-spec",
+            f"{API_BASE_URL}/api/ranked-recommend-from-spec",
             json=payload,
             timeout=30,
         )
@@ -2539,27 +2563,25 @@ def get_workload_insights(use_case: str, qps: int, user_count: int) -> list:
 
 @st.cache_data
 def load_weighted_scores(use_case: str) -> pd.DataFrame:
-    """Load use-case-specific weighted scores from CSV."""
-    # Map use case to CSV filename
-    use_case_to_file = {
-        "chatbot_conversational": "opensource_chatbot_conversational.csv",
-        "code_completion": "opensource_code_completion.csv",
-        "code_generation_detailed": "opensource_code_generation_detailed.csv",
-        "document_analysis_rag": "opensource_document_analysis_rag.csv",
-        "summarization_short": "opensource_summarization_short.csv",
-        "long_document_summarization": "opensource_long_document_summarization.csv",
-        "translation": "opensource_translation.csv",
-        "content_generation": "opensource_content_generation.csv",
-        "research_legal_analysis": "opensource_research_legal_analysis.csv",
-    }
-    
-    filename = use_case_to_file.get(use_case, "opensource_chatbot_conversational.csv")
-    csv_path = DATA_DIR / "business_context" / "use_case" / "weighted_scores" / filename
-    
+    """Load use-case-specific weighted scores from backend API."""
     try:
-        df = pd.read_csv(csv_path)
-        return df
-    except Exception:
+        # Fetch weighted scores from backend API
+        response = requests.get(
+            f"{API_BASE_URL}/api/v1/weighted-scores/{use_case}",
+            timeout=10
+        )
+        response.raise_for_status()
+        data = response.json()
+
+        # Convert JSON to DataFrame
+        if data.get("success") and data.get("scores"):
+            df = pd.DataFrame(data["scores"])
+            return df
+        else:
+            logger.warning(f"No weighted scores returned from API for use case: {use_case}")
+            return pd.DataFrame()
+    except Exception as e:
+        logger.error(f"Failed to load weighted scores from API for {use_case}: {e}")
         return pd.DataFrame()
 
 @st.cache_data

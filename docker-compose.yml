@@ -1,0 +1,154 @@
+services:
+  # PostgreSQL database for benchmarks and deployment outcomes
+  postgres:
+    image: postgres:latest
+    container_name: compass-postgres
+    environment:
+      POSTGRES_DB: compass
+      POSTGRES_USER: compass
+      POSTGRES_PASSWORD: compass_dev_password
+    volumes:
+      - postgres_data:/var/lib/postgresql      
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U compass"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - compass-network
+
+  # Ollama for LLM-powered intent extraction
+  ollama:
+    image: ollama/ollama:latest
+    container_name: compass-ollama
+    volumes:
+      - ollama_data:/root/.ollama
+    ports:
+      - "11434:11434"
+    healthcheck:
+      test: ["CMD", "bash", "-c", "cat < /dev/null > /dev/tcp/localhost/11434"]  # Check if port is open, the ollama image doesn't have curl installed
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    networks:
+      - compass-network
+    # Pull the model on startup
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        ollama serve &
+        sleep 10
+        ollama pull qwen2.5:7b
+        wait
+
+  # Backend API (FastAPI)
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    container_name: compass-backend
+    environment:
+      # Database configuration
+      DATABASE_URL: postgresql://compass:compass_dev_password@postgres:5432/compass
+
+      # Ollama configuration
+      OLLAMA_HOST: http://ollama:11434
+      OLLAMA_MODEL: qwen2.5:7b
+
+      # API configuration
+      API_HOST: 0.0.0.0
+      API_PORT: 8000
+
+      # Enable CORS for local development
+      CORS_ORIGINS: http://localhost:8501,http://ui:8501
+    volumes:
+      # Mount source code for development (hot reload)
+      - ./backend/src:/app/backend/src
+      - ./data:/app/data
+      - ./generated_configs:/app/generated_configs
+      - ./logs:/app/logs
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      ollama:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 40s
+    networks:
+      - compass-network
+    restart: unless-stopped
+
+  # UI (Streamlit)
+  ui:
+    build:
+      context: .
+      dockerfile: ui/Dockerfile
+    container_name: compass-ui
+    environment:
+      # Backend API URL
+      API_BASE_URL: http://backend:8000
+
+      # Streamlit configuration
+      STREAMLIT_SERVER_PORT: 8501
+      STREAMLIT_SERVER_ADDRESS: 0.0.0.0
+      STREAMLIT_SERVER_HEADLESS: "true"
+      STREAMLIT_BROWSER_GATHER_USAGE_STATS: "false"
+    volumes:
+      # Mount source code for development (hot reload)
+      - ./ui:/app/ui
+      - ./.streamlit:/app/.streamlit
+    ports:
+      - "8501:8501"
+    depends_on:
+      backend:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8501/_stcore/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 40s
+    networks:
+      - compass-network
+    restart: unless-stopped
+
+  # vLLM Simulator (optional - for GPU-free development)
+  simulator:
+    build:
+      context: ./simulator
+      dockerfile: Dockerfile
+    container_name: compass-simulator
+    environment:
+      MODEL_NAME: meta-llama/Llama-3.1-8B-Instruct
+      TENSOR_PARALLEL_SIZE: "1"
+      GPU_TYPE: H100
+      PORT: "8080"
+    ports:
+      - "8080:8080"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - compass-network
+    profiles:
+      - simulator
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+    driver: local
+  ollama_data:
+    driver: local
+
+networks:
+  compass-network:
+    driver: bridge

@@ -11,6 +11,7 @@ For each synthetic benchmark configuration, this script:
 """
 
 import json
+import os
 import random
 import sys
 from pathlib import Path
@@ -20,7 +21,10 @@ import psycopg2
 
 def get_db_connection():
     """Create a connection to the PostgreSQL database."""
-    db_url = "postgresql://postgres:compass@localhost:5432/compass"
+    db_url = os.getenv(
+        "DATABASE_URL",
+        "postgresql://postgres:compass@localhost:5432/compass"
+    )
     try:
         conn = psycopg2.connect(db_url)
         return conn

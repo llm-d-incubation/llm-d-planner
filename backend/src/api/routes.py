@@ -1,8 +1,10 @@
 """FastAPI routes for the Compass API."""
 
+import csv
 import logging
 import os
 from datetime import datetime
+from pathlib import Path
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
@@ -243,6 +245,96 @@ async def list_use_cases():
     except Exception as e:
         logger.error(f"Failed to list use cases: {e}")
         raise HTTPException(status_code=500, detail=str(e)) from e
+
+
+# Get benchmark data
+@app.get("/api/v1/benchmarks")
+async def get_benchmarks():
+    """Get all 206 models benchmark data from opensource_all_benchmarks.csv."""
+    try:
+        # Get the CSV file path relative to the backend directory
+        csv_path = Path(__file__).parent.parent.parent.parent / "data" / "benchmarks" / "models" / "opensource_all_benchmarks.csv"
+
+        if not csv_path.exists():
+            logger.error(f"Benchmark CSV not found at: {csv_path}")
+            raise HTTPException(status_code=404, detail="Benchmark data file not found")
+
+        # Read CSV using built-in csv module
+        records = []
+        with open(csv_path, 'r', encoding='utf-8') as f:
+            reader = csv.DictReader(f)
+            for row in reader:
+                # Filter out rows with empty/missing Model Name
+                if row.get('Model Name') and row['Model Name'].strip():
+                    records.append(row)
+
+        logger.info(f"Loaded {len(records)} benchmark records from CSV")
+
+        return {
+            "success": True,
+            "count": len(records),
+            "benchmarks": records
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to load benchmarks: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Failed to load benchmarks: {str(e)}") from e
+
+
+# Get weighted scores for a use case
+@app.get("/api/v1/weighted-scores/{use_case}")
+async def get_weighted_scores(use_case: str):
+    """Get use-case-specific weighted scores from CSV."""
+    try:
+        # Map use case to CSV filename
+        use_case_to_file = {
+            "chatbot_conversational": "opensource_chatbot_conversational.csv",
+            "code_completion": "opensource_code_completion.csv",
+            "code_generation_detailed": "opensource_code_generation_detailed.csv",
+            "document_analysis_rag": "opensource_document_analysis_rag.csv",
+            "summarization_short": "opensource_summarization_short.csv",
+            "long_document_summarization": "opensource_long_document_summarization.csv",
+            "translation": "opensource_translation.csv",
+            "content_generation": "opensource_content_generation.csv",
+            "research_legal_analysis": "opensource_research_legal_analysis.csv",
+        }
+
+        filename = use_case_to_file.get(use_case)
+        if not filename:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Invalid use case: {use_case}. Valid options: {list(use_case_to_file.keys())}"
+            )
+
+        # Get the CSV file path
+        csv_path = Path(__file__).parent.parent.parent.parent / "data" / "business_context" / "use_case" / "weighted_scores" / filename
+
+        if not csv_path.exists():
+            logger.error(f"Weighted scores CSV not found at: {csv_path}")
+            raise HTTPException(status_code=404, detail=f"Weighted scores file not found for use case: {use_case}")
+
+        # Read CSV using built-in csv module
+        records = []
+        with open(csv_path, 'r', encoding='utf-8') as f:
+            reader = csv.DictReader(f)
+            for row in reader:
+                # Include all rows (no filtering)
+                records.append(row)
+
+        logger.info(f"Loaded {len(records)} weighted score records for use case: {use_case}")
+
+        return {
+            "success": True,
+            "use_case": use_case,
+            "count": len(records),
+            "scores": records
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to load weighted scores: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Failed to load weighted scores: {str(e)}") from e
 
 
 # Simplified recommendation endpoint for UI
