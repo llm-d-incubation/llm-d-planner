@@ -75,6 +75,10 @@ Be intelligent about inference:
 - "budget is flexible" or "no budget constraint" → budget_constraint: flexible or none
 - No budget mentioned → budget_constraint: moderate
 - "cost-sensitive" or "cost efficiency important" → budget_constraint: strict or moderate
+- "document Q&A" or "knowledge base" or "document search" → use_case: document_analysis_rag
+- "RAG" or "retrieval" → use_case: document_analysis_rag
+- "chatbot" or "customer service" or "conversational" → use_case: chatbot_conversational
+- "summarize document" or "summarization" → use_case: summarization_short or long_document_summarization
 
 {INTENT_EXTRACTION_SCHEMA}
 """
