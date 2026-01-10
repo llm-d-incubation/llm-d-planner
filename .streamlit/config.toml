@@ -4,6 +4,7 @@ gatherUsageStats = false
 [server]
 headless = true
 port = 8501
+enableStaticServing = true
 
 [theme]
 primaryColor = "#1f77b4"

@@ -10,7 +10,7 @@ Production-grade implementation with:
 5. Outlier detection
 6. Quality metrics reporting
 
-Author: Compass Team
+Author: NeuralNav Team
 """
 
 import pandas as pd

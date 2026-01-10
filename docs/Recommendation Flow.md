@@ -1,6 +1,6 @@
-# Compass Recommendation Flow
+# NeuralNav Recommendation Flow
 
-This document describes the end-to-end recommendation flow implemented in the Compass codebase. It traces data from user input through to ranked deployment recommendations.
+This document describes the end-to-end recommendation flow implemented in the NeuralNav codebase. It traces data from user input through to ranked deployment recommendations.
 
 ## Overview
 

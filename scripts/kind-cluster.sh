@@ -1,8 +1,8 @@
 #!/bin/bash
 
-# Compass - Kubernetes Cluster Management Script
+# NeuralNav - Kubernetes Cluster Management Script
 #
-# This script manages the KIND cluster lifecycle for Compass.
+# This script manages the KIND cluster lifecycle for NeuralNav.
 # It handles cluster creation, KServe installation, and cluster teardown.
 
 set -e  # Exit on error
@@ -87,7 +87,7 @@ cluster_exists() {
 
 # Start cluster
 start_cluster() {
-    print_header "Starting Compass Kubernetes Cluster"
+    print_header "Starting NeuralNav Kubernetes Cluster"
 
     check_prerequisites
 
@@ -173,7 +173,7 @@ start_cluster() {
 
 # Stop/delete cluster
 stop_cluster() {
-    print_header "Stopping Compass Kubernetes Cluster"
+    print_header "Stopping NeuralNav Kubernetes Cluster"
 
     if ! cluster_exists; then
         print_warning "Cluster '${CLUSTER_NAME}' does not exist"
@@ -191,7 +191,7 @@ stop_cluster() {
 
 # Restart cluster (delete and recreate)
 restart_cluster() {
-    print_header "Restarting Compass Kubernetes Cluster"
+    print_header "Restarting NeuralNav Kubernetes Cluster"
 
     if cluster_exists; then
         print_step "Deleting existing cluster..."
@@ -209,7 +209,7 @@ restart_cluster() {
 
 # Show cluster status
 show_status() {
-    print_header "Compass Kubernetes Cluster Status"
+    print_header "NeuralNav Kubernetes Cluster Status"
 
     echo ""
     echo "Cluster Name: ${CLUSTER_NAME}"
@@ -279,7 +279,7 @@ show_status() {
 # Show usage
 show_usage() {
     cat << EOF
-Compass - Cluster Management
+NeuralNav - Cluster Management
 
 Usage: scripts/kind-cluster.sh <command>
 

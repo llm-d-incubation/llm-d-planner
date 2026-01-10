@@ -8,7 +8,7 @@
 
 ## Context
 
-The Compass architecture is being reorganized from 8 components to a clearer 4-engine + UI Layer structure. This improves:
+The NeuralNav architecture is being reorganized from 8 components to a clearer 4-engine + UI Layer structure. This improves:
 - **Clarity:** UI is horizontal (sits on top), engines are vertical domain services
 - **Modularity:** Each engine has clear responsibilities and boundaries
 - **Alignment:** Code organization matches conceptual architecture

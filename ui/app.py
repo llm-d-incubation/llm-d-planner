@@ -1,5 +1,5 @@
 """
-Red Hat AI Deployment Assistant - E2E LLM Deployment Recommendation System
+NeuralNav - E2E LLM Deployment Recommendation System
 
 A beautiful, presentation-ready Streamlit application demonstrating:
 1. Business Context Extraction (Qwen 2.5 7B @ 95.1% accuracy)
@@ -139,8 +139,8 @@ def format_display_name(raw_name: str) -> str:
 # =============================================================================
 
 st.set_page_config(
-    page_title="Red Hat AI Deployment Assistant",
-    page_icon="🎩",
+    page_title="NeuralNav",
+    page_icon="docs/neuralnav-logo-32.png",
     layout="wide",
     initial_sidebar_state="expanded",
 )
@@ -154,10 +154,10 @@ st.markdown("""
     /* Import Google Fonts - Qualifire & HuggingFace Inspired Typography */
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=DM+Sans:wght@400;500;600;700&display=swap');
     
-    /* Global Styles - Red Hat Brand Theme */
+    /* Global Styles */
     .stApp {
-        font-family: 'Red Hat Display', 'Inter', 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
-        /* Red Hat dark background */
+        font-family: 'Inter', 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+        /* Dark background */
         background: 
             radial-gradient(ellipse at 20% 0%, rgba(238, 0, 0, 0.05) 0%, transparent 50%),
             radial-gradient(ellipse at 80% 100%, rgba(238, 0, 0, 0.03) 0%, transparent 50%),
@@ -204,7 +204,7 @@ st.markdown("""
         50% { border-color: rgba(99, 102, 241, 0.6); }
     }
     
-    /* Corporate Color Palette - Red Hat Brand */
+    /* Corporate Color Palette */
     :root {
         --bg-primary: #0c0c0c;
         --bg-secondary: #151515;
@@ -235,7 +235,7 @@ st.markdown("""
         --shadow-glow: 0 0 40px rgba(238, 0, 0, 0.1);
     }
     
-    /* Hero Section - Red Hat Brand Design */
+    /* Hero Section */
     .hero-container {
         background: linear-gradient(135deg, #151515 0%, #1a1a1a 50%, #151515 100%);
         padding: 1.5rem 2rem;
@@ -1196,7 +1196,7 @@ st.markdown("""
         border-radius: 5px; 
     }
     
-    /* Tabs Styling - Red Hat Brand */
+    /* Tabs Styling */
     .stTabs [data-baseweb="tab-list"] {
         gap: 8px;
         background: #151515;
@@ -1235,7 +1235,7 @@ st.markdown("""
         background-color: #EE0000 !important;
     }
     
-    /* Buttons - Red Hat Brand Style */
+    /* Buttons */
     .stButton > button {
         border-radius: 4px;
         font-weight: 600;
@@ -1358,7 +1358,7 @@ st.markdown("""
         border: 1px solid rgba(163, 113, 247, 0.25);
     }
     
-    /* Progress Bar Styling - Red Hat Theme */
+    /* Progress Bar Styling */
     .stProgress > div > div {
         background: linear-gradient(90deg, #EE0000, #CC0000, #EE0000) !important;
         border-radius: 8px;
@@ -1368,7 +1368,7 @@ st.markdown("""
         border-radius: 8px;
     }
     
-    /* Spinner Styling - Red Hat Theme */
+    /* Spinner Styling */
     .stSpinner > div {
         border-top-color: #EE0000 !important;
     }
@@ -3585,14 +3585,8 @@ def render_hero():
     """Render compact hero section."""
     st.markdown("""
     <div class="hero-container">
-        <svg class="hero-logo" width="48" height="48" viewBox="0 0 100 100" style="margin-right: 12px; vertical-align: middle;">
-            <ellipse cx="50" cy="75" rx="48" ry="12" fill="#EE0000"/>
-            <ellipse cx="50" cy="72" rx="35" ry="8" fill="#EE0000"/>
-            <path d="M20 72 Q25 35 50 30 Q75 35 80 72" fill="#EE0000"/>
-            <ellipse cx="50" cy="45" rx="25" ry="12" fill="#EE0000"/>
-            <rect x="25" y="55" width="50" height="8" fill="#000000"/>
-        </svg>
-        <span class="hero-title">Red Hat AI Deployment Assistant</span>
+        <img src="app/static/neuralnav-logo.png" width="48" height="48" style="margin-right: 12px; vertical-align: middle;" alt="NeuralNav Logo">
+        <span class="hero-title">NeuralNav</span>
         <div class="hero-subtitle">AI-Powered LLM Deployment Recommendations — From Natural Language to Production in Seconds</div>
     </div>
     """, unsafe_allow_html=True)
@@ -3614,7 +3608,7 @@ def render_about_section(models_df: pd.DataFrame):
             <span style="color: rgba(255,255,255,0.8); font-size: 0.9rem;"><strong style="color: white;">9</strong> Use Cases</span>
         </div>
         <p style="color: rgba(255,255,255,0.7); font-size: 0.85rem; margin: 0;">
-            Powered by <strong style="color: white;">Qwen 2.5 7B</strong> for context extraction, <strong style="color: white;">Red Hat Performance Benchmarks (integ-oct-29.sql)</strong> and <strong style="color: white;">Artificial Analysis</strong> accuracy scores.
+            Powered by <strong style="color: white;">Qwen 2.5 7B</strong> for context extraction, <strong style="color: white;">Performance Benchmarks,</strong> and <strong style="color: white;">Artificial Analysis</strong> accuracy scores.
         </p>
     </div>
     """, unsafe_allow_html=True)
@@ -3711,7 +3705,7 @@ def render_catalog_content(models_df: pd.DataFrame):
     """Model catalog content for About section expander."""
     st.markdown("""
     <p style="color: rgba(255,255,255,0.9); margin: 0 0 1rem 0; font-size: 0.95rem;">
-        Complete benchmark data from <strong style="color: #D4AF37;">Red Hat Performance DB</strong> + 
+        Complete benchmark data from <strong style="color: #D4AF37;">Performance DB</strong> + 
         <strong style="color: #38ef7d;">Artificial Analysis</strong> covering 
         <span style="color: #38ef7d; font-weight: 700;">50 benchmarked models</span> with 
         <span style="color: #667eea; font-weight: 700;">50 models having accuracy scores</span> across 
@@ -4847,7 +4841,7 @@ def show_category_dialog():
     }
     output_tokens = USE_CASE_OUTPUT_TOKENS.get(use_case, 256)
     
-    # Category config - Red Hat theme colors (no emojis)
+    # Category config - theme colors (no emojis)
     category_config = {
         "balanced": {"title": "Balanced - Top 5", "color": "#EE0000", "field": "final", "top5_key": "top5_balanced"},
         "accuracy": {"title": "Best Accuracy - Top 5", "color": "#EE0000", "field": "accuracy", "top5_key": "top5_accuracy"},
@@ -4858,7 +4852,7 @@ def show_category_dialog():
     config = category_config.get(category, category_config["balanced"])
     top5_list = st.session_state.get(config["top5_key"], [])
     
-    # Red Hat theme CSS
+    # Theme CSS
     st.markdown("""
     <style>
         [data-testid="stDialog"] > div {
@@ -4880,7 +4874,7 @@ def show_category_dialog():
     </style>
     """, unsafe_allow_html=True)
     
-    # Header - Red Hat theme
+    # Header
     st.markdown(f"""
     <div style="background: #EE0000; padding: 1rem; border-radius: 12px; margin-bottom: 1.5rem;">
         <h3 style="color: #ffffff; margin: 0; font-size: 1.3rem;">{config['title']}</h3>
@@ -4951,7 +4945,7 @@ def show_category_dialog():
             throughput_display = f"{throughput:.0f} tok/s" if throughput else "N/A"
         
         highlight_score = scores.get(config["field"], 0)
-        # Red Hat theme rank colors: red for #1, gray shades for others
+        # Theme rank colors: red for #1, gray shades for others
         rank_colors = ["#EE0000", "#666666", "#555555", "#444444", "#333333"]
         rank_color = rank_colors[i] if i < 5 else "#333333"
         rank_text_color = "#ffffff"  # Always white text
@@ -5001,7 +4995,7 @@ def show_category_dialog():
         </div>
         """, unsafe_allow_html=True)
     
-    # Close button - Red Hat theme
+    # Close button
     st.markdown("<div style='margin-top: 1rem;'></div>", unsafe_allow_html=True)
     if st.button("Close", key="close_cat_dialog", use_container_width=True):
         st.session_state.show_category_dialog = False

@@ -1,6 +1,6 @@
 # Developer Guide
 
-This guide provides step-by-step instructions for developing and testing Compass.
+This guide provides step-by-step instructions for developing and testing NeuralNav.
 
 ## Table of Contents
 
@@ -41,7 +41,7 @@ This checks for:
 
 ### Container Runtime Support
 
-Compass supports both **Docker** and **Podman** as container runtimes.
+NeuralNav supports both **Docker** and **Podman** as container runtimes.
 
 #### Compatibility Matrix
 
@@ -388,7 +388,7 @@ make test-watch
 
 ### Logging
 
-Compass implements comprehensive logging to help you debug and monitor the system. For complete logging documentation, see [docs/LOGGING.md](LOGGING.md).
+NeuralNav implements comprehensive logging to help you debug and monitor the system. For complete logging documentation, see [docs/LOGGING.md](LOGGING.md).
 
 **Quick Start:**
 
@@ -659,7 +659,7 @@ make cluster-stop
 
 ### Linting and Formatting
 
-Compass uses [Ruff](https://docs.astral.sh/ruff/) for linting and code formatting.
+NeuralNav uses [Ruff](https://docs.astral.sh/ruff/) for linting and code formatting.
 
 **Run linter:**
 ```bash
@@ -772,7 +772,7 @@ ollama list  # Should show llama3.1:8b
 
 ### Option 1: Run Full Stack with UI (Recommended)
 
-The easiest way to use Compass:
+The easiest way to use NeuralNav:
 
 ```bash
 # Terminal 1 - Start Ollama (if not already running)

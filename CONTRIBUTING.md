@@ -1,6 +1,6 @@
-# Contributing to Compass
+# Contributing to NeuralNav
 
-Thank you for your interest in contributing to Compass! This document provides guidelines for contributing to the project.
+Thank you for your interest in contributing to NeuralNav! This document provides guidelines for contributing to the project.
 
 ## Table of Contents
 
@@ -334,7 +334,7 @@ make format
 
 ## License
 
-By contributing to Compass, you agree that your contributions will be licensed under the same license as the project (see [LICENSE](LICENSE)).
+By contributing to NeuralNav, you agree that your contributions will be licensed under the same license as the project (see [LICENSE](LICENSE)).
 
 ## Questions?
 
@@ -343,4 +343,4 @@ If you have questions not covered here, please:
 2. Open a new issue with the "question" label
 3. Reach out to maintainers
 
-Thank you for contributing to Compass!
+Thank you for contributing to NeuralNav!

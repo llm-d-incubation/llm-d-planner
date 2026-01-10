@@ -1,4 +1,4 @@
-# Backend Dockerfile for Compass
+# Backend Dockerfile for NeuralNav
 FROM python:3.11-slim
 
 # Set working directory

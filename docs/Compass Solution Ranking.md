@@ -1,8 +1,8 @@
-## Ranking and Presenting Compass Recommendations
+## Ranking and Presenting NeuralNav Recommendations
 
 ### Overview
 
-Compass recommends optimal LLM and GPU configurations that satisfy users' specific use cases and performance requirements. This document describes the implemented multi-criteria ranking system that scores and presents configuration options based on four optimization criteria.
+NeuralNav recommends optimal LLM and GPU configurations that satisfy users' specific use cases and performance requirements. This document describes the implemented multi-criteria ranking system that scores and presents configuration options based on four optimization criteria.
 
 **Key Design Principle**: Configuration-first approach. The system queries all (model, GPU) configurations meeting SLO targets, then scores each on four criteria. This ensures no viable configurations are missed due to model pre-filtering.
 

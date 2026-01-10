@@ -1,11 +1,11 @@
 #!/bin/bash
 
-# Start the Compass UI
+# Start the NeuralNav UI
 # This script activates the virtual environment and starts the Streamlit UI
 
 set -e
 
-echo "🤖 Starting Compass UI..."
+echo "🤖 Starting NeuralNav UI..."
 echo ""
 
 # Check if virtual environment exists

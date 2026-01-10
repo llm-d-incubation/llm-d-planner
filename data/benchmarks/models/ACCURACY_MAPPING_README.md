@@ -1,7 +1,7 @@
 # Accuracy Score Mapping Summary
 
 ## Overview
-This document summarizes how accuracy scores were mapped from `opensource_all_benchmarks.csv` to `redhat_models_benchmarks.csv` for the Compass POC demo.
+This document summarizes how accuracy scores were mapped from `opensource_all_benchmarks.csv` to `redhat_models_benchmarks.csv` for the NeuralNav POC demo.
 
 **Date:** December 2024  
 **Files Updated:** `redhat_models_benchmarks.csv`

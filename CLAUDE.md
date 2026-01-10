@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-This repository contains the architecture design for **Compass**, an open-source system that guides users from concept to production-ready LLM deployments through a conversational AI and intelligent capacity planning.
+This repository contains the architecture design for **NeuralNav**, an open-source system that guides users from concept to production-ready LLM deployments through a conversational AI and intelligent capacity planning.
 
 **Key Principle**: This is a **Phase 1 POC implementation** based on the architecture design. The core functionality is complete and working end-to-end.
 
@@ -82,7 +82,7 @@ The system translates high-level user intent into technical specifications:
 
 ### Architecture Overview
 
-Compass is structured as a layered architecture:
+NeuralNav is structured as a layered architecture:
 
 **UI Layer** (Horizontal - Presentation):
 - **Conversational Interface, Specification Editor, Recommendation Visualizer, Monitoring Dashboard**
@@ -184,7 +184,7 @@ The recommendation engine uses **multi-criteria scoring** to rank configurations
 
 ### Terminology Consistency
 
-- Use "**Compass**" as the project name
+- Use "**NeuralNav**" as the project name
 - Use "**TTFT**" for Time to First Token (not "time-to-first-token")
 - Use "**ITL**" for Inter-Token Latency (Phase 2 terminology, replaces TPOT)
 - Use "**SLO**" for Service Level Objective

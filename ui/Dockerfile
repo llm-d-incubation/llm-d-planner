@@ -1,4 +1,4 @@
-# UI Dockerfile for Compass Streamlit Frontend
+# UI Dockerfile for NeuralNav Streamlit Frontend
 FROM python:3.11-slim
 
 # Set working directory

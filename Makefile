@@ -1,6 +1,6 @@
-# Compass - Makefile
+# NeuralNav - Makefile
 #
-# This Makefile provides common development tasks for Compass.
+# This Makefile provides common development tasks for NeuralNav.
 # Supports macOS and Linux.
 
 .PHONY: help
@@ -213,7 +213,7 @@ stop: ## Stop all services
 		kill $$(cat $(BACKEND_PID)) 2>/dev/null || true; \
 		rm -f $(BACKEND_PID); \
 	fi
-	@# Kill any remaining Compass processes by pattern matching
+	@# Kill any remaining NeuralNav processes by pattern matching
 	@pkill -f "streamlit run ui/app.py" 2>/dev/null || true
 	@pkill -f "uvicorn src.api.routes:app" 2>/dev/null || true
 	@# Give processes time to exit gracefully
@@ -221,7 +221,7 @@ stop: ## Stop all services
 	@# Force kill if still running
 	@pkill -9 -f "streamlit run ui/app.py" 2>/dev/null || true
 	@pkill -9 -f "uvicorn src.api.routes:app" 2>/dev/null || true
-	@printf "$(GREEN)✓ All Compass services stopped$(NC)\n"
+	@printf "$(GREEN)✓ All NeuralNav services stopped$(NC)\n"
 	@# Don't stop Ollama as it might be used by other apps
 	@printf "$(YELLOW)Note: Ollama left running (use 'pkill ollama' to stop manually)$(NC)\n"
 

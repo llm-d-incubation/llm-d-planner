@@ -1,4 +1,4 @@
-# Compass Architecture Diagram
+# NeuralNav Architecture Diagram
 
 ## High-Level Architecture
 
@@ -158,12 +158,12 @@ graph TB
 
 ```mermaid
 C4Context
-    title System Context - Compass Phase 2
+    title System Context - NeuralNav Phase 2
 
     Person(dev, "Application Developer", "Wants to deploy LLM model")
     Person(admin, "Cluster Admin", "Manages infrastructure")
 
-    System(assistant, "Compass", "Guides users from concept to production")
+    System(assistant, "NeuralNav", "Guides users from concept to production")
 
     System_Ext(k8s, "Kubernetes/KIND", "Container orchestration")
     System_Ext(registry, "Model Registry", "HuggingFace Hub")

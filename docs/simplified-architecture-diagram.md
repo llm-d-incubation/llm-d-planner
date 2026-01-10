@@ -103,7 +103,7 @@ flowchart LR
 graph TB
     User["👤 User Input<br/>Natural language requirements"]
 
-    subgraph "Compass"
+    subgraph "NeuralNav"
         Chat["💬 Conversational Interface"]
         Intent["🧠 Intent & Specification Engine"]
         Rec["🎯 Recommendation Engine<br/><small>Model Selection | Capacity Planning</small>"]

@@ -1,11 +1,11 @@
 #!/bin/bash
 
-# Start the Compass FastAPI backend
+# Start the NeuralNav FastAPI backend
 # This script activates the virtual environment and starts the API server
 
 set -e
 
-echo "🚀 Starting Compass API..."
+echo "🚀 Starting NeuralNav API..."
 echo ""
 
 # Check if virtual environment exists

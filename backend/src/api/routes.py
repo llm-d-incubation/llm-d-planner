@@ -1,4 +1,4 @@
-"""FastAPI routes for the Compass API."""
+"""FastAPI routes for the NeuralNav API."""
 
 import csv
 import logging
@@ -32,11 +32,11 @@ logging.basicConfig(
     datefmt="%Y-%m-%d %H:%M:%S",
 )
 logger = logging.getLogger(__name__)
-logger.info(f"Compass API starting with log level: {logging.getLevelName(log_level)}")
+logger.info(f"NeuralNav API starting with log level: {logging.getLevelName(log_level)}")
 
 # Create FastAPI app
 app = FastAPI(
-    title="Compass API", description="API for LLM deployment recommendations", version="0.1.0"
+    title="NeuralNav API", description="API for LLM deployment recommendations", version="0.1.0"
 )
 
 # Add CORS middleware

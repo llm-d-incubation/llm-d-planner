@@ -7,7 +7,7 @@ preserved for potential Phase 2 conversational interface enhancements.
 DO NOT DELETE - These may be useful for future multi-turn dialogue features.
 """
 
-CONVERSATIONAL_RESPONSE_TEMPLATE = """You are a helpful assistant for Compass.
+CONVERSATIONAL_RESPONSE_TEMPLATE = """You are a helpful assistant for NeuralNav.
 
 The user is working on deploying a Large Language Model for their use case. You are here to have a natural conversation with them to understand their needs.
 

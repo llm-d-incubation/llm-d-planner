@@ -1,10 +1,10 @@
-# Compass Logging Guide
+# NeuralNav Logging Guide
 
-This document describes the logging features in Compass and how to use them for debugging and monitoring.
+This document describes the logging features in NeuralNav and how to use them for debugging and monitoring.
 
 ## Overview
 
-Compass implements comprehensive logging at every stage of the recommendation workflow:
+NeuralNav implements comprehensive logging at every stage of the recommendation workflow:
 
 1. **User Request Logging** - Captures every user message
 2. **LLM Interaction Logging** - Logs prompts sent to the LLM and responses received
@@ -181,7 +181,7 @@ make restart
 ### Not seeing DEBUG logs?
 1. Check `COMPASS_DEBUG` is set: `echo $COMPASS_DEBUG`
 2. Restart the backend after setting the variable
-3. Verify log level in startup message: `Compass API starting with log level: DEBUG`
+3. Verify log level in startup message: `NeuralNav API starting with log level: DEBUG`
 
 ### Logs too verbose?
 1. Unset `COMPASS_DEBUG`: `unset COMPASS_DEBUG`

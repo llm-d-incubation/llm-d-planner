@@ -1,1 +1,1 @@
-"""Backend source package for Compass."""
+"""Backend source package for NeuralNav."""

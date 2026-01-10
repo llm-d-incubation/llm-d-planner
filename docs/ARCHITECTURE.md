@@ -1,8 +1,8 @@
-# System-Level Architecture for Compass
+# System-Level Architecture for NeuralNav
 
 ## Overview
 
-This document defines the system architecture for **Compass**, which streamlines the path from concept to production-ready endpoint for LLM deployments on Kubernetes.
+This document defines the system architecture for **NeuralNav**, which streamlines the path from concept to production-ready endpoint for LLM deployments on Kubernetes.
 
 ## Project Context
 
@@ -53,7 +53,7 @@ Advanced features for scale and optimization:
 
 ## Solution Approach
 
-Compass follows a **4-stage workflow**:
+NeuralNav follows a **4-stage workflow**:
 
 1. **Intent & Specification** - Transform conversation into structured deployment specifications with traffic profiles and SLO targets
 2. **Recommendation** - Generate ranked model + GPU configurations that meet SLO requirements
@@ -64,7 +64,7 @@ Compass follows a **4-stage workflow**:
 
 ## Architecture Components
 
-Compass is structured as a layered architecture with a presentation layer, four core engines, and a shared data layer:
+NeuralNav is structured as a layered architecture with a presentation layer, four core engines, and a shared data layer:
 
 ```
 ┌───────────────────────────────────────────────────────────────────────────┐

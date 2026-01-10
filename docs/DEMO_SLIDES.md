@@ -1,4 +1,4 @@
-# Compass - Technical Overview
+# NeuralNav - Technical Overview
 
 ---
 

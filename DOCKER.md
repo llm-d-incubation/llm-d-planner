@@ -1,10 +1,10 @@
-# Docker Deployment Guide for Compass
+# Docker Deployment Guide for NeuralNav
 
-This guide explains how to run Compass using Docker and Docker Compose.
+This guide explains how to run NeuralNav using Docker and Docker Compose.
 
 ## Overview
 
-Compass is containerized into the following services:
+NeuralNav is containerized into the following services:
 
 - **postgres**: PostgreSQL database for benchmarks and deployment outcomes
 - **ollama**: Ollama LLM service for intent extraction (qwen2.5:7b model)
