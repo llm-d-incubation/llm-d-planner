@@ -1687,67 +1687,6 @@ def load_research_workload_patterns():
     except Exception:
         return None
 
-@st.cache_data
-def load_performance_benchmarks():
-    """Load performance benchmark data for real hardware/model performance validation."""
-    try:
-        # Benchmark file is in data/ root, not data/benchmarks/
-        json_path = DATA_DIR / "benchmarks_BLIS.json"
-        with open(json_path, 'r') as f:
-            return json.load(f)
-    except Exception as e:
-        logger.warning(f"Could not load benchmark data: {e}")
-        return None
-
-def get_slo_targets_for_use_case(use_case: str, priority: str = "balanced") -> dict:
-    """Get research-backed SLO targets (min/max) for a use case with priority adjustment.
-    
-    Returns dict with:
-    - ttft_target: {"min": X, "max": Y} - the acceptable range
-    - itl_target: {"min": X, "max": Y}
-    - e2e_target: {"min": X, "max": Y}
-    - token_config: {"prompt": X, "output": Y}
-    """
-    research_data = load_research_slo_ranges()
-    if not research_data:
-        return None
-    
-    slo_ranges = research_data.get('slo_ranges', {})
-    priority_adjustments = research_data.get('priority_adjustments', {})
-    
-    use_case_data = slo_ranges.get(use_case)
-    if not use_case_data:
-        return None
-    
-    # Get priority adjustment factors
-    priority_factor = priority_adjustments.get(priority, {})
-    ttft_factor = priority_factor.get('ttft_factor', 1.0)
-    itl_factor = priority_factor.get('itl_factor', 1.0)
-    e2e_factor = priority_factor.get('e2e_factor', 1.0)
-    
-    return {
-        "use_case": use_case,
-        "priority": priority,
-        "description": use_case_data.get('description', ''),
-        "ttft_target": {
-            "min": int(use_case_data['ttft_ms']['min'] * ttft_factor),
-            "max": int(use_case_data['ttft_ms']['max'] * ttft_factor),
-        },
-        "itl_target": {
-            "min": int(use_case_data['itl_ms']['min'] * itl_factor),
-            "max": int(use_case_data['itl_ms']['max'] * itl_factor),
-        },
-        "e2e_target": {
-            "min": int(use_case_data['e2e_ms']['min'] * e2e_factor),
-            "max": int(use_case_data['e2e_ms']['max'] * e2e_factor),
-        },
-        "token_config": use_case_data.get('token_config', {"prompt": 512, "output": 256}),
-        "tokens_per_sec_target": use_case_data.get('tokens_per_sec', {}).get('target', 100),
-        "research_note": use_case_data.get('research_note', ''),
-        "recommended_hardware": priority_factor.get('recommended_hardware', 'H100_x2'),
-    }
-
-
 # =============================================================================
 # RANKED RECOMMENDATIONS (Backend API Integration)
 # =============================================================================
@@ -1973,94 +1912,6 @@ def render_weight_controls() -> None:
                 st.rerun()
 
 
-def render_recommendation_category_card(
-    category_name: str,
-    category_emoji: str,
-    category_color: str,
-    recommendations: list,
-):
-    """Render a single recommendation category card with top pick and expander.
-
-    Args:
-        category_name: Display name (e.g., "Balanced", "Best Accuracy")
-        category_emoji: Emoji for the category
-        category_color: Hex color for styling
-        recommendations: List of recommendation dicts from backend
-    """
-    if not recommendations:
-        st.markdown(f"""
-        <div style="background: var(--bg-card); padding: 1rem; border-radius: 0.75rem;
-                    border: 1px solid {category_color}40; min-height: 150px;">
-            <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem;">
-                <span style="font-size: 1.25rem;">{category_emoji}</span>
-                <span style="color: {category_color}; font-weight: 700;">{category_name}</span>
-            </div>
-            <p style="color: rgba(255,255,255,0.5); font-style: italic;">No configurations found</p>
-        </div>
-        """, unsafe_allow_html=True)
-        return
-
-    top = recommendations[0]
-    model_name = top.get("model_name", "Unknown")
-    gpu_type = top.get("gpu_config", {}).get("gpu_type", "Unknown") if isinstance(top.get("gpu_config"), dict) else "Unknown"
-    gpu_count = top.get("gpu_config", {}).get("gpu_count", 1) if isinstance(top.get("gpu_config"), dict) else 1
-    ttft = top.get("predicted_ttft_p95_ms", 0)
-    cost = top.get("cost_per_month_usd", 0)
-    meets_slo = top.get("meets_slo", False)
-    scores = top.get("scores", {})
-    balanced_score = scores.get("balanced_score", 0) if isinstance(scores, dict) else 0
-    accuracy_score = scores.get("accuracy_score", 0) if isinstance(scores, dict) else 0
-
-    slo_badge = "Yes" if meets_slo else "No"
-
-    st.markdown(f"""
-    <div style="background: var(--bg-card); padding: 1rem; border-radius: 0.75rem;
-                border: 1px solid {category_color}40;">
-        <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem;">
-            <span style="font-size: 1.25rem;">{category_emoji}</span>
-            <span style="color: {category_color}; font-weight: 700;">{category_name}</span>
-            <span style="margin-left: auto; font-size: 0.9rem;">{slo_badge}</span>
-        </div>
-        <div style="margin-bottom: 0.5rem;">
-            <span style="color: white; font-weight: 600; font-size: 1.1rem;">{model_name}</span>
-        </div>
-        <div style="color: rgba(255,255,255,0.7); font-size: 0.9rem; margin-bottom: 0.5rem;">
-            {gpu_count}x {gpu_type}
-        </div>
-        <div style="display: flex; gap: 1rem; font-size: 0.85rem; color: rgba(255,255,255,0.6);">
-            <span>⏱️ {ttft:.0f}ms</span>
-            <span>${cost:,.0f}/mo</span>
-        </div>
-        <div style="margin-top: 0.5rem; font-size: 0.85rem;">
-            <span style="color: {category_color};">Score: {balanced_score:.1f}</span>
-            <span style="color: rgba(255,255,255,0.5);"> | Accuracy: {accuracy_score:.0f}</span>
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
-
-    # Expander for additional options
-    if len(recommendations) > 1:
-        with st.expander(f"Show {len(recommendations) - 1} more options"):
-            for rec in recommendations[1:]:
-                rec_model = rec.get("model_name", "Unknown")
-                rec_gpu_type = rec.get("gpu_config", {}).get("gpu_type", "Unknown") if isinstance(rec.get("gpu_config"), dict) else "Unknown"
-                rec_gpu_count = rec.get("gpu_config", {}).get("gpu_count", 1) if isinstance(rec.get("gpu_config"), dict) else 1
-                rec_ttft = rec.get("predicted_ttft_p95_ms", 0)
-                rec_cost = rec.get("cost_per_month_usd", 0)
-                rec_meets_slo = "Yes" if rec.get("meets_slo", False) else "No"
-                rec_scores = rec.get("scores", {})
-                rec_balanced = rec_scores.get("balanced_score", 0) if isinstance(rec_scores, dict) else 0
-
-                st.markdown(f"""
-                <div style="padding: 0.5rem; margin: 0.25rem 0; background: rgba(255,255,255,0.03);
-                            border-radius: 0.5rem; font-size: 0.9rem;">
-                    <span style="color: white; font-weight: 500;">{rec_meets_slo} {rec_model}</span>
-                    <span style="color: rgba(255,255,255,0.5);"> — {rec_gpu_count}x {rec_gpu_type},
-                          {rec_ttft:.0f}ms, ${rec_cost:,.0f}/mo (Score: {rec_balanced:.1f})</span>
-                </div>
-                """, unsafe_allow_html=True)
-
-
 def render_ranked_recommendations(response: dict, show_config: bool = True):
     """Render all 5 ranked recommendation categories in a table format.
 
@@ -2259,130 +2110,6 @@ def render_ranked_recommendations(response: dict, show_config: bool = True):
     st.markdown(unified_table_html, unsafe_allow_html=True)
 
 
-def get_slo_for_model(model_name: str, use_case: str, hardware: str = "H100") -> dict:
-    """Get REAL benchmark SLO data for a specific model and use case.
-    
-    IMPORTANT: Only returns data if we have ACTUAL benchmarks for this model.
-    Returns None if no matching benchmark data exists (we don't fake data).
-    
-    Benchmark dataset contains only these models:
-    - qwen2.5-7b, llama-3.1-8b, llama-3.3-70b, phi-4
-    - mistral-small-24b, mixtral-8x7b, granite-3.1-8b
-    - gpt-oss-120b, gpt-oss-20b
-    """
-    benchmark_data = load_performance_benchmarks()
-    if not benchmark_data or 'benchmarks' not in benchmark_data:
-        return None
-    
-    benchmarks = benchmark_data['benchmarks']
-    
-    # Map use case to token config
-    token_configs = {
-        "code_completion": (512, 256),
-        "chatbot_conversational": (512, 256),
-        "code_generation_detailed": (1024, 1024),
-        "translation": (512, 256),
-        "content_generation": (512, 256),
-        "summarization_short": (4096, 512),
-        "document_analysis_rag": (4096, 512),
-        "long_document_summarization": (10240, 1536),
-        "research_legal_analysis": (10240, 1536),
-    }
-    
-    prompt_tokens, output_tokens = token_configs.get(use_case, (512, 256))
-    
-    # STRICT mapping: Only map if we're confident it's the same model family
-    # Key = pattern to find in recommended model name, Value = benchmark repo
-    model_mapping = {
-        "qwen2.5": "qwen/qwen2.5-7b-instruct",
-        "qwen 2.5": "qwen/qwen2.5-7b-instruct",
-        "llama 3.1 8b": "meta-llama/llama-3.1-8b-instruct",
-        "llama 3.1 instruct 8b": "meta-llama/llama-3.1-8b-instruct",
-        "llama-3.1-8b": "meta-llama/llama-3.1-8b-instruct",
-        "llama 3.3": "meta-llama/llama-3.3-70b-instruct",
-        "llama-3.3": "meta-llama/llama-3.3-70b-instruct",
-        "granite": "ibm-granite/granite-3.1-8b-instruct",
-        "phi-4": "microsoft/phi-4",
-        "phi 4": "microsoft/phi-4",
-        "mistral small": "mistralai/mistral-small-24b-instruct-2501",
-        "mistral-small": "mistralai/mistral-small-24b-instruct-2501",
-        "mixtral": "mistralai/mixtral-8x7b-instruct-v0.1",
-        "gpt-oss-120b": "openai/gpt-oss-120b",
-        "gpt-oss-20b": "openai/gpt-oss-20b",
-    }
-    
-    # Find matching model in benchmark data - STRICT matching
-    model_lower = model_name.lower()
-    benchmark_model_repo = None
-    is_exact_match = False
-    
-    for key, repo in model_mapping.items():
-        if key in model_lower:
-            benchmark_model_repo = repo
-            is_exact_match = True
-            break
-    
-    # If no exact match, return None - we don't want to show misleading data
-    if not benchmark_model_repo:
-        return None
-    
-    # Filter benchmarks by token config
-    matching = [b for b in benchmarks 
-                if b['prompt_tokens'] == prompt_tokens 
-                and b['output_tokens'] == output_tokens]
-    
-    # MUST match the specific model - no fallbacks
-    model_matches = [b for b in matching if b['model_hf_repo'] == benchmark_model_repo]
-    if not model_matches:
-        return None  # No benchmark data for this model
-    
-    matching = model_matches
-    
-    # Filter by hardware if specified
-    if hardware:
-        hw_matches = [b for b in matching if hardware.upper() in b['hardware'].upper()]
-        if hw_matches:
-            matching = hw_matches
-    
-    if not matching:
-        return None
-    
-    # Get best benchmark (lowest E2E at reasonable RPS)
-    matching.sort(key=lambda x: x['e2e_mean'])
-    best = matching[0]
-    
-    return {
-        "model_repo": best['model_hf_repo'],
-        "is_exact_match": is_exact_match,
-        "recommended_model": model_name,
-        "hardware": best['hardware'],
-        "hardware_count": best['hardware_count'],
-        "token_config": {"prompt": prompt_tokens, "output": output_tokens},
-        "slo_actual": {
-            "ttft_mean_ms": round(best['ttft_mean'], 1),
-            "ttft_p95_ms": round(best['ttft_p95'], 1),
-            "ttft_p99_ms": round(best['ttft_p99'], 1),
-            "itl_mean_ms": round(best['itl_mean'], 1),
-            "itl_p95_ms": round(best['itl_p95'], 1),
-            "itl_p99_ms": round(best['itl_p99'], 1),
-            "e2e_mean_ms": round(best['e2e_mean'], 0),
-            "e2e_p95_ms": round(best['e2e_p95'], 0),
-            "e2e_p99_ms": round(best['e2e_p99'], 0),
-        },
-        "throughput": {
-            "tokens_per_sec": round(best['tokens_per_second'], 0),
-            "requests_per_sec": round(best['requests_per_second'], 2),
-            "responses_per_sec": round(best['responses_per_second'], 2),
-        },
-        "benchmark_samples": len(matching),
-        "ranges": {
-            "ttft_range_ms": [round(min(b['ttft_mean'] for b in matching), 1), 
-                             round(max(b['ttft_mean'] for b in matching), 1)],
-            "e2e_range_ms": [round(min(b['e2e_mean'] for b in matching), 0),
-                           round(max(b['e2e_mean'] for b in matching), 0)],
-        }
-    }
-
 def get_workload_insights(use_case: str, qps: int, user_count: int) -> list:
     """Get workload pattern insights based on research data and benchmarks.
     
@@ -2551,28 +2278,11 @@ def get_raw_aa_accuracy(model_name: str, use_case: str) -> float:
     
     return 0.0
 
-@st.cache_data
-def load_model_pricing() -> pd.DataFrame:
-    """Load model pricing and latency data from model_pricing.csv.
-    
-    This provides REAL data for:
-    - Cost scoring: price_blended ($/1M tokens)
-    - Latency scoring: median_output_tokens_per_sec, median_ttft_seconds
-    """
-    csv_path = DATA_DIR / "benchmarks" / "models" / "model_pricing.csv"
-    try:
-        df = pd.read_csv(csv_path)
-        df = df.dropna(subset=['model_name'])
-        df = df[df['model_name'].str.strip() != '']
-        return df
-    except Exception:
-        return pd.DataFrame()
-
 # =============================================================================
 # API FUNCTIONS (with Mock fallback for demo)
 # =============================================================================
 
-from typing import Optional, Dict, List
+from typing import Optional
 
 def extract_business_context(user_input: str) -> Optional[dict]:
     """Extract business context using Qwen 2.5 7B."""
@@ -2969,29 +2679,6 @@ def render_how_it_works_content():
         <li><strong style="color: white;">Use-Case CSVs</strong> - Pre-computed weighted scores for each use case</li>
     </ul>
         """, unsafe_allow_html=True)
-
-
-def render_pipeline():
-    """Render the pipeline visualization."""
-    st.markdown("""
-    <div class="pipeline-container">
-        <div class="pipeline-step">
-            <div class="pipeline-number pipeline-number-1">1</div>
-            <div class="pipeline-title">Context Extraction</div>
-            <div class="pipeline-desc">Qwen 2.5 7B extracts use case, users, priority & hardware from natural language</div>
-        </div>
-        <div class="pipeline-step">
-            <div class="pipeline-number pipeline-number-2">2</div>
-            <div class="pipeline-title">MCDM Scoring</div>
-            <div class="pipeline-desc">Score 204 models on Accuracy, Latency, Cost & Capacity with weighted criteria</div>
-        </div>
-        <div class="pipeline-step">
-            <div class="pipeline-number pipeline-number-3">3</div>
-            <div class="pipeline-title">Recommendation</div>
-            <div class="pipeline-desc">Top 5 models with explainability, tradeoffs, SLO compliance & deployment config</div>
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
 
 
 def render_top5_table(recommendations: list, priority: str):
