@@ -32,22 +32,22 @@ Detailed logging for troubleshooting that adds:
 ## Enabling Debug Mode
 
 ### Option 1: Environment Variable (Recommended)
-Set the `COMPASS_DEBUG` environment variable before starting the backend:
+Set the `NEURALNAV_DEBUG` environment variable before starting the backend:
 
 ```bash
 # Enable debug logging
-export COMPASS_DEBUG=true
+export NEURALNAV_DEBUG=true
 make start-backend
 
 # Or inline:
-COMPASS_DEBUG=true make start-backend
+NEURALNAV_DEBUG=true make start-backend
 ```
 
 ### Option 2: Script Modification
 Edit `scripts/run_api.sh` and add:
 
 ```bash
-export COMPASS_DEBUG=true
+export NEURALNAV_DEBUG=true
 ```
 
 ## Log Output Locations
@@ -58,7 +58,7 @@ All logs are written to stdout/stderr and captured by uvicorn.
 ### Log Files
 Logs are also written to:
 - `logs/backend.log` - Main application logs (when using make commands)
-- `logs/compass.log` - Structured logs with full details
+- `logs/neuralnav.log` - Structured logs with full details
 
 ## Log Format
 
@@ -152,10 +152,10 @@ To prevent log files from growing indefinitely, consider setting up log rotation
 
 ### Using logrotate (Linux)
 
-Create `/etc/logrotate.d/compass`:
+Create `/etc/logrotate.d/neuralnav`:
 
 ```
-/path/to/compass/logs/*.log {
+/path/to/neuralnav/logs/*.log {
     daily
     rotate 7
     compress
@@ -179,21 +179,21 @@ make restart
 ## Troubleshooting Tips
 
 ### Not seeing DEBUG logs?
-1. Check `COMPASS_DEBUG` is set: `echo $COMPASS_DEBUG`
+1. Check `NEURALNAV_DEBUG` is set: `echo $NEURALNAV_DEBUG`
 2. Restart the backend after setting the variable
 3. Verify log level in startup message: `NeuralNav API starting with log level: DEBUG`
 
 ### Logs too verbose?
-1. Unset `COMPASS_DEBUG`: `unset COMPASS_DEBUG`
+1. Unset `NEURALNAV_DEBUG`: `unset NEURALNAV_DEBUG`
 2. Restart backend: `make restart`
 
 ### Need to see full prompts temporarily?
 ```bash
 # Enable debug for one request
-COMPASS_DEBUG=true make restart
+NEURALNAV_DEBUG=true make restart
 # Make your request
 # Then disable
-unset COMPASS_DEBUG && make restart
+unset NEURALNAV_DEBUG && make restart
 ```
 
 ## Privacy and Security Considerations

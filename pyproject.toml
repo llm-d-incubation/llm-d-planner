@@ -1,5 +1,5 @@
 [project]
-name = "compass"
+name = "neuralnav"
 version = "0.1.0"
 description = "Confidently navigate LLM deployments from concept to production"
 readme = "README.md"

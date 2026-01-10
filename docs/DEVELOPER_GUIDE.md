@@ -120,10 +120,10 @@ Error: listen tcp :5432: bind: address already in use
 1. Stop and remove the container in the other runtime:
    ```bash
    # If switching TO Podman, clean up Docker first:
-   docker stop compass-postgres && docker rm compass-postgres
+   docker stop neuralnav-postgres && docker rm neuralnav-postgres
 
    # If switching TO Docker, clean up Podman first:
-   podman stop compass-postgres && podman rm compass-postgres
+   podman stop neuralnav-postgres && podman rm neuralnav-postgres
    ```
 
 2. If the port is still in use, check what's holding it:
@@ -395,11 +395,11 @@ NeuralNav implements comprehensive logging to help you debug and monitor the sys
 Enable debug logging to see full LLM prompts and responses:
 ```bash
 # Enable debug mode
-export COMPASS_DEBUG=true
+export NEURALNAV_DEBUG=true
 make start-backend
 
 # Or inline:
-COMPASS_DEBUG=true make start-backend
+NEURALNAV_DEBUG=true make start-backend
 ```
 
 **Log Levels:**
@@ -409,7 +409,7 @@ COMPASS_DEBUG=true make start-backend
 **Log Locations:**
 - Console output (stdout/stderr)
 - `logs/backend.log` - Main application logs
-- `logs/compass.log` - Structured detailed logs
+- `logs/neuralnav.log` - Structured detailed logs
 
 **Common Log Searches:**
 ```bash

@@ -40,13 +40,13 @@ CONTAINER_TOOL ?= $(shell \
 
 # Configuration
 REGISTRY ?= quay.io
-REGISTRY_ORG ?= vllm-assistant
+REGISTRY_ORG ?= neuralnav
 SIMULATOR_IMAGE ?= vllm-simulator
 SIMULATOR_TAG ?= latest
 SIMULATOR_FULL_IMAGE := $(REGISTRY)/$(REGISTRY_ORG)/$(SIMULATOR_IMAGE):$(SIMULATOR_TAG)
 
 OLLAMA_MODEL ?= qwen2.5:7b
-KIND_CLUSTER_NAME ?= compass-poc
+KIND_CLUSTER_NAME ?= neuralnav
 
 PGDUMP_INPUT ?= data/integ-oct-29.sql
 PGDUMP_OUTPUT ?= data/benchmarks_GuideLLM.json
@@ -255,7 +255,7 @@ open-backend: ## Open backend API docs in browser
 
 build-simulator: ## Build vLLM simulator Docker image
 	@printf "$(BLUE)Building simulator image...$(NC)\n"
-	cd $(SIMULATOR_DIR) && $(CONTAINER_TOOL) build -t vllm-simulator:latest -t $(SIMULATOR_FULL_IMAGE) .
+	$(CONTAINER_TOOL) build -f $(SIMULATOR_DIR)/Dockerfile -t vllm-simulator:latest -t $(SIMULATOR_FULL_IMAGE) .
 	@printf "$(GREEN)✓ Simulator image built:$(NC)\n"
 	@printf "  - vllm-simulator:latest\n"
 	@printf "  - $(SIMULATOR_FULL_IMAGE)\n"
@@ -347,7 +347,7 @@ docker-shell-ui: ## Open shell in UI container
 	@docker-compose exec ui /bin/bash
 
 docker-shell-postgres: ## Open PostgreSQL shell in container
-	@docker-compose exec postgres psql -U compass -d compass
+	@docker-compose exec postgres psql -U neuralnav -d neuralnav
 
 ##@ Kubernetes Cluster
 
@@ -383,38 +383,38 @@ clean-deployments: ## Delete all InferenceServices from cluster
 
 db-start: ## Start PostgreSQL container for benchmark data
 	@printf "$(BLUE)Starting PostgreSQL...$(NC)\n"
-	@if $(CONTAINER_TOOL) ps -a --format '{{.Names}}' | grep -q '^compass-postgres$$'; then \
-		if $(CONTAINER_TOOL) ps --format '{{.Names}}' | grep -q '^compass-postgres$$'; then \
+	@if $(CONTAINER_TOOL) ps -a --format '{{.Names}}' | grep -q '^neuralnav-postgres$$'; then \
+		if $(CONTAINER_TOOL) ps --format '{{.Names}}' | grep -q '^neuralnav-postgres$$'; then \
 			printf "$(YELLOW)PostgreSQL already running$(NC)\n"; \
 		else \
-			$(CONTAINER_TOOL) start compass-postgres; \
+			$(CONTAINER_TOOL) start neuralnav-postgres; \
 			printf "$(GREEN)✓ PostgreSQL started$(NC)\n"; \
 		fi \
 	else \
-		$(CONTAINER_TOOL) run --name compass-postgres -d \
-			-e POSTGRES_PASSWORD=compass \
-			-e POSTGRES_DB=compass \
+		$(CONTAINER_TOOL) run --name neuralnav-postgres -d \
+			-e POSTGRES_PASSWORD=neuralnav \
+			-e POSTGRES_DB=neuralnav \
 			-p 5432:5432 \
 			postgres:16; \
 		sleep 3; \
 		printf "$(GREEN)✓ PostgreSQL started on port 5432$(NC)\n"; \
 	fi
-	@printf "$(BLUE)Database URL:$(NC) postgresql://postgres:compass@localhost:5432/compass\n"
+	@printf "$(BLUE)Database URL:$(NC) postgresql://postgres:neuralnav@localhost:5432/neuralnav\n"
 
 db-stop: ## Stop PostgreSQL container
 	@printf "$(BLUE)Stopping PostgreSQL...$(NC)\n"
-	@$(CONTAINER_TOOL) stop compass-postgres 2>/dev/null || true
+	@$(CONTAINER_TOOL) stop neuralnav-postgres 2>/dev/null || true
 	@printf "$(GREEN)✓ PostgreSQL stopped$(NC)\n"
 
 db-remove: db-stop ## Stop and remove PostgreSQL container
 	@printf "$(BLUE)Removing PostgreSQL container...$(NC)\n"
-	@$(CONTAINER_TOOL) rm compass-postgres 2>/dev/null || true
+	@$(CONTAINER_TOOL) rm neuralnav-postgres 2>/dev/null || true
 	@printf "$(GREEN)✓ PostgreSQL container removed$(NC)\n"
 
 db-init: db-start ## Initialize PostgreSQL schema
 	@printf "$(BLUE)Initializing PostgreSQL schema...$(NC)\n"
 	@sleep 2
-	@$(CONTAINER_TOOL) exec -i compass-postgres psql -U postgres -d compass < scripts/schema.sql
+	@$(CONTAINER_TOOL) exec -i neuralnav-postgres psql -U postgres -d neuralnav < scripts/schema.sql
 	@printf "$(GREEN)✓ Schema initialized$(NC)\n"
 
 db-load-synthetic: db-start ## Load synthetic benchmark data (appends)
@@ -457,11 +457,11 @@ db-convert-pgdump: db-start ## Convert PostgreSQL dump to JSON format
 	@printf "$(GREEN)✓ Created $(PGDUMP_OUTPUT)$(NC)\n"
 
 db-shell: ## Open PostgreSQL shell
-	@$(CONTAINER_TOOL) exec -it compass-postgres psql -U postgres -d compass
+	@$(CONTAINER_TOOL) exec -it neuralnav-postgres psql -U postgres -d neuralnav
 
 db-query-traffic: ## Query unique traffic patterns from database
 	@printf "$(BLUE)Querying unique traffic patterns...$(NC)\n"
-	@$(CONTAINER_TOOL) exec -i compass-postgres psql -U postgres -d compass -c \
+	@$(CONTAINER_TOOL) exec -i neuralnav-postgres psql -U postgres -d neuralnav -c \
 		"SELECT DISTINCT mean_input_tokens, mean_output_tokens, COUNT(*) as num_benchmarks \
 		FROM exported_summaries \
 		GROUP BY prompt_tokens, output_tokens \
@@ -469,7 +469,7 @@ db-query-traffic: ## Query unique traffic patterns from database
 
 db-query-models: ## Query available models in database
 	@printf "$(BLUE)Querying available models...$(NC)\n"
-	@$(CONTAINER_TOOL) exec -i compass-postgres psql -U postgres -d compass -c \
+	@$(CONTAINER_TOOL) exec -i neuralnav-postgres psql -U postgres -d neuralnav -c \
 		"SELECT DISTINCT model_hf_repo, hardware, hardware_count, COUNT(*) as num_benchmarks \
 		FROM exported_summaries \
 		GROUP BY model_hf_repo, hardware, hardware_count \

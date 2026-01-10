@@ -26,24 +26,24 @@ This section describes the complete workflow from setup to submitting a pull req
 
 **2. Clone your fork locally:**
 ```bash
-git clone https://github.com/YOUR_USERNAME/compass.git
-cd compass
+git clone https://github.com/YOUR_USERNAME/neuralnav.git
+cd neuralnav
 ```
 
 **3. Set up remotes:**
 ```bash
 # Your fork is already set as 'origin' by the clone
 # Add the main repository as 'upstream'
-git remote add upstream https://github.com/redhat-et/compass.git
+git remote add upstream https://github.com/redhat-et/neuralnav.git
 ```
 
 Verify your remotes:
 ```bash
 git remote -v
-# origin    https://github.com/YOUR_USERNAME/compass.git (fetch)
-# origin    https://github.com/YOUR_USERNAME/compass.git (push)
-# upstream  https://github.com/redhat-et/compass.git (fetch)
-# upstream  https://github.com/redhat-et/compass.git (push)
+# origin    https://github.com/YOUR_USERNAME/neuralnav.git (fetch)
+# origin    https://github.com/YOUR_USERNAME/neuralnav.git (push)
+# upstream  https://github.com/redhat-et/neuralnav.git (fetch)
+# upstream  https://github.com/redhat-et/neuralnav.git (push)
 ```
 
 **4. Set up your development environment** by following the [Quick Start guide](README.md#quick-start).

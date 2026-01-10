@@ -129,7 +129,7 @@ class BenchmarkRepository:
         """
         self.database_url = database_url or os.getenv(
             "DATABASE_URL",
-            "postgresql://postgres:compass@localhost:5432/compass"
+            "postgresql://postgres:neuralnav@localhost:5432/neuralnav"
         )
         self._test_connection()
         

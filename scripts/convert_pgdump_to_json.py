@@ -16,7 +16,7 @@ The output JSON file will have the same format as benchmarks_BLIS.json and can b
 loaded using the standard JSON loader.
 
 Requirements:
-    - Docker running with compass-postgres container (make db-start)
+    - Docker running with neuralnav-postgres container (make db-start)
 """
 
 import argparse
@@ -37,7 +37,7 @@ def extract_data_via_docker(dump_file: Path) -> list[dict]:
     4. Queries and exports the data as JSON
     5. Cleans up
     """
-    container_name = "compass-postgres"
+    container_name = "neuralnav-postgres"
 
     # Check if container is running
     result = subprocess.run(

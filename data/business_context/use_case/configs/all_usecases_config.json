@@ -1,7 +1,7 @@
 {
   "_description": "Complete configuration for all 9 predefined use cases + custom use cases",
   "_updated": "2024 - Based on research from SCORPIO, vLLM, Splitwise, Azure OpenAI, Nielsen UX guidelines",
-  "_source": "This is the master config - compass/data/slo_templates.json should mirror these values",
+  "_source": "This is the master config - neuralnav/data/slo_templates.json should mirror these values",
   
   "predefined_use_cases": {
     

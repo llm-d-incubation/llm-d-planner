@@ -2,25 +2,25 @@ services:
   # PostgreSQL database for benchmarks and deployment outcomes
   postgres:
     image: postgres:latest
-    container_name: compass-postgres
+    container_name: neuralnav-postgres
     environment:
-      POSTGRES_DB: compass
-      POSTGRES_USER: compass
-      POSTGRES_PASSWORD: compass_dev_password
+      POSTGRES_DB: neuralnav
+      POSTGRES_USER: neuralnav
+      POSTGRES_PASSWORD: neuralnav_dev_password
     volumes:
       - postgres_data:/var/lib/postgresql      
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U compass"]
+      test: ["CMD-SHELL", "pg_isready -U neuralnav"]
       interval: 10s
       timeout: 5s
       retries: 5
     networks:
-      - compass-network
+      - neuralnav-network
 
   # Ollama for LLM-powered intent extraction
   ollama:
     image: ollama/ollama:latest
-    container_name: compass-ollama
+    container_name: neuralnav-ollama
     volumes:
       - ollama_data:/root/.ollama
     ports:
@@ -31,7 +31,7 @@ services:
       timeout: 10s
       retries: 5
     networks:
-      - compass-network
+      - neuralnav-network
     # Pull the model on startup
     entrypoint: ["/bin/sh", "-c"]
     command:
@@ -46,10 +46,10 @@ services:
     build:
       context: .
       dockerfile: backend/Dockerfile
-    container_name: compass-backend
+    container_name: neuralnav-backend
     environment:
       # Database configuration
-      DATABASE_URL: postgresql://compass:compass_dev_password@postgres:5432/compass
+      DATABASE_URL: postgresql://neuralnav:neuralnav_dev_password@postgres:5432/neuralnav
 
       # Ollama configuration
       OLLAMA_HOST: http://ollama:11434
@@ -81,7 +81,7 @@ services:
       retries: 5
       start_period: 40s
     networks:
-      - compass-network
+      - neuralnav-network
     restart: unless-stopped
 
   # UI (Streamlit)
@@ -89,7 +89,7 @@ services:
     build:
       context: .
       dockerfile: ui/Dockerfile
-    container_name: compass-ui
+    container_name: neuralnav-ui
     environment:
       # Backend API URL
       API_BASE_URL: http://backend:8000
@@ -115,7 +115,7 @@ services:
       retries: 5
       start_period: 40s
     networks:
-      - compass-network
+      - neuralnav-network
     restart: unless-stopped
 
   # vLLM Simulator (optional - for GPU-free development)
@@ -123,7 +123,7 @@ services:
     build:
       context: ./simulator
       dockerfile: Dockerfile
-    container_name: compass-simulator
+    container_name: neuralnav-simulator
     environment:
       MODEL_NAME: meta-llama/Llama-3.1-8B-Instruct
       TENSOR_PARALLEL_SIZE: "1"
@@ -138,7 +138,7 @@ services:
       retries: 3
       start_period: 40s
     networks:
-      - compass-network
+      - neuralnav-network
     profiles:
       - simulator
     restart: unless-stopped
@@ -150,5 +150,5 @@ volumes:
     driver: local
 
 networks:
-  compass-network:
+  neuralnav-network:
     driver: bridge

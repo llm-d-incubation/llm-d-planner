@@ -70,7 +70,7 @@ This repository includes a **Makefile** that provides convenient shortcuts for a
 | **Clean everything** | `docker-compose down -v --remove-orphans` | `make docker-clean` |
 | **Backend shell** | `docker-compose exec backend /bin/bash` | `make docker-shell-backend` |
 | **UI shell** | `docker-compose exec ui /bin/bash` | `make docker-shell-ui` |
-| **PostgreSQL shell** | `docker-compose exec postgres psql -U compass -d compass` | `make docker-shell-postgres` |
+| **PostgreSQL shell** | `docker-compose exec postgres psql -U neuralnav -d neuralnav` | `make docker-shell-postgres` |
 
 ### Examples
 
@@ -179,20 +179,20 @@ make docker-ps
 
 ```bash
 # Access PostgreSQL CLI
-docker-compose exec postgres psql -U compass -d compass
+docker-compose exec postgres psql -U neuralnav -d neuralnav
 make docker-shell-postgres
 
 # Run database migrations/scripts
-docker-compose exec postgres psql -U compass -d compass -f /scripts/schema.sql
+docker-compose exec postgres psql -U neuralnav -d neuralnav -f /scripts/schema.sql
 
 # Load benchmark data
 docker-compose exec backend python scripts/load_benchmarks.py
 
 # Backup database
-docker-compose exec postgres pg_dump -U compass compass > backup.sql
+docker-compose exec postgres pg_dump -U neuralnav neuralnav > backup.sql
 
 # Restore database
-docker-compose exec -T postgres psql -U compass compass < backup.sql
+docker-compose exec -T postgres psql -U neuralnav neuralnav < backup.sql
 ```
 
 ### Ollama Operations
@@ -216,8 +216,8 @@ Create a `.env` file in the project root to customize configuration:
 
 ```env
 # Database Configuration
-POSTGRES_DB=compass
-POSTGRES_USER=compass
+POSTGRES_DB=neuralnav
+POSTGRES_USER=neuralnav
 POSTGRES_PASSWORD=your_secure_password
 
 # Ollama Configuration
@@ -324,11 +324,11 @@ curl http://localhost:11434/  # Ollama
 
 ### Network Topology
 
-All services communicate via a bridge network (`compass-network`):
+All services communicate via a bridge network (`neuralnav-network`):
 
 ```
 ┌─────────────────────────────────────────────┐
-│           compass-network (bridge)          │
+│           neuralnav-network (bridge)          │
 │                                             │
 │  ┌─────────┐    ┌─────────┐    ┌────────┐   │
 │  │   UI    │───▶│ Backend │───▶│Postgres│   │
@@ -382,7 +382,7 @@ docker-compose logs postgres  # Use docker-compose for PostgreSQL
 docker-compose exec ollama ollama list
 
 # Verify database schema
-docker-compose exec postgres psql -U compass -c "\dt"
+docker-compose exec postgres psql -U neuralnav -c "\dt"
 ```
 
 ### Database Connection Errors
@@ -397,7 +397,7 @@ docker-compose logs postgres
 
 **Test database connection:**
 ```bash
-docker-compose exec postgres pg_isready -U compass
+docker-compose exec postgres pg_isready -U neuralnav
 ```
 
 **Reset database (WARNING: deletes all data):**
@@ -474,7 +474,7 @@ Example nginx configuration:
 ```nginx
 server {
     listen 80;
-    server_name compass.example.com;
+    server_name neuralnav.example.com;
 
     location / {
         proxy_pass http://localhost:8501;
@@ -513,6 +513,6 @@ server {
 ## Support
 
 For issues and questions:
-- Check [GitHub Issues](https://github.com/yourusername/compass/issues)
+- Check [GitHub Issues](https://github.com/yourusername/neuralnav/issues)
 - Review Docker logs: `docker-compose logs -f`
 - Verify service health: `docker-compose ps`

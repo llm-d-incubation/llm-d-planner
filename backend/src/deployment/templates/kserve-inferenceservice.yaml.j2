@@ -11,7 +11,7 @@ metadata:
     serving.kserve.io/deploymentMode: RawDeployment
     description: "{{ use_case }} deployment - {{ reasoning | truncate(100) }}"
     {% if simulator_mode %}
-    compass/simulator-mode: "true"
+    neuralnav/simulator-mode: "true"
     {% endif %}
 spec:
   predictor:

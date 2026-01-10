@@ -23,7 +23,7 @@ from src.context_intent.schema import SLOTargets
 
 
 # Test database configuration
-TEST_DB_URL = "postgresql://postgres:compass@localhost:5432/compass"
+TEST_DB_URL = "postgresql://postgres:neuralnav@localhost:5432/neuralnav"
 
 
 class TestBenchmarkRepository:

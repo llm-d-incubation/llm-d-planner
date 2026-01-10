@@ -8,7 +8,7 @@
 set -e  # Exit on error
 
 # Configuration
-CLUSTER_NAME="compass-poc"
+CLUSTER_NAME="neuralnav"
 KSERVE_VERSION="v0.13.0"
 CERT_MANAGER_VERSION="v1.14.4"
 CLUSTER_CONFIG="config/kind-cluster.yaml"

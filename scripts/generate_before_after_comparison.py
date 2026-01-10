@@ -3,8 +3,10 @@
 Generate Before/After Interpolation comparison visualizations
 """
 
-import matplotlib.pyplot as plt
+from pathlib import Path
+
 import matplotlib.patches as mpatches
+import matplotlib.pyplot as plt
 import numpy as np
 
 # Color scheme
@@ -184,7 +186,7 @@ def create_comparison_chart(data, title, output_path):
     print(f"✅ Saved: {output_path}")
 
 def main():
-    output_dir = '/Users/yluria/Documents/Project repository/compass-official/data/benchmarks/models/presentation'
+    output_dir = Path(__file__).parent.parent / 'data/benchmarks/models/presentation'
     
     # Generate BEFORE chart
     create_comparison_chart(

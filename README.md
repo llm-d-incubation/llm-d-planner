@@ -1,4 +1,4 @@
-# <img src="docs/compass-logo.ico" alt="NeuralNav" width="32" style="vertical-align: middle;"/> NeuralNav
+# <img src="docs/neuralnav-logo.ico" alt="NeuralNav" width="32" style="vertical-align: middle;"/> NeuralNav
 
 **Confidently navigate LLM deployments from concept to production.**
 
@@ -59,7 +59,7 @@ make cluster-start  # Optional: Create local KIND cluster with vLLM simulator fo
 
 Then open [http://localhost:8501](http://localhost:8501) in your browser.
 
-**Note**: PostgreSQL runs as a Docker container (`compass-postgres`) with benchmark data. All `db-load-*` commands append to existing data. Use `make db-reset` first for a clean database. 
+**Note**: PostgreSQL runs as a Docker container (`neuralnav-postgres`) with benchmark data. All `db-load-*` commands append to existing data. Use `make db-reset` first for a clean database. 
 
 **Stop everything:**
 ```bash

@@ -3,17 +3,17 @@ FROM python:3.11-slim
 WORKDIR /app
 
 # Copy requirements and install dependencies
-COPY requirements.txt .
+COPY simulator/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy simulator service
-COPY simulator_service.py .
+COPY simulator/simulator_service.py .
 
 # Create data directory for benchmarks
 RUN mkdir -p /app/data
 
-# Copy benchmark data (will be mounted or copied at build time)
-COPY data/benchmarks.json /app/data/benchmarks.json
+# Copy benchmark data from main data directory
+COPY data/benchmarks_BLIS.json /app/data/benchmarks.json
 
 # Expose vLLM-compatible port
 EXPOSE 8080

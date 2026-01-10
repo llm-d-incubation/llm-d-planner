@@ -100,7 +100,7 @@ The simulator is used automatically when `simulator_mode: true` is set in the de
 docker build -t vllm-simulator:latest .
 
 # Load into KIND
-kind load docker-image vllm-simulator:latest --name compass-poc
+kind load docker-image vllm-simulator:latest --name neuralnav
 ```
 
 ## Architecture

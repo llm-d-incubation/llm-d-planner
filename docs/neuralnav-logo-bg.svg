@@ -825,13 +825,13 @@
             ></cc:Agent
           ></dc:publisher
         ><dc:title
-          >wind rose / compass rose 2</dc:title
+          >wind rose / neuralnav rose 2</dc:title
         ><dc:date
           >2013-04-16T03:40:36</dc:date
         ><dc:description
           >Like version 1, but with better peaks</dc:description
         ><dc:source
-          >https://openclipart.org/detail/177085/wind-rose--compass-rose-2-by-urwald-177085</dc:source
+          >https://openclipart.org/detail/177085/wind-rose--neuralnav-rose-2-by-urwald-177085</dc:source
         ><dc:creator
           ><cc:Agent
             ><dc:title
@@ -843,7 +843,7 @@
             ><rdf:li
               >wind</rdf:li
             ><rdf:li
-              >compass</rdf:li
+              >neuralnav</rdf:li
             ><rdf:li
               >rose</rdf:li
             ></rdf:Bag

@@ -21,7 +21,7 @@ def get_db_connection():
     """Create a connection to the PostgreSQL database."""
     db_url = os.getenv(
         "DATABASE_URL",
-        "postgresql://postgres:compass@localhost:5432/compass"
+        "postgresql://postgres:neuralnav@localhost:5432/neuralnav"
     )
 
     try:

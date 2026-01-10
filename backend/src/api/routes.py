@@ -24,7 +24,7 @@ from ..knowledge_base.slo_templates import SLOTemplateRepository
 from ..orchestration.workflow import RecommendationWorkflow
 
 # Configure logging - check for DEBUG environment variable
-debug_mode = os.getenv("COMPASS_DEBUG", "false").lower() == "true"
+debug_mode = os.getenv("NEURALNAV_DEBUG", "false").lower() == "true"
 log_level = logging.DEBUG if debug_mode else logging.INFO
 logging.basicConfig(
     level=log_level,
@@ -126,7 +126,7 @@ class ExtractRequest(BaseModel):
 @app.get("/health")
 async def health_check():
     """Health check endpoint."""
-    return {"status": "healthy", "service": "compass"}
+    return {"status": "healthy", "service": "neuralnav"}
 
 
 # Main recommendation endpoint
