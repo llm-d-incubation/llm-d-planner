@@ -2752,15 +2752,17 @@ def mock_extraction(user_input: str) -> dict:
     complexity_priority = "medium"
 
     # Accuracy priority detection
-    if any(kw in text_lower for kw in ["accuracy is important", "quality matters", "best model",
+    if any(kw in text_lower for kw in ["accuracy is important", "accuracy matters", "accuracy is critical",
+                                        "quality matters", "quality is critical", "best model",
                                         "highest accuracy", "accuracy critical", "top quality"]):
         accuracy_priority = "high"
     elif any(kw in text_lower for kw in ["accuracy less important", "good enough", "accuracy not critical"]):
         accuracy_priority = "low"
 
     # Cost priority detection
-    if any(kw in text_lower for kw in ["cost is important", "budget constrained", "cost-efficient",
-                                        "cost critical", "minimize cost", "budget is tight"]):
+    if any(kw in text_lower for kw in ["cost is important", "cost-effective", "cost effective", 
+                                        "budget constrained", "cost-efficient", "cost critical", 
+                                        "minimize cost", "budget is tight", "cost sensitive"]):
         cost_priority = "high"
     elif any(kw in text_lower for kw in ["not cost sensitive", "budget flexible", "money not an issue",
                                           "cost doesn't matter"]):
@@ -4716,7 +4718,20 @@ def render_slo_cards(use_case: str, user_count: int, priority: str = "balanced",
         # Get extraction result to check for LLM-detected priorities
         extraction = st.session_state.get('extraction_result', {})
 
-        # Initialize session state for priorities if not set
+        # Check if new extraction is available - force update priorities from LLM
+        # This ensures "accuracy matters" in user input updates the UI dropdowns
+        if st.session_state.get('new_extraction_available', False):
+            st.session_state.accuracy_priority = extraction.get('accuracy_priority', 'medium')
+            st.session_state.cost_priority = extraction.get('cost_priority', 'medium')
+            st.session_state.latency_priority = extraction.get('latency_priority', 'medium')
+            st.session_state.weight_accuracy = get_weight_for_priority("accuracy", st.session_state.accuracy_priority)
+            st.session_state.weight_cost = get_weight_for_priority("cost", st.session_state.cost_priority)
+            st.session_state.weight_latency = get_weight_for_priority("latency", st.session_state.latency_priority)
+            st.session_state.new_extraction_available = False  # Clear flag after processing
+            logger.info(f"Updated priorities from new extraction: accuracy={st.session_state.accuracy_priority}, "
+                       f"cost={st.session_state.cost_priority}, latency={st.session_state.latency_priority}")
+        
+        # Initialize session state for priorities if not set (first load)
         if 'accuracy_priority' not in st.session_state:
             st.session_state.accuracy_priority = extraction.get('accuracy_priority', 'medium')
         if 'cost_priority' not in st.session_state:
@@ -5365,6 +5380,10 @@ def render_use_case_input_tab(priority: str, models_df: pd.DataFrame):
                            f"cost={st.session_state.cost_priority}, latency={st.session_state.latency_priority}")
                 logger.info(f"Initialized weights: accuracy={st.session_state.weight_accuracy}, "
                            f"cost={st.session_state.weight_cost}, latency={st.session_state.weight_latency}")
+                
+                # Set flag to signal PRIORITIES UI to update from this new extraction
+                st.session_state.new_extraction_available = True
+                
                 st.session_state.used_priority = extraction.get("priority", priority)
                 st.session_state.detected_use_case = extraction.get("use_case", "chatbot_conversational")
                 progress_bar.progress(100, text="Ready!")

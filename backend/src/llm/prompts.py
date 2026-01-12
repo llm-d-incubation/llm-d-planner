@@ -85,11 +85,11 @@ Be intelligent about inference:
 - "summarize document" or "summarization" → use_case: summarization_short or long_document_summarization
 
 Priority extraction (for scoring weights - use "medium" as baseline, adjust based on context):
-- accuracy_priority: "high" if accuracy/quality seems important for the use case, "low" if user indicates good-enough is fine
-- cost_priority: Default to "medium". Only set "high" if user explicitly mentions budget constraints or cost sensitivity. Only set "low" if user explicitly says cost doesn't matter or budget is unlimited.
-- latency_priority: "high" if the use case requires fast responses (e.g., real-time, interactive), "low" if async/batch is acceptable
-- complexity_priority: "high" if user wants simple deployment, "low" if they're okay with complex setups
-Explicit user statements override inferences (e.g., "cost is critical" → cost_priority: high)
+- accuracy_priority: "high" if user mentions accuracy matters, quality is important, accuracy is critical, best model, or top quality. "low" if user says good enough or accuracy less important.
+- cost_priority: "high" if user mentions cost-effective, cost-sensitive, budget constrained, minimize cost, cost is important, or budget is tight. "low" if user says cost doesn't matter or budget is unlimited. Default to "medium" if not mentioned.
+- latency_priority: "high" if the use case requires fast responses (e.g., real-time, interactive, instant). "low" if async/batch is acceptable.
+- complexity_priority: "high" if user wants simple deployment, easy setup. "low" if they're okay with complex setups.
+IMPORTANT: Explicit user statements override inferences (e.g., "cost-effective preferred" → cost_priority: high)
 
 {INTENT_EXTRACTION_SCHEMA}
 """
