@@ -4272,8 +4272,7 @@ def render_use_case_input_tab(priority: str, models_df: pd.DataFrame):
 
     st.markdown('<div class="section-header">Describe your use case or select from 9 predefined scenarios</div>', unsafe_allow_html=True)
 
-    # Input area with validation
-    st.markdown('<div class="input-container">', unsafe_allow_html=True)
+    # Input area
     st.text_area(
         "Your requirements:",
         key="user_input",
@@ -4282,7 +4281,6 @@ def render_use_case_input_tab(priority: str, models_df: pd.DataFrame):
         placeholder="Describe your LLM use case in natural language...\n\nExample: I need a chatbot for customer support with 30 users. Low latency is important, and we have H100 GPUs available.",
         label_visibility="collapsed"
     )
-    st.markdown('</div>', unsafe_allow_html=True)
 
     # Row 1: 5 task buttons
     col1, col2, col3, col4, col5 = st.columns(5)
