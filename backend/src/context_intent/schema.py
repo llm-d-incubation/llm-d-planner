@@ -71,9 +71,10 @@ class DeploymentIntent(BaseModel):
     )
 
     # Hardware preference extracted from natural language
-    preferred_gpu_type: str = Field(
-        default="Any GPU",
-        description="User's preferred GPU type if mentioned (e.g., H100, H200, A100, L4) or 'Any GPU' if not specified"
+    preferred_gpu_types: list[str] = Field(
+        default_factory=list,
+        description="List of user's preferred GPU types (empty = any GPU). "
+                    "Canonical names: L4, A100-40, A100-80, H100, H200, B200"
     )
 
     # Priority hints extracted from natural language (used for weight calculation)

@@ -621,7 +621,7 @@ class RankedRecommendationFromSpecRequest(BaseModel):
     # Intent fields
     use_case: str
     user_count: int
-    hardware_preference: str | None = None
+    preferred_gpu_types: list[str] | None = None  # GPU filter list (empty/None = any GPU)
 
     # Traffic profile fields
     prompt_tokens: int
@@ -670,7 +670,7 @@ async def ranked_recommend_from_spec(request: RankedRecommendationFromSpecReques
         logger.info("=" * 60)
         logger.info(f"  use_case: {request.use_case}")
         logger.info(f"  user_count: {request.user_count}")
-        logger.info(f"  hardware_preference: {request.hardware_preference}")
+        logger.info(f"  preferred_gpu_types: {request.preferred_gpu_types}")
         logger.info(f"  prompt_tokens: {request.prompt_tokens}")
         logger.info(f"  output_tokens: {request.output_tokens}")
         logger.info(f"  expected_qps: {request.expected_qps}")
@@ -696,6 +696,7 @@ async def ranked_recommend_from_spec(request: RankedRecommendationFromSpecReques
                 "use_case": request.use_case,
                 "user_count": request.user_count,
                 "domain_specialization": ["general"],
+                "preferred_gpu_types": request.preferred_gpu_types or [],
             },
             "traffic_profile": {
                 "prompt_tokens": request.prompt_tokens,

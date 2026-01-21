@@ -20,6 +20,7 @@ TODO (Phase 2+): Parametric Performance Models
 import logging
 import math
 
+from ..context_intent.gpu_normalizer import normalize_gpu_types
 from ..context_intent.schema import (
     ConfigurationScores,
     DeploymentIntent,
@@ -165,7 +166,12 @@ class CapacityPlanner:
 
         # Get percentile from SLO targets (default to p95 for backwards compatibility)
         percentile = getattr(slo_targets, 'percentile', 'p95')
-        
+
+        # Normalize GPU types for database filtering (empty list = no filter)
+        normalized_gpus = normalize_gpu_types(intent.preferred_gpu_types)
+        if normalized_gpus:
+            logger.info(f"Filtering by preferred GPUs: {normalized_gpus}")
+
         # Query PostgreSQL for configurations meeting relaxed SLO targets
         matching_configs = self.benchmark_repo.find_configurations_meeting_slo(
             prompt_tokens=traffic_profile.prompt_tokens,
@@ -175,30 +181,16 @@ class CapacityPlanner:
             e2e_p95_max_ms=query_e2e,
             min_qps=0,
             percentile=percentile,
+            gpu_types=normalized_gpus if normalized_gpus else None,
         )
 
         if not matching_configs:
             logger.warning(
                 f"No configurations found for traffic profile "
                 f"({traffic_profile.prompt_tokens}→{traffic_profile.output_tokens})"
+                + (f" with GPUs {normalized_gpus}" if normalized_gpus else "")
             )
             return []
-
-        # Filter by preferred GPU type if specified (skip if "Any GPU")
-        if intent.preferred_gpu_type and intent.preferred_gpu_type.lower() != "any gpu":
-            preferred_gpu = intent.preferred_gpu_type.upper()
-            original_count = len(matching_configs)
-            matching_configs = [
-                c for c in matching_configs
-                if c.hardware.upper() == preferred_gpu
-            ]
-            logger.info(
-                f"Filtered by preferred GPU '{preferred_gpu}': "
-                f"{original_count} → {len(matching_configs)} configs"
-            )
-            if not matching_configs:
-                logger.warning(f"No configurations found for preferred GPU: {preferred_gpu}")
-                return []
 
         # Build model lookup from catalog for scoring
         # Models not in catalog will get accuracy score = 0

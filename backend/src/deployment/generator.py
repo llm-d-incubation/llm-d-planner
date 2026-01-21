@@ -12,23 +12,13 @@ from typing import Any
 from jinja2 import Environment, FileSystemLoader
 
 from ..context_intent.schema import DeploymentRecommendation
+from ..knowledge_base.model_catalog import ModelCatalog
 
 logger = logging.getLogger(__name__)
 
 
 class DeploymentGenerator:
     """Generate deployment configurations from recommendations."""
-
-    # GPU pricing (USD per hour) - representative cloud pricing
-    # Keys match hardware names from benchmark database
-    GPU_PRICING = {
-        "NVIDIA-L4": 0.50,
-        "NVIDIA-A10G": 1.00,
-        "NVIDIA-A100-40GB": 3.00,
-        "NVIDIA-A100-80GB": 4.50,
-        "H100": 8.00,
-        "H200": 10.00,
-    }
 
     # vLLM version to use
     VLLM_VERSION = "v0.6.2"
@@ -60,6 +50,9 @@ class DeploymentGenerator:
 
         # Simulator mode (for development/testing without GPUs)
         self.simulator_mode = simulator_mode
+
+        # Model catalog for GPU pricing lookup
+        self._catalog = ModelCatalog()
 
         logger.info(
             f"DeploymentGenerator initialized with output_dir: {self.output_dir}, simulator_mode: {simulator_mode}"
@@ -127,8 +120,9 @@ class DeploymentGenerator:
         traffic = recommendation.traffic_profile
         slo = recommendation.slo_targets
 
-        # Calculate GPU hourly rate
-        gpu_hourly_rate = self.GPU_PRICING.get(gpu_config.gpu_type, 1.0)
+        # Calculate GPU hourly rate from ModelCatalog
+        gpu_info = self._catalog.get_gpu_type(gpu_config.gpu_type)
+        gpu_hourly_rate = gpu_info.cost_per_hour_usd if gpu_info else 1.0
 
         # Determine resource requests based on GPU type
         gpu_type = gpu_config.gpu_type

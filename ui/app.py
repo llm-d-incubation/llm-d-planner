@@ -1805,6 +1805,7 @@ def fetch_ranked_recommendations(
     weights: dict = None,
     include_near_miss: bool = False,
     percentile: str = "p95",
+    preferred_gpu_types: list[str] = None,
 ) -> dict | None:
     """Fetch ranked recommendations from the backend API.
 
@@ -1820,6 +1821,7 @@ def fetch_ranked_recommendations(
         weights: Optional dict with accuracy, price, latency, complexity weights (0-10)
         include_near_miss: Whether to include near-SLO configurations
         percentile: Which percentile to use for SLO comparison (mean, p90, p95, p99)
+        preferred_gpu_types: Optional list of GPU types to filter by (empty = any GPU)
 
     Returns:
         RankedRecommendationsResponse as dict, or None on error
@@ -1840,6 +1842,7 @@ def fetch_ranked_recommendations(
         "percentile": percentile,
         "include_near_miss": include_near_miss,
         "min_accuracy": 35,
+        "preferred_gpu_types": preferred_gpu_types or [],
     }
 
     if weights:
@@ -2287,10 +2290,11 @@ def extract_business_context(user_input: str) -> Optional[dict]:
         )
         if response.status_code == 200:
             result = response.json()
-            # Map preferred_gpu_type to hardware for UI compatibility
-            if 'preferred_gpu_type' in result:
-                gpu = result['preferred_gpu_type']
-                result['hardware'] = None if gpu == "Any GPU" else gpu
+            # Map preferred_gpu_types (list) to hardware for UI compatibility
+            if 'preferred_gpu_types' in result:
+                gpu_list = result['preferred_gpu_types']
+                # Display as comma-separated list, or None if empty
+                result['hardware'] = ", ".join(gpu_list) if gpu_list else None
             logger.info(f"LLM extraction successful: {result.get('use_case')}, hardware={result.get('hardware')}, priorities: acc={result.get('accuracy_priority')}, cost={result.get('cost_priority')}, lat={result.get('latency_priority')}, comp={result.get('complexity_priority')}")
             return result
         else:
@@ -2478,10 +2482,14 @@ def mock_extraction(user_input: str) -> dict:
     elif any(kw in text_lower for kw in ["complexity is fine", "advanced setup ok", "complex ok"]):
         complexity_priority = "low"
 
+    # Build preferred_gpu_types list for API compatibility
+    preferred_gpu_types = [hardware] if hardware else []
+
     return {
         "use_case": use_case,
         "user_count": user_count,
         "hardware": hardware,
+        "preferred_gpu_types": preferred_gpu_types,
         "priority": priority,
         "accuracy_priority": accuracy_priority,
         "cost_priority": cost_priority,
@@ -3348,7 +3356,7 @@ def render_score_bar(label: str, icon: str, score: float, bar_class: str, contri
     """, unsafe_allow_html=True)
 
 
-def render_slo_cards(use_case: str, user_count: int, priority: str = "balanced", hardware: str = None):
+def render_slo_cards(use_case: str, user_count: int, priority: str = "balanced"):
     """Render SLO and workload impact cards with editable fields.
     
     SLO defaults are set to MAX (showing all configs by default).
@@ -3718,7 +3726,7 @@ def render_slo_cards(use_case: str, user_count: int, priority: str = "balanced",
         
         for icon, color, text, severity in workload_messages[:3]:  # Limit to 3 for space
             st.markdown(f'<div style="font-size: 0.85rem; color: white; padding: 0.4rem 0.5rem; line-height: 1.4; background: #000000; border-radius: 6px; margin: 4px 0;">{text}</div>', unsafe_allow_html=True)
-    
+
     with col3:
         # Accuracy Benchmarks - show which benchmarks are used for this use case
         # Each entry: (name, weight, color, tooltip_description) - all black background
@@ -4815,6 +4823,9 @@ def render_results_tab(priority: str, models_df: pd.DataFrame):
             "complexity": 0,  # Complexity scoring disabled in UI
         }
 
+        # Get GPU preference from extraction (if specified)
+        preferred_gpu_types = final_extraction.get("preferred_gpu_types", [])
+
         with st.spinner(f"Scoring {len(models_df)} models with MCDM..."):
             recommendation = fetch_ranked_recommendations(
                 use_case=use_case,
@@ -4828,6 +4839,7 @@ def render_results_tab(priority: str, models_df: pd.DataFrame):
                 weights=weights,
                 include_near_miss=False,
                 percentile=percentile,
+                preferred_gpu_types=preferred_gpu_types,
             )
 
         if recommendation is None:
@@ -4842,11 +4854,33 @@ def render_results_tab(priority: str, models_df: pd.DataFrame):
 def render_extraction_result(extraction: dict, priority: str):
     """Render beautiful extraction results."""
     st.markdown('<div class="section-header">Extracted Business Context</div>', unsafe_allow_html=True)
-    
+
     use_case = extraction.get("use_case", "unknown")
     user_count = extraction.get("user_count", 0)
     hardware = extraction.get("hardware")
-    
+
+    # Check for non-default priorities (only show if user explicitly mentioned them)
+    accuracy_priority = extraction.get("accuracy_priority", "medium")
+    cost_priority = extraction.get("cost_priority", "medium")
+    latency_priority = extraction.get("latency_priority", "medium")
+
+    # Build priority badges list (only for non-medium values)
+    priority_badges = []
+    if accuracy_priority != "medium":
+        priority_badges.append(f"Accuracy: {accuracy_priority.title()}")
+    if cost_priority != "medium":
+        priority_badges.append(f"Cost: {cost_priority.title()}")
+    if latency_priority != "medium":
+        priority_badges.append(f"Latency: {latency_priority.title()}")
+
+    # Format priorities as comma-separated display value
+    priorities_display = ", ".join(priority_badges) if priority_badges else None
+
+    # Build priorities item HTML only if there are non-default priorities
+    priorities_item = ""
+    if priorities_display:
+        priorities_item = f'''<div class="extraction-item"><div><div class="extraction-label">Priorities</div><div class="extraction-value">{priorities_display}</div></div></div>'''
+
     st.markdown(f"""
     <div class="extraction-card">
         <div class="extraction-grid">
@@ -4868,6 +4902,7 @@ def render_extraction_result(extraction: dict, priority: str):
                     <div class="extraction-value">{hardware if hardware else "Any GPU"}</div>
                 </div>
             </div>
+            {priorities_item}
         </div>
     </div>
     """, unsafe_allow_html=True)
@@ -4876,11 +4911,33 @@ def render_extraction_result(extraction: dict, priority: str):
 def render_extraction_with_approval(extraction: dict, models_df: pd.DataFrame):
     """Render extraction results with YES/NO approval buttons."""
     st.markdown('<div class="section-header">Extracted Business Context</div>', unsafe_allow_html=True)
-    
+
     use_case = extraction.get("use_case", "unknown")
     user_count = extraction.get("user_count", 0)
     hardware = extraction.get("hardware")
-    
+
+    # Check for non-default priorities (only show if user explicitly mentioned them)
+    accuracy_priority = extraction.get("accuracy_priority", "medium")
+    cost_priority = extraction.get("cost_priority", "medium")
+    latency_priority = extraction.get("latency_priority", "medium")
+
+    # Build priority badges list (only for non-medium values)
+    priority_badges = []
+    if accuracy_priority != "medium":
+        priority_badges.append(f"Accuracy: {accuracy_priority.title()}")
+    if cost_priority != "medium":
+        priority_badges.append(f"Cost: {cost_priority.title()}")
+    if latency_priority != "medium":
+        priority_badges.append(f"Latency: {latency_priority.title()}")
+
+    # Format priorities as comma-separated display value
+    priorities_display = ", ".join(priority_badges) if priority_badges else None
+
+    # Build priorities item HTML only if there are non-default priorities
+    priorities_item = ""
+    if priorities_display:
+        priorities_item = f'''<div class="extraction-item"><div><div class="extraction-label">Priorities</div><div class="extraction-value">{priorities_display}</div></div></div>'''
+
     st.markdown(f"""
     <div class="extraction-card" style="border: 2px solid #EE0000;">
         <div class="extraction-grid">
@@ -4902,10 +4959,11 @@ def render_extraction_with_approval(extraction: dict, models_df: pd.DataFrame):
                     <div class="extraction-value">{hardware if hardware else "Any GPU"}</div>
                 </div>
             </div>
+            {priorities_item}
         </div>
     </div>
     """, unsafe_allow_html=True)
-    
+
     # Approval question
     st.markdown("""
     <div style="background: #000000; 
@@ -5093,10 +5151,9 @@ def render_slo_with_approval(extraction: dict, priority: str, models_df: pd.Data
     """Render SLO section with approval to proceed to recommendations."""
     use_case = extraction.get("use_case", "chatbot_conversational")
     user_count = extraction.get("user_count", 1000)
-    hardware = extraction.get("hardware")
-    
+
     # SLO and Impact Cards - all 4 cards in one row
-    render_slo_cards(use_case, user_count, priority, hardware)
+    render_slo_cards(use_case, user_count, priority)
     
     # ==========================================================================
     # VALIDATE SLO VALUES - Use case-specific ranges (same as sliders)
