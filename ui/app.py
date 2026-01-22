@@ -4585,14 +4585,14 @@ def render_use_case_input_tab(priority: str, models_df: pd.DataFrame):
         if st.button("Long Doc Summary", use_container_width=True, key="task_longdoc"):
             clear_dialog_states()
             # With priority (accuracy) to show filtering
-            st.session_state.user_input = "Long document summarization for research papers, 30 researchers, accuracy matters."
+            st.session_state.pending_user_input = "Long document summarization for research papers, 30 researchers, accuracy matters."
             st.rerun()
 
     with col9:
         if st.button("Code Generation", use_container_width=True, key="task_codegen"):
             clear_dialog_states()
             # Simple prompt - no priority, no hardware = show all configs
-            st.session_state.user_input = "Full code generation tool for implementing features, 30 developers."
+            st.session_state.pending_user_input = "Full code generation tool for implementing features, 30 developers."
             st.rerun()
     
     # Show character count - white text
