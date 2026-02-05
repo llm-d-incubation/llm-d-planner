@@ -17,7 +17,8 @@ from typing import Dict, List, Optional, Tuple
 logger = logging.getLogger(__name__)
 
 # Base path for weighted scores CSVs
-DATA_DIR = os.path.join(os.path.dirname(__file__), "..", "..", "..", "data")
+# Path: quality/usecase_scorer.py -> recommendation -> src -> backend -> project root -> data
+DATA_DIR = os.path.join(os.path.dirname(__file__), "..", "..", "..", "..", "data")
 WEIGHTED_SCORES_DIR = os.path.join(DATA_DIR, "business_context", "use_case", "weighted_scores")
 
 

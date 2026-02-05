@@ -90,9 +90,6 @@ class SolutionScorer:
         config_path = (
             Path(__file__).parent.parent.parent.parent
             / "data"
-            / "business_context"
-            / "use_case"
-            / "configs"
             / "usecase_slo_workload.json"
         )
         try:
