@@ -213,6 +213,16 @@ The recommendation engine uses **multi-criteria scoring** to rank configurations
 - Use "**p95**" for 95th percentile metrics (Phase 2 standard, more conservative than p90)
 - GPU configurations: "2x NVIDIA L4" or "4x A100-80GB" (not "2 L4s")
 
+### API Endpoint Conventions
+
+All API endpoints **must** follow these rules:
+
+- **Prefix**: Every route file uses `APIRouter(prefix="/api/v1")`. Individual route decorators use relative paths (e.g., `@router.post("/recommend")`), **not** full paths.
+- **Health check exception**: `/health` stays at root with no prefix (standard for load balancer probes). This is the only endpoint outside `/api/v1/`.
+- **Versioning**: All endpoints are under `/api/v1/`. When a v2 is needed, add new route files with `prefix="/api/v2"`.
+- **Naming**: Use kebab-case for multi-word paths (e.g., `/deploy-to-cluster`, `/ranked-recommend-from-spec`).
+- **When adding a new route file**: Set `prefix="/api/v1"` on the `APIRouter` and use relative paths in all decorators. Register the router in `backend/src/api/routes/__init__.py` and include it in `backend/src/api/app.py`.
+
 ### Common Editing Patterns
 
 **Adding a new use case template**:
@@ -230,6 +240,13 @@ The recommendation engine uses **multi-criteria scoring** to rank configurations
 4. Update Inference Observability section
 5. Update dashboard example if applicable
 6. Update docs/architecture-diagram.md data model ERD
+
+**Adding a new API endpoint**:
+1. Add the route to the appropriate file in `backend/src/api/routes/` (or create a new route file)
+2. Use a relative path in the decorator (e.g., `@router.get("/my-endpoint")`) — the `/api/v1` prefix comes from the router
+3. If creating a new route file, set `APIRouter(prefix="/api/v1")` and register it in `routes/__init__.py` and `app.py`
+4. Update `ui/app.py` if the UI calls the new endpoint
+5. Update documentation (docs/DEVELOPER_GUIDE.md, docs/ARCHITECTUREv2.md) with the new endpoint
 
 **Adding a new component**:
 1. Add numbered section to docs/ARCHITECTURE.md (maintain sequential numbering)
@@ -311,7 +328,7 @@ The system now supports two deployment modes:
 - **Purpose**: GPU-free development and testing on local machines
 - **Location**: `simulator/` directory contains the vLLM simulator service
 - **Docker Image**: `vllm-simulator:latest` (single image for all models)
-- **Configuration**: Set `DeploymentGenerator(simulator_mode=True)` in `backend/src/api/routes.py`
+- **Configuration**: Set `DeploymentGenerator(simulator_mode=True)` in `backend/src/api/dependencies.py`
 - **Benefits**:
   - No GPU hardware required
   - Fast deployment (~10-15 seconds to Ready)
@@ -321,7 +338,7 @@ The system now supports two deployment modes:
 
 ### Real vLLM Mode (Production)
 - **Purpose**: Actual model inference with GPUs
-- **Configuration**: Set `DeploymentGenerator(simulator_mode=False)` in `backend/src/api/routes.py`
+- **Configuration**: Set `DeploymentGenerator(simulator_mode=False)` in `backend/src/api/dependencies.py`
 - **Requirements**:
   - GPU-enabled Kubernetes cluster
   - NVIDIA GPU Operator installed
@@ -349,7 +366,7 @@ The system now supports two deployment modes:
 
 ### Technical Details
 
-The deployment template (`backend/src/deployment/templates/kserve-inferenceservice.yaml.j2`) uses Jinja2 conditionals:
+The deployment template (`backend/src/configuration/templates/kserve-inferenceservice.yaml.j2`) uses Jinja2 conditionals:
 - `{% if simulator_mode %}` - Uses `vllm-simulator:latest`, no GPU resources, fast health checks
 - `{% else %}` - Uses `vllm/vllm-openai:v0.6.2`, requests GPUs, longer health checks
 

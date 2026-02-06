@@ -191,8 +191,8 @@ RankedRecommendationsResponse
 
 #### API Endpoints
 
-- **`POST /api/recommend`**: Returns single best recommendation (balanced score)
-- **`POST /api/ranked-recommend`**: Returns all 5 ranked lists with filter support
+- **`POST /api/v1/recommend`**: Returns single best recommendation (balanced score)
+- **`POST /api/v1/ranked-recommend-from-spec`**: Returns all 5 ranked lists with filter support
 
 ***
 

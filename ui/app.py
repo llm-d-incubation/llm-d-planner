@@ -1850,7 +1850,7 @@ def fetch_ranked_recommendations(
 
     try:
         response = requests.post(
-            f"{API_BASE_URL}/api/ranked-recommend-from-spec",
+            f"{API_BASE_URL}/api/v1/ranked-recommend-from-spec",
             json=payload,
             timeout=30,
         )
@@ -2568,7 +2568,7 @@ def render_deployment_tab():
                 try:
                     # Call backend API to generate YAML files
                     response = requests.post(
-                        f"{API_BASE_URL}/api/deploy",
+                        f"{API_BASE_URL}/api/v1/deploy",
                         json={
                             "recommendation": selected_config,
                             "namespace": "default"
@@ -2584,7 +2584,7 @@ def render_deployment_tab():
 
                         # Fetch the actual YAML content
                         yaml_response = requests.get(
-                            f"{API_BASE_URL}/api/deployments/{deployment_id}/yaml",
+                            f"{API_BASE_URL}/api/v1/deployments/{deployment_id}/yaml",
                             timeout=10
                         )
                         yaml_response.raise_for_status()
@@ -3251,7 +3251,7 @@ def render_top5_table(recommendations: list, priority: str):
                         # Auto-generate YAML files
                         try:
                             response = requests.post(
-                                f"{API_BASE_URL}/api/deploy",
+                                f"{API_BASE_URL}/api/v1/deploy",
                                 json={
                                     "recommendation": rec,
                                     "namespace": "default"
@@ -3267,7 +3267,7 @@ def render_top5_table(recommendations: list, priority: str):
 
                                 # Fetch the actual YAML content
                                 yaml_response = requests.get(
-                                    f"{API_BASE_URL}/api/deployments/{deployment_id}/yaml",
+                                    f"{API_BASE_URL}/api/v1/deployments/{deployment_id}/yaml",
                                     timeout=10
                                 )
                                 yaml_response.raise_for_status()

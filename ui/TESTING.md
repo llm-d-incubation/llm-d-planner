@@ -193,7 +193,7 @@ curl http://localhost:8000/health
 2. Verify Ollama is running: `curl http://localhost:11434/api/tags`
 3. Test backend directly:
    ```bash
-   curl -X POST http://localhost:8000/api/recommend \
+   curl -X POST http://localhost:8000/api/v1/recommend \
      -H "Content-Type: application/json" \
      -d '{"message": "test chatbot for 100 users"}'
    ```

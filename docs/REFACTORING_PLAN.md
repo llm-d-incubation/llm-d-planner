@@ -42,8 +42,8 @@ backend/src/
 │       ├── health.py
 │       ├── intent.py          # /api/v1/extract
 │       ├── specification.py   # SLO/workload endpoints
-│       ├── recommendation.py  # /api/recommend, /api/ranked-recommend-from-spec
-│       ├── configuration.py   # /api/deploy, deployments/*
+│       ├── recommendation.py  # /api/v1/recommend, /api/v1/ranked-recommend-from-spec
+│       ├── configuration.py   # /api/v1/deploy, /api/v1/deployments/*
 │       └── reference_data.py  # /api/v1/models, use-cases, etc.
 ├── intent_extraction/         # 1. Intent Extraction Service
 │   ├── service.py             # Service facade
@@ -104,8 +104,8 @@ Each step is independently testable. No backward compatibility needed after comp
   - `health.py` - /health
   - `intent.py` - /api/v1/extract
   - `specification.py` - /api/v1/slo-defaults, /api/v1/workload-profile, /api/v1/expected-rps
-  - `recommendation.py` - /api/recommend, /api/ranked-recommend-from-spec
-  - `configuration.py` - /api/deploy, /api/deploy-to-cluster, /api/deployments/*
+  - `recommendation.py` - /api/v1/recommend, /api/v1/ranked-recommend-from-spec
+  - `configuration.py` - /api/v1/deploy, /api/v1/deploy-to-cluster, /api/v1/deployments/*
   - `reference_data.py` - /api/v1/models, /api/v1/gpu-types, /api/v1/use-cases, etc.
 - Create `api/app.py` as FastAPI app factory that assembles routers
 - Delete old `routes.py`
@@ -155,7 +155,7 @@ Each step is independently testable. No backward compatibility needed after comp
 - Update imports
 - Delete `deployment/` directory
 
-**Test:** Generate YAML via /api/deploy, verify cluster operations
+**Test:** Generate YAML via /api/v1/deploy, verify cluster operations
 
 ### Phase 6: Recommendation Service Cleanup
 
@@ -169,7 +169,7 @@ Each step is independently testable. No backward compatibility needed after comp
 - Create `recommendation/service.py` with RecommendationService facade
 - Delete `model_evaluator.py` (legacy, unused)
 
-**Test:** Full recommendation flow via /api/ranked-recommend-from-spec
+**Test:** Full recommendation flow via /api/v1/ranked-recommend-from-spec
 
 ### Phase 7: Finalize
 

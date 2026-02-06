@@ -28,12 +28,12 @@ Return best recommendation or all ranked lists
 
 | Endpoint | Purpose | Returns |
 |----------|---------|---------|
-| `POST /api/recommend` | Simple recommendation | Single best config with YAML |
-| `POST /api/ranked-recommend` | Multi-criteria ranking | 5 ranked lists (10 configs each) |
-| `POST /api/re-recommend` | Re-run with edited specs | Single best config |
-| `POST /api/regenerate-and-recommend` | Regenerate profile from intent | Single best config |
+| `POST /api/v1/recommend` | Simple recommendation | Single best config with YAML |
+| `POST /api/v1/ranked-recommend-from-spec` | Multi-criteria ranking | 5 ranked lists (10 configs each) |
+| `POST /api/v1/re-recommend` | Re-run with edited specs | Single best config |
+| `POST /api/v1/regenerate-and-recommend` | Regenerate profile from intent | Single best config |
 
-**Entry Point**: [backend/src/api/routes.py](../backend/src/api/routes.py)
+**Entry Point**: [backend/src/api/routes/](../backend/src/api/routes/)
 
 ---
 
@@ -285,12 +285,12 @@ ranked_lists = ranking_service.generate_ranked_lists(
 
 The `RecommendationWorkflow` orchestrates all steps and returns the appropriate response.
 
-**For `/api/recommend`**:
+**For `/api/v1/recommend`**:
 - Returns single best configuration (highest balanced score)
 - Includes top 3 alternatives
 - Auto-generates YAML files
 
-**For `/api/ranked-recommend`**:
+**For `/api/v1/ranked-recommend-from-spec`**:
 - Returns `RankedRecommendationsResponse` with all 5 ranked lists
 - Includes specification (intent, traffic_profile, slo_targets)
 - Reports total configs evaluated and configs after filters
@@ -332,7 +332,7 @@ User Request
      │
      ▼
 ┌─────────────────────┐
-│  API Route Handler  │ (/api/recommend or /api/ranked-recommend)
+│  API Route Handler  │ (/api/v1/recommend or /api/v1/ranked-recommend-from-spec)
 └──────────┬──────────┘
            │
            ▼

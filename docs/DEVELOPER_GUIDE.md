@@ -289,7 +289,7 @@ make logs-ui
 **Test API endpoints:**
 ```bash
 # Get recommendation
-curl -X POST http://localhost:8000/api/recommend \
+curl -X POST http://localhost:8000/api/v1/recommend \
   -H "Content-Type: application/json" \
   -d '{"message": "I need a chatbot for 1000 users"}'
 ```
@@ -820,7 +820,7 @@ Test the API:
 curl http://localhost:8000/health
 
 # Full recommendation
-curl -X POST http://localhost:8000/api/recommend \
+curl -X POST http://localhost:8000/api/v1/recommend \
   -H "Content-Type: application/json" \
   -d '{"message": "I need a chatbot for 5000 users with low latency"}'
 ```

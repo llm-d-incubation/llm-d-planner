@@ -18,7 +18,7 @@ from ..dependencies import (
 
 logger = logging.getLogger(__name__)
 
-router = APIRouter(tags=["configuration"])
+router = APIRouter(prefix="/api/v1", tags=["configuration"])
 
 
 class DeploymentRequest(BaseModel):
@@ -50,7 +50,7 @@ class DeploymentStatusResponse(BaseModel):
     recommendations: list[str] | None = None
 
 
-@router.post("/api/deploy", response_model=DeploymentResponse)
+@router.post("/deploy", response_model=DeploymentResponse)
 async def deploy_model(request: DeploymentRequest):
     """
     Generate deployment YAML files from recommendation.
@@ -100,7 +100,7 @@ async def deploy_model(request: DeploymentRequest):
         ) from e
 
 
-@router.get("/api/deployments/{deployment_id}/status", response_model=DeploymentStatusResponse)
+@router.get("/deployments/{deployment_id}/status", response_model=DeploymentStatusResponse)
 async def get_deployment_status(deployment_id: str):
     """
     Get mock deployment status for observability demonstration.
@@ -185,7 +185,7 @@ async def get_deployment_status(deployment_id: str):
         raise HTTPException(status_code=404, detail=f"Deployment not found: {deployment_id}") from e
 
 
-@router.post("/api/deploy-to-cluster")
+@router.post("/deploy-to-cluster")
 async def deploy_to_cluster(request: DeploymentRequest):
     """
     Deploy model to Kubernetes cluster.
@@ -255,7 +255,7 @@ async def deploy_to_cluster(request: DeploymentRequest):
         raise HTTPException(status_code=500, detail=f"Failed to deploy to cluster: {str(e)}") from e
 
 
-@router.get("/api/cluster-status")
+@router.get("/cluster-status")
 async def get_cluster_status():
     """
     Get Kubernetes cluster status.
@@ -279,7 +279,7 @@ async def get_cluster_status():
         return {"accessible": False, "error": str(e)}
 
 
-@router.get("/api/deployments/{deployment_id}/k8s-status")
+@router.get("/deployments/{deployment_id}/k8s-status")
 async def get_k8s_deployment_status(deployment_id: str):
     """
     Get actual Kubernetes deployment status (not mock data).
@@ -313,7 +313,7 @@ async def get_k8s_deployment_status(deployment_id: str):
         ) from e
 
 
-@router.get("/api/deployments/{deployment_id}/yaml")
+@router.get("/deployments/{deployment_id}/yaml")
 async def get_deployment_yaml(deployment_id: str):
     """
     Retrieve generated YAML files for a deployment.
@@ -352,7 +352,7 @@ async def get_deployment_yaml(deployment_id: str):
         ) from e
 
 
-@router.delete("/api/deployments/{deployment_id}")
+@router.delete("/deployments/{deployment_id}")
 async def delete_deployment(deployment_id: str):
     """
     Delete a deployment from the cluster.
@@ -386,7 +386,7 @@ async def delete_deployment(deployment_id: str):
         raise HTTPException(status_code=500, detail=f"Failed to delete deployment: {str(e)}") from e
 
 
-@router.get("/api/deployments")
+@router.get("/deployments")
 async def list_all_deployments():
     """
     List all InferenceServices in the cluster with their detailed status.

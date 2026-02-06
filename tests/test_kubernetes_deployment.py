@@ -21,7 +21,7 @@ API_BASE_URL = "http://localhost:8000"
 def test_cluster_status():
     """Test 1: Verify cluster is accessible."""
     print("\n=== Test 1: Cluster Status ===")
-    response = requests.get(f"{API_BASE_URL}/api/cluster-status")
+    response = requests.get(f"{API_BASE_URL}/api/v1/cluster-status")
     status = response.json()
 
     print(f"Cluster accessible: {status['accessible']}")
@@ -40,7 +40,7 @@ def test_generate_recommendation():
 
     message = "I need a small chatbot for 100 users with low latency"
     response = requests.post(
-        f"{API_BASE_URL}/api/recommend",
+        f"{API_BASE_URL}/api/v1/recommend",
         json={"message": message},
         timeout=30
     )
@@ -63,7 +63,7 @@ def test_deploy_to_cluster(recommendation):
     print("=== Test 3: Deploy to Kubernetes ===")
 
     response = requests.post(
-        f"{API_BASE_URL}/api/deploy-to-cluster",
+        f"{API_BASE_URL}/api/v1/deploy-to-cluster",
         json={"recommendation": recommendation, "namespace": "default"},
         timeout=60
     )
@@ -96,7 +96,7 @@ def test_deployment_status(deployment_id):
     time.sleep(10)
 
     response = requests.get(
-        f"{API_BASE_URL}/api/deployments/{deployment_id}/k8s-status",
+        f"{API_BASE_URL}/api/v1/deployments/{deployment_id}/k8s-status",
         timeout=10
     )
 
@@ -129,7 +129,7 @@ def test_cleanup(deployment_id):
     print("=== Test 5: Cleanup ===")
 
     response = requests.delete(
-        f"{API_BASE_URL}/api/deployments/{deployment_id}",
+        f"{API_BASE_URL}/api/v1/deployments/{deployment_id}",
         timeout=30
     )
 

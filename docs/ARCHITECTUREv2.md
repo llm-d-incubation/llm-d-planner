@@ -197,7 +197,7 @@ Backend components interact with the UI via **FastAPI** REST endpoints.
 - Priority preferences (accuracy vs. cost vs. latency)
 - Subject matter domain (optional)
 
-**Interface**: REST endpoint `/api/extract`
+**Interface**: REST endpoint `/api/v1/extract`
 
 **Notes**:
 
@@ -384,7 +384,7 @@ without real benchmark data
 - Quality/complexity/latency scores
 - Trade-off analysis vs. alternatives
 
-**Interface**: REST endpoint `/api/ranked-recommend-from-spec`
+**Interface**: REST endpoint `/api/v1/ranked-recommend-from-spec`
 
 ---
 
@@ -425,7 +425,7 @@ without real benchmark data
 - Configuration files ready for user to deploy via `kubectl apply -f`
 - Files available for download or copy from UI
 
-**Interface**: REST endpoint `/api/generate-config`
+**Interface**: REST endpoint `/api/v1/deploy`
 
 **Initial Target**: KServe on Kubernetes **Future Options**: Direct Linux server
 deployment, other orchestration platforms

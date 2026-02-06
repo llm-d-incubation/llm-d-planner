@@ -10,7 +10,7 @@ from ..dependencies import get_deployment_generator, get_workflow
 
 logger = logging.getLogger(__name__)
 
-router = APIRouter(tags=["recommendation"])
+router = APIRouter(prefix="/api/v1", tags=["recommendation"])
 
 
 class SimpleRecommendationRequest(BaseModel):
@@ -58,7 +58,7 @@ class RankedRecommendationFromSpecRequest(BaseModel):
     weights: BalancedWeights | None = None
 
 
-@router.post("/api/recommend")
+@router.post("/recommend")
 async def simple_recommend(request: SimpleRecommendationRequest):
     """
     Simplified recommendation endpoint for UI compatibility.
@@ -147,7 +147,7 @@ async def simple_recommend(request: SimpleRecommendationRequest):
         ) from e
 
 
-@router.post("/api/ranked-recommend-from-spec")
+@router.post("/ranked-recommend-from-spec")
 async def ranked_recommend_from_spec(request: RankedRecommendationFromSpecRequest):
     """
     Generate ranked recommendations from pre-built specification.
@@ -252,7 +252,7 @@ async def ranked_recommend_from_spec(request: RankedRecommendationFromSpecReques
         ) from e
 
 
-@router.post("/api/v1/test")
+@router.post("/test")
 async def test_endpoint(message: str = "I need a chatbot for 1000 users"):
     """
     Quick test endpoint for validation.
