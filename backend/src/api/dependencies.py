@@ -7,11 +7,11 @@ for the API routes. All shared state is initialized here.
 import logging
 import os
 
-from ..cluster import KubernetesClusterManager, KubernetesDeploymentError
-from ..configuration import DeploymentGenerator, YAMLValidator
-from ..knowledge_base.model_catalog import ModelCatalog
-from ..knowledge_base.slo_templates import SLOTemplateRepository
-from ..orchestration.workflow import RecommendationWorkflow
+from src.cluster import KubernetesClusterManager, KubernetesDeploymentError
+from src.configuration import DeploymentGenerator, YAMLValidator
+from src.knowledge_base.model_catalog import ModelCatalog
+from src.knowledge_base.slo_templates import SLOTemplateRepository
+from src.orchestration.workflow import RecommendationWorkflow
 
 # Configure logging
 debug_mode = os.getenv("NEURALNAV_DEBUG", "false").lower() == "true"
@@ -97,6 +97,7 @@ def get_cluster_manager_or_raise(namespace: str = "default") -> KubernetesCluste
             return KubernetesClusterManager(namespace=namespace)
         except KubernetesDeploymentError as e:
             from fastapi import HTTPException
+
             raise HTTPException(
                 status_code=503, detail=f"Kubernetes cluster not accessible: {str(e)}"
             ) from e

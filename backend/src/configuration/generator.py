@@ -11,8 +11,8 @@ from typing import Any
 
 from jinja2 import Environment, FileSystemLoader
 
-from ..shared.schemas import DeploymentRecommendation
-from ..knowledge_base.model_catalog import ModelCatalog
+from src.knowledge_base.model_catalog import ModelCatalog
+from src.shared.schemas import DeploymentRecommendation
 
 logger = logging.getLogger(__name__)
 
@@ -161,9 +161,7 @@ class DeploymentGenerator:
         max_num_seqs = max(32, int(traffic.expected_qps * avg_latency_sec * 1.5))
 
         # Max batched tokens (vLLM parameter)
-        max_num_batched_tokens = max_num_seqs * (
-            traffic.prompt_tokens + traffic.output_tokens
-        )
+        max_num_batched_tokens = max_num_seqs * (traffic.prompt_tokens + traffic.output_tokens)
 
         context = {
             # Deployment metadata

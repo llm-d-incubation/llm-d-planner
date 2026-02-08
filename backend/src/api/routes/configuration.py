@@ -7,14 +7,14 @@ from datetime import datetime
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 
-from ...cluster import KubernetesClusterManager, KubernetesDeploymentError
-from ...shared.schemas import DeploymentRecommendation
-from ..dependencies import (
+from src.api.dependencies import (
     get_cluster_manager,
     get_cluster_manager_or_raise,
     get_deployment_generator,
     get_yaml_validator,
 )
+from src.cluster import KubernetesClusterManager, KubernetesDeploymentError
+from src.shared.schemas import DeploymentRecommendation
 
 logger = logging.getLogger(__name__)
 

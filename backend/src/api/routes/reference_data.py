@@ -7,7 +7,7 @@ from pathlib import Path
 
 from fastapi import APIRouter, HTTPException
 
-from ..dependencies import get_model_catalog, get_slo_repo
+from src.api.dependencies import get_model_catalog, get_slo_repo
 
 logger = logging.getLogger(__name__)
 

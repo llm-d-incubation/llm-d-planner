@@ -5,8 +5,8 @@ import logging
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 
-from ...shared.schemas import DeploymentRecommendation
-from ..dependencies import get_deployment_generator, get_workflow
+from src.api.dependencies import get_deployment_generator, get_workflow
+from src.shared.schemas import DeploymentRecommendation
 
 logger = logging.getLogger(__name__)
 

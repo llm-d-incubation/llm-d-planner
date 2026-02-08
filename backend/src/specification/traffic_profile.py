@@ -2,8 +2,8 @@
 
 import logging
 
-from ..shared.schemas import DeploymentIntent, SLOTargets, TrafficProfile
-from ..knowledge_base.slo_templates import SLOTemplateRepository
+from src.knowledge_base.slo_templates import SLOTemplateRepository
+from src.shared.schemas import DeploymentIntent, SLOTargets, TrafficProfile
 
 logger = logging.getLogger(__name__)
 
@@ -109,7 +109,7 @@ class TrafficProfileGenerator:
         # with a peak-to-average ratio based on latency priority
         peak_hours = 8
         peak_ratio_map = {
-            "high": 2.5,    # High latency priority = need more headroom
+            "high": 2.5,  # High latency priority = need more headroom
             "medium": 2.0,
             "low": 1.5,
         }
@@ -138,9 +138,9 @@ class TrafficProfileGenerator:
             Adjusted SLO target
         """
         adjustment_factors = {
-            "high": 0.9,    # High priority = 10% tighter targets
+            "high": 0.9,  # High priority = 10% tighter targets
             "medium": 1.0,  # Use template as-is
-            "low": 1.2,     # Low priority = 20% more relaxed
+            "low": 1.2,  # Low priority = 20% more relaxed
         }
 
         factor = adjustment_factors.get(latency_priority, 1.0)
@@ -161,7 +161,7 @@ class TrafficProfileGenerator:
         """Generate default SLO targets when no template available."""
         # Using p95 targets for different latency priorities
         slo_map = {
-            "high": (150, 25, 7000),    # High priority = tighter targets (ttft, itl, e2e)
+            "high": (150, 25, 7000),  # High priority = tighter targets (ttft, itl, e2e)
             "medium": (300, 30, 25000),
             "low": (600, 40, 60000),
         }

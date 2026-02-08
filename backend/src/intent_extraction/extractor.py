@@ -4,9 +4,9 @@ import logging
 from datetime import datetime
 from pathlib import Path
 
-from ..llm.ollama_client import OllamaClient
-from ..llm.prompts import INTENT_EXTRACTION_SCHEMA, build_intent_extraction_prompt
-from ..shared.schemas import ConversationMessage, DeploymentIntent
+from src.llm.ollama_client import OllamaClient
+from src.llm.prompts import INTENT_EXTRACTION_SCHEMA, build_intent_extraction_prompt
+from src.shared.schemas import ConversationMessage, DeploymentIntent
 
 logger = logging.getLogger(__name__)
 
@@ -147,7 +147,13 @@ class IntentExtractor:
             use_case = cleaned.get("use_case", "")
             if use_case == "code_completion":
                 cleaned["experience_class"] = "instant"  # Sub-200ms TTFT
-            elif use_case in ["chatbot_conversational", "code_generation_detailed", "translation", "content_generation", "summarization_short"]:
+            elif use_case in [
+                "chatbot_conversational",
+                "code_generation_detailed",
+                "translation",
+                "content_generation",
+                "summarization_short",
+            ]:
                 cleaned["experience_class"] = "conversational"  # Interactive real-time
             elif use_case == "document_analysis_rag":
                 cleaned["experience_class"] = "interactive"  # Can tolerate slight delay
@@ -157,7 +163,9 @@ class IntentExtractor:
                 cleaned["experience_class"] = "batch"  # Background processing
             else:
                 cleaned["experience_class"] = "conversational"  # Default
-            logger.info(f"Inferred experience_class='{cleaned['experience_class']}' from use_case='{use_case}'")
+            logger.info(
+                f"Inferred experience_class='{cleaned['experience_class']}' from use_case='{use_case}'"
+            )
 
         # Fix user_count if it's a descriptive string instead of integer
         if "user_count" in cleaned and isinstance(cleaned["user_count"], str):
@@ -221,12 +229,19 @@ class IntentExtractor:
 
         # Ensure priority fields have valid values (default to "medium" if invalid/missing)
         valid_priorities = ["low", "medium", "high"]
-        for priority_field in ["accuracy_priority", "cost_priority", "latency_priority", "complexity_priority"]:
+        for priority_field in [
+            "accuracy_priority",
+            "cost_priority",
+            "latency_priority",
+            "complexity_priority",
+        ]:
             if priority_field in cleaned:
                 # Normalize to lowercase and validate
                 priority_value = str(cleaned[priority_field]).lower().strip()
                 if priority_value not in valid_priorities:
-                    logger.info(f"Invalid {priority_field}='{cleaned[priority_field]}', defaulting to 'medium'")
+                    logger.info(
+                        f"Invalid {priority_field}='{cleaned[priority_field]}', defaulting to 'medium'"
+                    )
                     cleaned[priority_field] = "medium"
                 else:
                     cleaned[priority_field] = priority_value

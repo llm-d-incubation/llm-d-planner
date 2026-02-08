@@ -20,8 +20,9 @@ TODO (Phase 2+): Parametric Performance Models
 import logging
 import math
 
-from ..shared.utils import normalize_gpu_types
-from ..shared.schemas import (
+from src.knowledge_base.benchmarks import BenchmarkData, BenchmarkRepository
+from src.knowledge_base.model_catalog import ModelCatalog, ModelInfo
+from src.shared.schemas import (
     ConfigurationScores,
     DeploymentIntent,
     DeploymentRecommendation,
@@ -29,8 +30,8 @@ from ..shared.schemas import (
     SLOTargets,
     TrafficProfile,
 )
-from ..knowledge_base.benchmarks import BenchmarkData, BenchmarkRepository
-from ..knowledge_base.model_catalog import ModelCatalog, ModelInfo
+from src.shared.utils import normalize_gpu_types
+
 from .analyzer import get_task_bonus
 from .scorer import Scorer
 
@@ -97,9 +98,7 @@ class ConfigFinder:
                 f"Selected {model.name} ({model.size_parameters}) for {intent.use_case} use case"
             )
         else:
-            reasons.append(
-                f"Selected {bench.model_hf_repo} for {intent.use_case} use case"
-            )
+            reasons.append(f"Selected {bench.model_hf_repo} for {intent.use_case} use case")
 
         # GPU configuration
         if gpu_config.tensor_parallel > 1:
@@ -165,7 +164,7 @@ class ConfigFinder:
             query_e2e = slo_targets.e2e_p95_target_ms
 
         # Get percentile from SLO targets (default to p95 for backwards compatibility)
-        percentile = getattr(slo_targets, 'percentile', 'p95')
+        percentile = getattr(slo_targets, "percentile", "p95")
 
         # Normalize GPU types for database filtering (empty list = no filter)
         normalized_gpus = normalize_gpu_types(intent.preferred_gpu_types)
@@ -251,15 +250,15 @@ class ConfigFinder:
             # This is the actual model accuracy from Artificial Analysis benchmarks
             # NOT a composite score with latency/budget bonuses
             from .quality import score_model_quality
-            
+
             # Try to get raw AA score using the benchmark model name
             model_name_for_scoring = model.name if model else bench.model_hf_repo
             raw_accuracy = score_model_quality(model_name_for_scoring, intent.use_case)
-            
+
             # If no score found, try with benchmark's model_hf_repo
             if raw_accuracy == 0 and bench.model_hf_repo:
                 raw_accuracy = score_model_quality(bench.model_hf_repo, intent.use_case)
-            
+
             accuracy_score = int(raw_accuracy)
 
             # Apply task-specific bonus to accuracy score
@@ -293,11 +292,13 @@ class ConfigFinder:
                 "tps_p95": float(bench.tps_p95) if bench.tps_p95 else 0,
                 "tps_p99": float(bench.tps_p99) if bench.tps_p99 else 0,
                 # RPS per replica from benchmark (for card display)
-                "requests_per_second": float(bench.requests_per_second) if bench.requests_per_second else 0,
+                "requests_per_second": float(bench.requests_per_second)
+                if bench.requests_per_second
+                else 0,
                 # Data validation flag: True = estimated/interpolated, False = real benchmark
-                "estimated": getattr(bench, 'estimated', False),
+                "estimated": getattr(bench, "estimated", False),
             }
-            
+
             # Build recommendation (price score calculated later after we know min/max)
             recommendation = DeploymentRecommendation(
                 intent=intent,
@@ -341,9 +342,7 @@ class ConfigFinder:
             for rec in all_configs:
                 if rec.scores and rec.cost_per_month_usd:
                     # Update price score
-                    price_score = scorer.score_price(
-                        rec.cost_per_month_usd, min_cost, max_cost
-                    )
+                    price_score = scorer.score_price(rec.cost_per_month_usd, min_cost, max_cost)
                     rec.scores.price_score = price_score
 
                     # Calculate base balanced score with user weights
@@ -351,9 +350,7 @@ class ConfigFinder:
                     normalized_weights = None
                     if weights:
                         total = sum(weights.values()) or 1  # Avoid division by zero
-                        normalized_weights = {
-                            k: v / total for k, v in weights.items()
-                        }
+                        normalized_weights = {k: v / total for k, v in weights.items()}
 
                     base_balanced = scorer.score_balanced(
                         accuracy_score=rec.scores.accuracy_score,
@@ -362,7 +359,7 @@ class ConfigFinder:
                         complexity_score=rec.scores.complexity_score,
                         weights=normalized_weights,
                     )
-                    
+
                     # Apply scalability penalty based on replica count
                     # Configs needing many replicas are less efficient for high workloads
                     replicas = rec.gpu_config.replicas if rec.gpu_config else 1
@@ -378,10 +375,12 @@ class ConfigFinder:
                         scalability_factor = 0.80  # 20% penalty
                     else:
                         scalability_factor = 0.65  # 35% penalty for very large deployments
-                    
+
                     rec.scores.balanced_score = round(base_balanced * scalability_factor, 1)
 
         # Count unique models in configurations
         unique_models = {rec.model_id for rec in all_configs}
-        logger.info(f"Found {len(all_configs)} viable configurations across {len(unique_models)} models")
+        logger.info(
+            f"Found {len(all_configs)} viable configurations across {len(unique_models)} models"
+        )
         return all_configs

@@ -15,18 +15,3 @@ from .recommendation import (
     RankedRecommendationsResponse,
 )
 from .specification import DeploymentSpecification, SLOTargets, TrafficProfile
-
-__all__ = [
-    # Intent schemas
-    "DeploymentIntent",
-    "ConversationMessage",
-    # Specification schemas
-    "TrafficProfile",
-    "SLOTargets",
-    "DeploymentSpecification",
-    # Recommendation schemas
-    "GPUConfig",
-    "ConfigurationScores",
-    "DeploymentRecommendation",
-    "RankedRecommendationsResponse",
-]

@@ -2,16 +2,16 @@
 
 import logging
 
-from ..intent_extraction import IntentExtractor
-from ..shared.schemas import (
+from src.intent_extraction import IntentExtractor
+from src.llm.ollama_client import OllamaClient
+from src.recommendation.analyzer import Analyzer
+from src.recommendation.config_finder import ConfigFinder
+from src.shared.schemas import (
     ConversationMessage,
     DeploymentRecommendation,
     RankedRecommendationsResponse,
 )
-from ..llm.ollama_client import OllamaClient
-from ..recommendation.config_finder import ConfigFinder
-from ..recommendation.analyzer import Analyzer
-from ..specification import TrafficProfileGenerator
+from src.specification import TrafficProfileGenerator
 
 logger = logging.getLogger(__name__)
 
@@ -52,14 +52,12 @@ class RecommendationWorkflow:
         Returns:
             Tuple of (DeploymentSpecification, intent, traffic_profile, slo_targets)
         """
-        from ..shared.schemas import DeploymentSpecification
+        from src.shared.schemas import DeploymentSpecification
 
         logger.info("Step 1: Extracting deployment intent")
         intent = self.intent_extractor.extract_intent(user_message, conversation_history)
         intent = self.intent_extractor.infer_missing_fields(intent)
-        logger.info(
-            f"Intent extracted: {intent.use_case}, {intent.user_count} users"
-        )
+        logger.info(f"Intent extracted: {intent.use_case}, {intent.user_count} users")
 
         logger.info("Step 2: Generating traffic profile and SLO targets")
         traffic_profile = self.traffic_generator.generate_profile(intent)
@@ -105,8 +103,8 @@ class RecommendationWorkflow:
         logger.info("Starting recommendation workflow")
 
         # Generate specification from conversation
-        specification, intent, traffic_profile, slo_targets = (
-            self.generate_specification(user_message, conversation_history)
+        specification, intent, traffic_profile, slo_targets = self.generate_specification(
+            user_message, conversation_history
         )
 
         # Convert to dict format and delegate to single recommendation path
@@ -135,7 +133,7 @@ class RecommendationWorkflow:
         Raises:
             ValueError: If recommendation cannot be generated
         """
-        from ..shared.schemas import DeploymentIntent, SLOTargets, TrafficProfile
+        from src.shared.schemas import DeploymentIntent, SLOTargets, TrafficProfile
 
         logger.info("Generating recommendation from specifications")
 
@@ -204,9 +202,7 @@ class RecommendationWorkflow:
             raise ValueError(error_msg)
 
         # Sort by balanced score and pick best
-        all_configs.sort(
-            key=lambda x: x.scores.balanced_score if x.scores else 0, reverse=True
-        )
+        all_configs.sort(key=lambda x: x.scores.balanced_score if x.scores else 0, reverse=True)
         best_recommendation = all_configs[0]
 
         logger.info(
@@ -255,8 +251,8 @@ class RecommendationWorkflow:
         logger.info("Starting ranked recommendation workflow")
 
         # Generate specification from conversation
-        specification, intent, traffic_profile, slo_targets = (
-            self.generate_specification(user_message, conversation_history)
+        specification, intent, traffic_profile, slo_targets = self.generate_specification(
+            user_message, conversation_history
         )
 
         # Get ALL configurations with scores
@@ -339,7 +335,7 @@ class RecommendationWorkflow:
         Returns:
             RankedRecommendationsResponse with 5 ranked lists
         """
-        from ..shared.schemas import (
+        from src.shared.schemas import (
             DeploymentIntent,
             DeploymentSpecification,
             SLOTargets,
