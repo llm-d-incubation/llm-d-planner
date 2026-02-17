@@ -1,6 +1,7 @@
 """API route modules for NeuralNav."""
 
 from .configuration import router as configuration_router
+from .database import router as database_router
 from .health import router as health_router
 from .intent import router as intent_router
 from .recommendation import router as recommendation_router

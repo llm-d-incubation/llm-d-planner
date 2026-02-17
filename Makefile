@@ -415,11 +415,6 @@ db-init: db-start ## Initialize PostgreSQL schema
 	@$(CONTAINER_TOOL) exec -i neuralnav-postgres psql -U postgres -d neuralnav < scripts/schema.sql
 	@printf "$(GREEN)✓ Schema initialized$(NC)\n"
 
-db-load-synthetic: db-start ## Load synthetic benchmark data (appends)
-	@printf "$(BLUE)Loading synthetic benchmark data...$(NC)\n"
-	@uv run python scripts/load_benchmarks.py data/benchmarks/performance/benchmarks_synthetic.json
-	@printf "$(GREEN)✓ Synthetic data loaded$(NC)\n"
-
 db-load-blis: db-start ## Load BLIS benchmark data (appends)
 	@printf "$(BLUE)Loading BLIS benchmark data...$(NC)\n"
 	@uv run python scripts/load_benchmarks.py data/benchmarks/performance/benchmarks_BLIS.json
@@ -460,7 +455,7 @@ db-shell: ## Open PostgreSQL shell
 db-query-traffic: ## Query unique traffic patterns from database
 	@printf "$(BLUE)Querying unique traffic patterns...$(NC)\n"
 	@$(CONTAINER_TOOL) exec -i neuralnav-postgres psql -U postgres -d neuralnav -c \
-		"SELECT DISTINCT mean_input_tokens, mean_output_tokens, COUNT(*) as num_benchmarks \
+		"SELECT prompt_tokens, output_tokens, COUNT(*) as num_benchmarks \
 		FROM exported_summaries \
 		GROUP BY prompt_tokens, output_tokens \
 		ORDER BY prompt_tokens, output_tokens;"

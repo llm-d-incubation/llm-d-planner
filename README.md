@@ -59,7 +59,7 @@ make cluster-start  # Optional: Create local KIND cluster with vLLM simulator fo
 
 Then open [http://localhost:8501](http://localhost:8501) in your browser.
 
-**Note**: PostgreSQL runs as a Docker container (`neuralnav-postgres`) with benchmark data. All `db-load-*` commands append to existing data. Use `make db-reset` first for a clean database. 
+**Note**: PostgreSQL runs as a Docker container (`neuralnav-postgres`) with benchmark data. All `db-load-*` commands append to existing data. Use `make db-reset` first for a clean database. Benchmark data can also be uploaded and managed via the UI's **Configuration** tab or the REST API (`/api/v1/db/upload-benchmarks`).
 
 **Stop everything:**
 ```bash
@@ -119,6 +119,7 @@ See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for detailed system design.
 - ✅ **Local Kubernetes**: KIND cluster support, KServe installation, cluster management
 - ✅ **vLLM Simulator**: GPU-free development mode with realistic latency simulation
 - ✅ **Monitoring & Testing**: Real-time deployment status, inference testing UI, cluster observability
+- ✅ **Database Management**: Upload/reset benchmark data via REST API or UI Configuration tab (no shell access needed)
 
 ## Key Technologies
 

@@ -146,6 +146,15 @@ integrated views:
 - **Future Options**: Direct Linux server deployment, other orchestration
   platforms
 
+#### e. Configuration Tab (Database Management)
+
+- Upload benchmark JSON files into PostgreSQL (append mode, duplicates skipped)
+- Reset the benchmark database (removes all benchmark data, preserves schema)
+- View database statistics: total benchmarks, distinct models, hardware types,
+  traffic profile distribution
+- Enables remote management of NeuralNav deployments (e.g., on Kubernetes)
+  without requiring shell access
+
 ---
 
 ### Backend Components
@@ -447,6 +456,8 @@ components:
 - Expose HTTP endpoints for UI to call services
 - Orchestrate multi-step flows (conversation → recommendation → deployment)
 - Manage workflow state (session-based currently, persistent store future)
+- Database management endpoints (`/api/v1/db/status`, `/api/v1/db/upload-benchmarks`,
+  `/api/v1/db/reset`) for remote benchmark data management
 - Handle authentication and authorization (future)
 
 #### Knowledge Base (Data Layer)
@@ -459,6 +470,8 @@ components:
   PostgreSQL, migrating to DuckDB or SQLite for simpler deployment)
 - **JSON files**: Configuration as code (SLO templates, model catalog, hardware
   profiles)
+- **Data Management**: Benchmark data can be loaded, inspected, and reset via
+  CLI, REST API, or UI Configuration tab
 
 **Collections**:
 

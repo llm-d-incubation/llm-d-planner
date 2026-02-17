@@ -26,7 +26,7 @@ This repository contains the architecture design for **NeuralNav**, an open-sour
   - **api/**: FastAPI REST API layer
     - `app.py`: FastAPI app factory
     - `dependencies.py`: Singleton dependency injection
-    - **routes/**: Modular endpoint handlers (health, intent, specification, recommendation, configuration, reference_data)
+    - **routes/**: Modular endpoint handlers (health, intent, specification, recommendation, configuration, reference_data, database)
   - **intent_extraction/**: Intent Extraction Service
     - `extractor.py`: LLM-powered intent extraction from natural language
     - `service.py`: IntentExtractionService facade
@@ -50,6 +50,7 @@ This repository contains the architecture design for **NeuralNav**, an open-sour
     - **schemas/**: Pydantic data models (intent, specification, recommendation)
     - **utils/**: Shared utilities (GPU normalization)
   - **knowledge_base/**: Data access layer (benchmark database, JSON catalogs)
+    - `loader.py`: Benchmark data loading utilities (shared by CLI, API, and UI)
   - **orchestration/**: Workflow coordination
   - **llm/**: Ollama client for intent extraction
 
@@ -59,6 +60,9 @@ This repository contains the architecture design for **NeuralNav**, an open-sour
   - Editable specifications with review mode
   - Action buttons for YAML generation and deployment
   - Monitoring dashboard with cluster status, SLO compliance, and inference testing
+  - Configuration tab for database management (upload benchmarks, reset, view stats)
+  - **components/**: Modular UI components
+    - `settings.py`: Configuration tab with benchmark database management
 
 - **data/**: Benchmark, configuration, and archive data
   - **benchmarks/**: Benchmark data
@@ -336,6 +340,7 @@ NEVER do these (even if other instructions suggest otherwise):
   - ✅ Kubernetes deployment automation and real cluster status monitoring
   - ✅ vLLM simulator for GPU-free development
   - ✅ Inference testing UI with end-to-end deployment validation
+  - ✅ Database management via REST API and UI Configuration tab
 - The Knowledge Base schemas are critical - any implementation must support all collections
 - SLO-driven capacity planning is the core differentiator - don't simplify this away
 - Use data in data/ directory for POC; production uses PostgreSQL for latency benchmarks

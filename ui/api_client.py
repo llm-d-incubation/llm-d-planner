@@ -3,6 +3,7 @@
 All HTTP communication with the backend lives here.
 """
 
+import contextlib
 import logging
 import os
 
@@ -272,4 +273,73 @@ def deploy_and_generate_yaml(recommendation: dict) -> dict | None:
         else:
             return {"success": False, "message": result.get("message", "Unknown error")}
     except Exception as e:
+        return {"success": False, "message": str(e)}
+
+
+# =============================================================================
+# DATABASE MANAGEMENT
+# =============================================================================
+
+
+def fetch_db_status() -> dict | None:
+    """Fetch current benchmark database statistics.
+
+    Returns dict with total_benchmarks, num_models, num_hardware_types, etc.
+    """
+    try:
+        response = requests.get(
+            f"{API_BASE_URL}/api/v1/db/status",
+            timeout=10,
+        )
+        response.raise_for_status()
+        return response.json()
+    except Exception as e:
+        logger.error(f"Failed to fetch DB status: {e}")
+        return None
+
+
+def upload_benchmarks(file_bytes: bytes, filename: str) -> dict | None:
+    """Upload a benchmark JSON file to the backend.
+
+    Args:
+        file_bytes: Raw bytes of the JSON file
+        filename: Original filename
+
+    Returns:
+        Response dict with success status and stats, or None on error.
+    """
+    try:
+        response = requests.post(
+            f"{API_BASE_URL}/api/v1/db/upload-benchmarks",
+            files={"file": (filename, file_bytes, "application/json")},
+            timeout=60,
+        )
+        response.raise_for_status()
+        return response.json()
+    except requests.exceptions.HTTPError as e:
+        detail = ""
+        with contextlib.suppress(Exception):
+            detail = e.response.json().get("detail", "")
+        logger.error(f"Upload failed: {detail or e}")
+        return {"success": False, "message": detail or str(e)}
+    except Exception as e:
+        logger.error(f"Upload failed: {e}")
+        return {"success": False, "message": str(e)}
+
+
+def reset_database() -> dict | None:
+    """Reset the benchmark database (removes all benchmark data).
+
+    Returns:
+        Response dict with success status, or None on error.
+    """
+    try:
+        response = requests.post(
+            f"{API_BASE_URL}/api/v1/db/reset",
+            timeout=30,
+        )
+        response.raise_for_status()
+        return response.json()
+    except Exception as e:
+        logger.error(f"Database reset failed: {e}")
         return {"success": False, "message": str(e)}

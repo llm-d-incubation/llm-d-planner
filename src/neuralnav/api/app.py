@@ -8,6 +8,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from .routes import (
     configuration_router,
+    database_router,
     health_router,
     intent_router,
     recommendation_router,
@@ -50,6 +51,7 @@ def create_app() -> FastAPI:
     app.include_router(recommendation_router)
     app.include_router(configuration_router)
     app.include_router(reference_data_router)
+    app.include_router(database_router)
 
     logger.info(f"NeuralNav API starting with log level: {logging.getLevelName(log_level)}")
 

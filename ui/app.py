@@ -36,6 +36,7 @@ from components.extraction import (
     render_extraction_with_approval,
 )
 from components.recommendations import render_recommendation_result
+from components.settings import render_configuration_tab
 from components.slo import render_slo_with_approval
 from state import init_session_state
 
@@ -509,9 +510,9 @@ def main():
     # Main Content - Compact hero
     render_hero()
 
-    # Tab-based navigation (4 tabs)
-    tab1, tab2, tab3, tab4 = st.tabs(
-        ["Define Use Case", "Technical Specification", "Recommendations", "Deployment"]
+    # Tab-based navigation (5 tabs)
+    tab1, tab2, tab3, tab4, tab5 = st.tabs(
+        ["Define Use Case", "Technical Specification", "Recommendations", "Deployment", "Configuration"]
     )
 
     with tab1:
@@ -525,6 +526,9 @@ def main():
 
     with tab4:
         render_deployment_tab()
+
+    with tab5:
+        render_configuration_tab()
 
     # Auto-switch to pending tab after rerun
     pending_tab = st.session_state.pop("_pending_tab", None)

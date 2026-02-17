@@ -293,6 +293,42 @@ curl -X POST http://localhost:8000/api/v1/recommend \
   -d '{"message": "I need a chatbot for 1000 users"}'
 ```
 
+### Database Management
+
+Benchmark data can be managed via the CLI (`make` targets), the REST API, or the UI's **Configuration** tab.
+
+**CLI (local development):**
+```bash
+make db-load-blis         # Load BLIS benchmark data
+make db-load-guidellm     # Load GuideLLM benchmark data
+make db-reset             # Reset database (remove all data and reinitialize)
+```
+
+**REST API (remote/Kubernetes deployments):**
+```bash
+# Check database status
+curl http://localhost:8000/api/v1/db/status
+
+# Upload a benchmark JSON file
+curl -X POST -F 'file=@data/benchmarks/performance/benchmarks_BLIS.json' \
+  http://localhost:8000/api/v1/db/upload-benchmarks
+
+# Reset database (remove all benchmark data)
+curl -X POST http://localhost:8000/api/v1/db/reset
+```
+
+**UI (Configuration tab):**
+
+1. Open the UI at <http://localhost:8501>
+2. Go to the **Configuration** tab
+3. Use **Upload Benchmarks** to load a JSON file with a top-level `benchmarks` array
+4. Use **Reset Database** to remove all benchmark data
+5. Database statistics (total benchmarks, models, hardware types) are displayed at the top and refresh after each action
+
+All loading methods are append-mode — duplicates (same model/hardware/traffic/load config) are silently skipped via `ON CONFLICT (config_id) DO NOTHING`.
+
+**Core loading logic** lives in `src/neuralnav/knowledge_base/loader.py` and is shared by the CLI script, API endpoints, and UI.
+
 ### Cluster Development
 
 **Create cluster:**
@@ -572,6 +608,7 @@ UI code is in `ui/app.py`. Changes auto-reload in the browser.
 - `render_chat_interface()` - Chat input/history
 - `render_recommendation()` - Recommendation tabs
 - `render_deployment_management_tab()` - Cluster management
+- `render_configuration_tab()` - Database management (in `ui/components/settings.py`)
 
 ### Modifying the Recommendation Algorithm
 

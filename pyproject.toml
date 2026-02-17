@@ -21,6 +21,7 @@ dependencies = [
     "pyyaml==6.0.2",
     # HTTP client
     "requests==2.32.5",
+    "python-multipart>=0.0.22",
 ]
 
 [project.optional-dependencies]
