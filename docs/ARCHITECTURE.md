@@ -1,10 +1,9 @@
-# NeuralNav Architecture v2
+# NeuralNav Architecture
 
-> **Note**: This document is a work in progress. The original
-> [ARCHITECTURE.md](ARCHITECTURE.md) captured our initial design thinking.
-> This revision reflects the production architecture vision that emerged from
-> completing the POC. Once finalized, this document will replace
-> ARCHITECTURE.md.
+> **Note**: This document replaces the original
+> [ARCHITECTUREv1.md](archive/ARCHITECTUREv1.md) document that captured our
+> initial design thinking. This revision reflects the production architecture
+> vision that emerged after completing the POC.
 
 ## Overview
 
@@ -611,8 +610,8 @@ recommendation and deployment workflows.
 
 ## Extensibility
 
-NeuralNav is designed to support pluggable components, allowing customization for
-different environments and requirements.
+NeuralNav is designed to support pluggable components, allowing customization
+for different environments and requirements.
 
 ### Pluggable LLM Providers
 

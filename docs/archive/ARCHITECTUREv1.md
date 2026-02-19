@@ -1,5 +1,8 @@
 # System-Level Architecture for NeuralNav
 
+> **Note**: This document has been replaced by
+> [ARCHITECTURE.md](ARCHITECTURE.md) 
+
 ## Overview
 
 This document defines the system architecture for **NeuralNav**, which streamlines the path from concept to production-ready endpoint for LLM deployments on Kubernetes.
