@@ -33,11 +33,43 @@ _yaml_validator: YAMLValidator | None = None
 _cluster_manager: KubernetesClusterManager | None = None
 
 
+def _get_benchmark_source_type() -> str:
+    """Get configured benchmark source type."""
+    return os.getenv("NEURALNAV_BENCHMARK_SOURCE", "postgresql")
+
+
 def get_workflow() -> RecommendationWorkflow:
     """Get the recommendation workflow singleton."""
     global _workflow
     if _workflow is None:
-        _workflow = RecommendationWorkflow()
+        source_type = _get_benchmark_source_type()
+        if source_type == "model_catalog":
+            from neuralnav.knowledge_base.model_catalog_benchmarks import (
+                ModelCatalogBenchmarkSource,
+            )
+            from neuralnav.knowledge_base.model_catalog_client import ModelCatalogClient
+            from neuralnav.knowledge_base.model_catalog_models import (
+                ModelCatalogModelSource,
+            )
+            from neuralnav.knowledge_base.model_catalog_quality import (
+                ModelCatalogQualityScorer,
+            )
+            from neuralnav.recommendation.config_finder import ConfigFinder
+
+            client = ModelCatalogClient()
+            benchmark_source = ModelCatalogBenchmarkSource(client)
+            catalog = ModelCatalogModelSource(client)
+            quality_scorer = ModelCatalogQualityScorer(client)
+            config_finder = ConfigFinder(
+                benchmark_repo=benchmark_source,
+                catalog=catalog,
+                quality_scorer=quality_scorer,
+            )
+            logger.info("Using Model Catalog as benchmark source")
+            _workflow = RecommendationWorkflow(config_finder=config_finder)
+        else:
+            logger.info("Using PostgreSQL as benchmark source")
+            _workflow = RecommendationWorkflow()
     return _workflow
 
 
