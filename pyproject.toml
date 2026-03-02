@@ -117,5 +117,7 @@ asyncio_mode = "strict"
 asyncio_default_fixture_loop_scope = "session"
 markers = [
     "database: marks tests that require a running PostgreSQL database with benchmark data",
-    "integration: marks tests as integration tests (requires Ollama and database)",
+    "integration: marks tests as integration tests (deselected by default, requires backend running)",
+    "unit: marks tests as unit tests (fast, no external dependencies)",
+    "e2e: marks tests as end-to-end tests (deselected by default, requires cluster)",
 ]
