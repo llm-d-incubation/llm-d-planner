@@ -1,0 +1,35 @@
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: neuralnav
+  namespace: neuralnav
+  labels:
+    app.kubernetes.io/name: ui
+    app.kubernetes.io/part-of: neuralnav
+spec:
+  to:
+    kind: Service
+    name: ui
+  port:
+    targetPort: 8501
+  tls:
+    termination: edge
+    insecureEdgeTerminationPolicy: Redirect
+---
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: neuralnav-backend
+  namespace: neuralnav
+  labels:
+    app.kubernetes.io/name: backend
+    app.kubernetes.io/part-of: neuralnav
+spec:
+  to:
+    kind: Service
+    name: backend
+  port:
+    targetPort: 8000
+  tls:
+    termination: edge
+    insecureEdgeTerminationPolicy: Redirect

@@ -2,6 +2,7 @@
 
 import json
 import logging
+import os
 from typing import Any
 
 try:
@@ -19,18 +20,24 @@ logger = logging.getLogger(__name__)
 class OllamaClient:
     """Client for interacting with Ollama LLM service."""
 
-    def __init__(self, model: str = "qwen2.5:7b", host: str | None = None):
+    def __init__(self, model: str | None = None, host: str | None = None):
         """
         Initialize Ollama client.
 
         Args:
-            model: Model name to use (default: llama3.1:8b)
-            host: Optional Ollama host URL (defaults to localhost:11434)
+            model: Model name to use. Falls back to OLLAMA_MODEL env var,
+                   then "qwen2.5:7b".
+            host: Optional Ollama host URL. Falls back to OLLAMA_HOST env var,
+                  then localhost:11434.
         """
-        self.model = model
-        self.host = host
+        self.model = model or os.getenv("OLLAMA_MODEL", "qwen2.5:7b")
+        self.host = host or os.getenv("OLLAMA_HOST")
 
-        if not OLLAMA_AVAILABLE:
+        if OLLAMA_AVAILABLE:
+            client_kwargs = {"host": self.host} if self.host else {}
+            self._client = ollama.Client(**client_kwargs)
+        else:
+            self._client = None
             logger.error("Ollama library not installed. Install with: pip install ollama")
 
     def chat(
@@ -73,10 +80,7 @@ class OllamaClient:
             if format_json:
                 kwargs["format"] = "json"
 
-            if self.host:
-                kwargs["host"] = self.host
-
-            response = ollama.chat(**kwargs)
+            response = self._client.chat(**kwargs)
 
             # Log the full response
             response_content = response.get("message", {}).get("content", "")
@@ -156,12 +160,12 @@ Return ONLY valid JSON matching the schema above. Do not include any explanation
 
     def is_available(self) -> bool:
         """Check if Ollama service is available."""
-        if not OLLAMA_AVAILABLE:
+        if not self._client:
             return False
 
         try:
             # Try to list models to verify connection
-            ollama.list()
+            self._client.list()
             return True
         except Exception as e:
             logger.warning(f"Ollama service not available: {e}")
@@ -174,16 +178,16 @@ Return ONLY valid JSON matching the schema above. Do not include any explanation
         Returns:
             True if model is available, False otherwise
         """
-        if not OLLAMA_AVAILABLE:
+        if not self._client:
             return False
 
         try:
-            models = ollama.list()
+            models = self._client.list()
             model_names = [m["name"] for m in models.get("models", [])]
 
             if self.model not in model_names:
                 logger.info(f"Pulling model {self.model}...")
-                ollama.pull(self.model)
+                self._client.pull(self.model)
                 logger.info(f"Model {self.model} pulled successfully")
 
             return True
