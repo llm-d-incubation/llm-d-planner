@@ -26,6 +26,10 @@ class ModelCatalogQualityScorer:
         self._scores: dict[str, float] = {}  # model_name (lowercase) -> overall_average
         self._loaded_at: float = 0
 
+    def preload(self) -> None:
+        """Eagerly load quality scores cache (call during app startup)."""
+        self._load_all()
+
     def _ensure_loaded(self) -> None:
         if self._scores and (time.time() - self._loaded_at) < _CACHE_TTL:
             return

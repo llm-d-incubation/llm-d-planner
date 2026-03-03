@@ -66,6 +66,11 @@ def get_workflow() -> RecommendationWorkflow:
                 quality_scorer=quality_scorer,
             )
             logger.info("Using Model Catalog as benchmark source")
+            logger.info("Preloading Model Catalog data...")
+            benchmark_source.preload()
+            catalog.preload()
+            quality_scorer.preload()
+            logger.info("Model Catalog data preloaded")
             _workflow = RecommendationWorkflow(config_finder=config_finder)
         else:
             logger.info("Using PostgreSQL as benchmark source")

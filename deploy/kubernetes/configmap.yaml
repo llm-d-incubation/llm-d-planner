@@ -7,7 +7,7 @@ metadata:
     app.kubernetes.io/part-of: neuralnav
 data:
   # Benchmark data source: "postgresql" (default) or "model_catalog" (RHOAI)
-  NEURALNAV_BENCHMARK_SOURCE: postgresql
+  NEURALNAV_BENCHMARK_SOURCE: model_catalog
 
   # Model Catalog connection (only used when NEURALNAV_BENCHMARK_SOURCE=model_catalog)
   MODEL_CATALOG_URL: https://model-catalog.rhoai-model-registries.svc:8443

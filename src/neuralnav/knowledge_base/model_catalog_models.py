@@ -122,6 +122,10 @@ class ModelCatalogModelSource:
         self._loaded_at: float = 0
         self._local_catalog: ModelCatalog | None = None
 
+    def preload(self) -> None:
+        """Eagerly load model cache (call during app startup)."""
+        self._load_all()
+
     def _ensure_loaded(self) -> None:
         if self._models and (time.time() - self._loaded_at) < _CACHE_TTL:
             return

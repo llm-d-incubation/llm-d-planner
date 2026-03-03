@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import logging
 import os
+import time
 from pathlib import Path
 from urllib.parse import quote
 
@@ -14,11 +15,17 @@ logger = logging.getLogger(__name__)
 # Default ServiceAccount token path inside a pod
 _SA_TOKEN_PATH = Path("/var/run/secrets/kubernetes.io/serviceaccount/token")
 
+# Client-level cache TTL (1 hour, matches source-level TTL)
+_CLIENT_CACHE_TTL = 3600
+
 
 class ModelCatalogClient:
     """Thin HTTP wrapper for the Model Catalog v1alpha1 REST API.
 
     Returns raw dicts from the API -- no domain mapping is performed here.
+    Caches list_models() and get_model_artifacts() results so multiple
+    sources sharing the same client avoid redundant HTTP calls.
+
     Configuration comes from constructor args or environment variables:
 
         MODEL_CATALOG_URL        -- base URL of the catalog service
@@ -52,6 +59,11 @@ class ModelCatalogClient:
 
         self._api_base = f"{self.base_url}/api/model_catalog/v1alpha1"
 
+        # Client-level cache
+        self._models_cache: list[dict] | None = None
+        self._artifacts_cache: dict[str, list[dict]] = {}
+        self._cache_loaded_at: float = 0
+
     @staticmethod
     def _read_sa_token() -> str:
         """Read ServiceAccount token from pod mount."""
@@ -69,33 +81,35 @@ class ModelCatalogClient:
     def _get_json(self, path: str) -> dict:
         """GET request returning parsed JSON."""
         url = f"{self._api_base}{path}"
-        with httpx.Client(verify=self.verify_ssl, timeout=30.0) as http:
+        with httpx.Client(verify=self.verify_ssl, timeout=60.0) as http:
             resp = http.get(url, headers=self._headers())
             resp.raise_for_status()
             return resp.json()
 
+    def _is_cache_stale(self) -> bool:
+        return (time.time() - self._cache_loaded_at) >= _CLIENT_CACHE_TTL
+
     def list_models(self, page_size: int = 200) -> list[dict]:
         """List all models from the catalog.
 
+        Results are cached for _CLIENT_CACHE_TTL seconds.
         Handles pagination automatically via nextPageToken.
-
-        Args:
-            page_size: Number of items per page request.
-
-        Returns:
-            List of raw model dicts from the API.
         """
+        if self._models_cache is not None and not self._is_cache_stale():
+            return self._models_cache
+
         all_items: list[dict] = []
         next_token = ""
         while True:
             token_param = f"&nextPageToken={next_token}" if next_token else ""
             data = self._get_json(f"/models?pageSize={page_size}{token_param}")
-            # API may return models under "models" or "items" key
             all_items.extend(data.get("models", data.get("items", [])))
             next_token = data.get("nextPageToken", "")
             if not next_token:
                 break
         logger.info("Fetched %d models from Model Catalog", len(all_items))
+        self._models_cache = all_items
+        self._cache_loaded_at = time.time()
         return all_items
 
     def get_model_artifacts(
@@ -103,17 +117,12 @@ class ModelCatalogClient:
     ) -> list[dict]:
         """Get all artifacts (model + metrics) for a model.
 
+        Results are cached per model_name for _CLIENT_CACHE_TTL seconds.
         Handles pagination automatically via nextPageToken.
-
-        Args:
-            model_name: Full model name (e.g. "RedHatAI/granite-3.1-8b-instruct").
-            source_id: Source identifier for the artifacts endpoint.
-                       Falls back to the configured source_id if not provided.
-            page_size: Number of items per page request.
-
-        Returns:
-            List of raw artifact dicts from the API.
         """
+        if model_name in self._artifacts_cache and not self._is_cache_stale():
+            return self._artifacts_cache[model_name]
+
         source = source_id or self.source_id
         encoded_source = quote(source, safe="")
         encoded_name = quote(model_name, safe="")
@@ -125,9 +134,9 @@ class ModelCatalogClient:
                 f"/sources/{encoded_source}/models/{encoded_name}/artifacts"
                 f"?pageSize={page_size}{token_param}"
             )
-            # API may return artifacts under "artifacts" or "items" key
             all_items.extend(data.get("artifacts", data.get("items", [])))
             next_token = data.get("nextPageToken", "")
             if not next_token:
                 break
+        self._artifacts_cache[model_name] = all_items
         return all_items

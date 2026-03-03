@@ -131,6 +131,10 @@ class ModelCatalogBenchmarkSource:
         self._benchmarks: list[BenchmarkData] = []
         self._loaded_at: float = 0
 
+    def preload(self) -> None:
+        """Eagerly load benchmark cache (call during app startup)."""
+        self._load_all()
+
     def _ensure_loaded(self) -> None:
         """Load or refresh benchmark cache if stale."""
         if self._benchmarks and (time.time() - self._loaded_at) < _CACHE_TTL:

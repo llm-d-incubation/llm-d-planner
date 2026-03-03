@@ -2,6 +2,7 @@
 
 import logging
 import os
+from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -27,12 +28,24 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Eagerly initialize singletons on startup to warm caches."""
+    from .dependencies import get_workflow
+
+    logger.info("Initializing workflow and warming caches...")
+    get_workflow()
+    logger.info("Startup initialization complete")
+    yield
+
+
 def create_app() -> FastAPI:
     """Create and configure the FastAPI application."""
     app = FastAPI(
         title="NeuralNav API",
         description="API for LLM deployment recommendations",
         version="0.1.0",
+        lifespan=lifespan,
     )
 
     # Add CORS middleware
