@@ -2,7 +2,7 @@
 
 import logging
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, status
 from pydantic import BaseModel
 
 from neuralnav.api.dependencies import get_deployment_generator, get_workflow
@@ -143,7 +143,7 @@ async def simple_recommend(request: SimpleRecommendationRequest):
     except Exception as e:
         logger.error(f"Failed to generate recommendation: {e}", exc_info=True)
         raise HTTPException(
-            status_code=500, detail=f"Failed to generate recommendation: {str(e)}"
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Failed to generate recommendation: {str(e)}"
         ) from e
 
 
@@ -248,7 +248,7 @@ async def ranked_recommend_from_spec(request: RankedRecommendationFromSpecReques
     except Exception as e:
         logger.error(f"Failed to generate ranked recommendations from spec: {e}", exc_info=True)
         raise HTTPException(
-            status_code=500, detail=f"Failed to generate ranked recommendations: {str(e)}"
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Failed to generate ranked recommendations: {str(e)}"
         ) from e
 
 

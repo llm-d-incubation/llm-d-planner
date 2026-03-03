@@ -12,6 +12,7 @@ from neuralnav.configuration import DeploymentGenerator, YAMLValidator
 from neuralnav.knowledge_base.model_catalog import ModelCatalog
 from neuralnav.knowledge_base.slo_templates import SLOTemplateRepository
 from neuralnav.orchestration.workflow import RecommendationWorkflow
+from neuralnav.shared.schemas import DeploymentMode
 
 # Configure logging
 debug_mode = os.getenv("NEURALNAV_DEBUG", "false").lower() == "true"
@@ -60,9 +61,22 @@ def get_deployment_generator() -> DeploymentGenerator:
     """Get the deployment generator singleton."""
     global _deployment_generator
     if _deployment_generator is None:
-        # Use simulator mode by default (no GPU required for development)
-        _deployment_generator = DeploymentGenerator(simulator_mode=True)
+        _deployment_generator = DeploymentGenerator(simulator_mode=False)
     return _deployment_generator
+
+
+def get_deployment_mode() -> DeploymentMode:
+    """Return the current deployment mode."""
+    gen = get_deployment_generator()
+    return DeploymentMode.SIMULATOR if gen.simulator_mode else DeploymentMode.PRODUCTION
+
+
+def set_deployment_mode(mode: DeploymentMode) -> DeploymentMode:
+    """Set the deployment mode and return the new mode."""
+    gen = get_deployment_generator()
+    gen.simulator_mode = mode == DeploymentMode.SIMULATOR
+    logger.info(f"Deployment mode changed to: {mode.value}")
+    return mode
 
 
 def get_yaml_validator() -> YAMLValidator:
@@ -96,9 +110,10 @@ def get_cluster_manager_or_raise(namespace: str = "default") -> KubernetesCluste
         try:
             return KubernetesClusterManager(namespace=namespace)
         except KubernetesDeploymentError as e:
-            from fastapi import HTTPException
+            from fastapi import HTTPException, status
 
             raise HTTPException(
-                status_code=503, detail=f"Kubernetes cluster not accessible: {str(e)}"
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                detail=f"Kubernetes cluster not accessible: {str(e)}",
             ) from e
     return manager

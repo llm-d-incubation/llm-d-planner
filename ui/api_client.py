@@ -12,6 +12,7 @@ import requests
 import streamlit as st
 
 API_BASE_URL = os.getenv("API_BASE_URL", "http://localhost:8000")
+DEFAULT_TIMEOUT = 10  # seconds; override per-call for heavier APIs
 
 logging.basicConfig(
     level=logging.INFO,
@@ -27,7 +28,7 @@ def load_206_models() -> pd.DataFrame:
     try:
         response = requests.get(
             f"{API_BASE_URL}/api/v1/benchmarks",
-            timeout=10,
+            timeout=DEFAULT_TIMEOUT,
         )
         response.raise_for_status()
         data = response.json()
@@ -56,7 +57,7 @@ def fetch_slo_defaults(use_case: str) -> dict | None:
     try:
         response = requests.get(
             f"{API_BASE_URL}/api/v1/slo-defaults/{use_case}",
-            timeout=10,
+            timeout=DEFAULT_TIMEOUT,
         )
         response.raise_for_status()
         data = response.json()
@@ -83,7 +84,7 @@ def fetch_expected_rps(use_case: str, user_count: int) -> dict | None:
         response = requests.get(
             f"{API_BASE_URL}/api/v1/expected-rps/{use_case}",
             params={"user_count": user_count},
-            timeout=10,
+            timeout=DEFAULT_TIMEOUT,
         )
         response.raise_for_status()
         data = response.json()
@@ -110,7 +111,7 @@ def fetch_workload_profile(use_case: str) -> dict | None:
     try:
         response = requests.get(
             f"{API_BASE_URL}/api/v1/workload-profile/{use_case}",
-            timeout=10,
+            timeout=DEFAULT_TIMEOUT,
         )
         response.raise_for_status()
         data = response.json()
@@ -132,7 +133,7 @@ def fetch_priority_weights() -> dict | None:
     try:
         response = requests.get(
             f"{API_BASE_URL}/api/v1/priority-weights",
-            timeout=5,
+            timeout=DEFAULT_TIMEOUT,
         )
         response.raise_for_status()
         data = response.json()
@@ -261,7 +262,7 @@ def deploy_and_generate_yaml(recommendation: dict) -> dict | None:
             deployment_id = result.get("deployment_id")
             yaml_response = requests.get(
                 f"{API_BASE_URL}/api/v1/deployments/{deployment_id}/yaml",
-                timeout=10,
+                timeout=DEFAULT_TIMEOUT,
             )
             yaml_response.raise_for_status()
             yaml_data = yaml_response.json()
@@ -277,6 +278,43 @@ def deploy_and_generate_yaml(recommendation: dict) -> dict | None:
 
 
 # =============================================================================
+# DEPLOYMENT MODE
+# =============================================================================
+
+
+def fetch_deployment_mode() -> str | None:
+    """Fetch the current deployment mode from the backend.
+
+    Returns 'production' or 'simulator', or None on error.
+    """
+    try:
+        response = requests.get(f"{API_BASE_URL}/api/v1/deployment-mode", timeout=DEFAULT_TIMEOUT)
+        response.raise_for_status()
+        return response.json().get("mode")
+    except Exception as e:
+        logger.error(f"Failed to fetch deployment mode: {e}")
+        return None
+
+
+def update_deployment_mode(mode: str) -> dict | None:
+    """Set the deployment mode ('production' or 'simulator').
+
+    Returns response dict with 'mode' key, or None on error.
+    """
+    try:
+        response = requests.put(
+            f"{API_BASE_URL}/api/v1/deployment-mode",
+            json={"mode": mode},
+            timeout=DEFAULT_TIMEOUT,
+        )
+        response.raise_for_status()
+        return response.json()
+    except Exception as e:
+        logger.error(f"Failed to set deployment mode: {e}")
+        return None
+
+
+# =============================================================================
 # DATABASE MANAGEMENT
 # =============================================================================
 
@@ -289,7 +327,7 @@ def fetch_db_status() -> dict | None:
     try:
         response = requests.get(
             f"{API_BASE_URL}/api/v1/db/status",
-            timeout=10,
+            timeout=DEFAULT_TIMEOUT,
         )
         response.raise_for_status()
         return response.json()

@@ -7,6 +7,8 @@ organized by domain:
 - recommendation: GPU config, scores, and recommendation schemas
 """
 
+from enum import Enum
+
 from .intent import ConversationMessage, DeploymentIntent
 from .recommendation import (
     ConfigurationScores,
@@ -15,3 +17,10 @@ from .recommendation import (
     RankedRecommendationsResponse,
 )
 from .specification import DeploymentSpecification, SLOTargets, TrafficProfile
+
+
+class DeploymentMode(str, Enum):
+    """Valid deployment modes."""
+
+    PRODUCTION = "production"
+    SIMULATOR = "simulator"

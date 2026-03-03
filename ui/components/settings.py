@@ -5,14 +5,48 @@ structured to support additional configuration sections.
 """
 
 import streamlit as st
-from api_client import fetch_db_status, reset_database, upload_benchmarks
+from api_client import (
+    fetch_db_status,
+    fetch_deployment_mode,
+    reset_database,
+    update_deployment_mode,
+    upload_benchmarks,
+)
 
 
 _TAB_INDEX = 4  # Configuration is the 5th tab (0-indexed)
 
 
 def render_configuration_tab():
-    """Render the Configuration tab with database management controls."""
+    """Render the Configuration tab with deployment mode and database management."""
+    # --- Deployment Mode ---
+    st.subheader("Deployment Mode")
+
+    current_mode = fetch_deployment_mode()
+    modes = ["Production", "Simulator"]
+    current_index = 1 if current_mode == "simulator" else 0
+
+    selected = st.radio(
+        "YAML generation target",
+        modes,
+        index=current_index,
+        horizontal=True,
+        key="deployment_mode_radio",
+        help="Production uses real vLLM with GPU resources. "
+        "Simulator uses the vLLM simulator (no GPU required).",
+    )
+
+    selected_mode = selected.lower()
+    if current_mode and selected_mode != current_mode:
+        result = update_deployment_mode(selected_mode)
+        if result:
+            st.success(f"Deployment mode set to **{selected}**.")
+        else:
+            st.error("Failed to update deployment mode.")
+
+    st.divider()
+
+    # --- Benchmark Database ---
     st.subheader("Benchmark Database")
 
     # Reserve space for stats — populated after actions so data is always fresh

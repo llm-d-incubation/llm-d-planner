@@ -2,7 +2,7 @@
 
 import logging
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, status
 from pydantic import BaseModel
 
 from neuralnav.api.dependencies import get_workflow
@@ -60,7 +60,7 @@ async def extract_intent(request: ExtractRequest):
 
     except ValueError as e:
         logger.error(f"Intent extraction failed: {e}")
-        raise HTTPException(status_code=422, detail=str(e)) from e
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(e)) from e
     except Exception as e:
         logger.error(f"Unexpected error during intent extraction: {e}")
-        raise HTTPException(status_code=500, detail=str(e)) from e
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e)) from e
