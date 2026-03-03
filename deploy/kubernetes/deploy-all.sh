@@ -12,6 +12,10 @@ oc apply -f deploy/kubernetes/namespace.yaml \
          -f deploy/kubernetes/ui.yaml \
          -f deploy/kubernetes/route.yaml
 
+# Cross-namespace NetworkPolicy (allows neuralnav -> Model Catalog)
+echo "Applying Model Catalog network policy..."
+oc apply -f deploy/kubernetes/networkpolicy-model-catalog.yaml
+
 echo "Waiting for PostgreSQL to be ready..."
 oc wait --for=condition=ready pod -l app.kubernetes.io/name=postgres -n neuralnav --timeout=120s
 

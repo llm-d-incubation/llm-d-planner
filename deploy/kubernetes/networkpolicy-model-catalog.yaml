@@ -1,0 +1,26 @@
+# Allow the neuralnav namespace to reach the Model Catalog API
+# in rhoai-model-registries.  Applied separately because the target
+# namespace is outside of neuralnav.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-neuralnav-to-model-catalog
+  namespace: rhoai-model-registries
+  labels:
+    app.kubernetes.io/part-of: neuralnav
+spec:
+  podSelector:
+    matchLabels:
+      app: model-catalog
+      app.kubernetes.io/name: model-catalog
+      component: model-catalog
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: neuralnav
+      ports:
+        - port: 8443
+          protocol: TCP
+  policyTypes:
+    - Ingress
