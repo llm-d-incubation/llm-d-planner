@@ -180,14 +180,18 @@ def render_extraction_edit_form(extraction: dict, models_df):
     col1, col2 = st.columns(2)
     with col1:
         if st.button("Apply Changes", type="primary", use_container_width=True, key="apply_edit"):
-            st.session_state.edited_extraction = {
+            edited = {
                 "use_case": new_use_case,
                 "user_count": new_user_count,
                 "priority": new_priority,
                 "hardware": new_hardware if new_hardware != "Any GPU" else None,
             }
+            st.session_state.edited_extraction = edited
+            # Apply edits back to extraction_result so the approval view shows updated values
+            st.session_state.extraction_result.update(edited)
             st.session_state.used_priority = new_priority
-            st.session_state.extraction_approved = True
+            # Return to approval view (not approved yet) so buttons remain visible
+            st.session_state.extraction_approved = None
             st.rerun()
     with col2:
         if st.button("🔙 Cancel", use_container_width=True, key="cancel_edit"):
