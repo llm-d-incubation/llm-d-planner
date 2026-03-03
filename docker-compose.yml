@@ -43,6 +43,7 @@ services:
 
   # Backend API (FastAPI)
   backend:
+    platform: linux/amd64
     build:
       context: .
       dockerfile: Dockerfile
@@ -86,6 +87,7 @@ services:
 
   # UI (Streamlit)
   ui:
+    platform: linux/amd64
     build:
       context: .
       dockerfile: ui/Dockerfile

@@ -1,0 +1,74 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: db-init
+  namespace: neuralnav
+  labels:
+    app.kubernetes.io/name: db-init
+    app.kubernetes.io/part-of: neuralnav
+spec:
+  backoffLimit: 3
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: db-init
+        app.kubernetes.io/part-of: neuralnav
+    spec:
+      restartPolicy: OnFailure
+      containers:
+        - name: db-init
+          image: quay.io/neuralnav/neuralnav-backend:latest
+          env:
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: neuralnav-secrets
+                  key: postgres-password
+            - name: DATABASE_URL
+              value: postgresql://neuralnav:$(POSTGRES_PASSWORD)@postgres:5432/neuralnav
+            - name: PGPASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: neuralnav-secrets
+                  key: postgres-password
+          command: ["/bin/sh", "-c"]
+          args:
+            - |
+              set -e
+              echo "Waiting for PostgreSQL to be ready..."
+              retries=0
+              max_retries=30
+              until pg_isready -h postgres -U neuralnav -d neuralnav; do
+                retries=$((retries + 1))
+                if [ "$retries" -ge "$max_retries" ]; then
+                  echo "ERROR: PostgreSQL not ready after $max_retries attempts, giving up."
+                  exit 1
+                fi
+                echo "  postgres not ready, retrying in 2s... (attempt $retries/$max_retries)"
+                sleep 2
+              done
+              echo "PostgreSQL is ready."
+
+              echo ""
+              echo "============================================================"
+              echo "Initializing schema..."
+              echo "============================================================"
+              psql -h postgres -U neuralnav -d neuralnav < /app/scripts/schema.sql
+              echo "Schema initialized."
+
+              echo ""
+              echo "============================================================"
+              echo "Loading benchmark data..."
+              echo "============================================================"
+              python scripts/load_benchmarks.py data/benchmarks/performance/benchmarks_BLIS.json
+              python scripts/load_benchmarks.py data/benchmarks/performance/benchmarks_interpolated_v2.json
+              python scripts/load_benchmarks.py data/benchmarks/performance/benchmarks_estimated_performance.json
+              echo ""
+              echo "All benchmark data loaded successfully."
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi

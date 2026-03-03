@@ -1,0 +1,69 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ui
+  namespace: neuralnav
+  labels:
+    app.kubernetes.io/name: ui
+    app.kubernetes.io/part-of: neuralnav
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: ui
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: ui
+        app.kubernetes.io/part-of: neuralnav
+    spec:
+      containers:
+        - name: ui
+          image: quay.io/neuralnav/neuralnav-ui:latest
+          ports:
+            - containerPort: 8501
+          env:
+            - name: API_BASE_URL
+              value: http://backend:8000
+            - name: STREAMLIT_SERVER_PORT
+              value: "8501"
+            - name: STREAMLIT_SERVER_ADDRESS
+              value: "0.0.0.0"
+            - name: STREAMLIT_SERVER_HEADLESS
+              value: "true"
+            - name: STREAMLIT_BROWSER_GATHER_USAGE_STATS
+              value: "false"
+          readinessProbe:
+            httpGet:
+              path: /_stcore/health
+              port: 8501
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /_stcore/health
+              port: 8501
+            initialDelaySeconds: 15
+            periodSeconds: 30
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: "1"
+              memory: 1Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ui
+  namespace: neuralnav
+  labels:
+    app.kubernetes.io/name: ui
+    app.kubernetes.io/part-of: neuralnav
+spec:
+  selector:
+    app.kubernetes.io/name: ui
+  ports:
+    - port: 8501
+      targetPort: 8501

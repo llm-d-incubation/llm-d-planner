@@ -1,0 +1,103 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ollama
+  namespace: neuralnav
+  labels:
+    app.kubernetes.io/name: ollama
+    app.kubernetes.io/part-of: neuralnav
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: ollama
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: ollama
+        app.kubernetes.io/part-of: neuralnav
+    spec:
+      containers:
+        - name: ollama
+          image: ollama/ollama:latest
+          env:
+            - name: HOME
+              value: /ollama-data
+            - name: OLLAMA_MODELS
+              value: /ollama-data/models
+          command: ["/bin/sh", "-c"]
+          args:
+            - |
+              # Start Ollama server in the background
+              ollama serve &
+              # Wait for server to be ready
+              until ollama list > /dev/null 2>&1; do
+                echo "Waiting for Ollama to start..."
+                sleep 2
+              done
+              echo "Ollama is ready, pulling model..."
+              ollama pull granite3.3:2b
+              echo "Model pull complete, Ollama is serving"
+              # Keep the container running by waiting on the server process
+              wait
+          ports:
+            - containerPort: 11434
+          volumeMounts:
+            - name: models
+              mountPath: /ollama-data
+          readinessProbe:
+            httpGet:
+              path: /api/tags
+              port: 11434
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /api/tags
+              port: 11434
+            initialDelaySeconds: 30
+            periodSeconds: 30
+          resources:
+            requests:
+              cpu: 500m
+              memory: 2Gi
+            limits:
+              cpu: "4"
+              memory: 8Gi
+              nvidia.com/gpu: "1"
+      volumes:
+        - name: models
+          persistentVolumeClaim:
+            claimName: ollama-pvc
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: ollama-pvc
+  namespace: neuralnav
+  labels:
+    app.kubernetes.io/name: ollama
+    app.kubernetes.io/part-of: neuralnav
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 20Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ollama
+  namespace: neuralnav
+  labels:
+    app.kubernetes.io/name: ollama
+    app.kubernetes.io/part-of: neuralnav
+spec:
+  selector:
+    app.kubernetes.io/name: ollama
+  ports:
+    - port: 11434
+      targetPort: 11434

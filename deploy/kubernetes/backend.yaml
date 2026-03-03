@@ -1,0 +1,80 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend
+  namespace: neuralnav
+  labels:
+    app.kubernetes.io/name: backend
+    app.kubernetes.io/part-of: neuralnav
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: backend
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: backend
+        app.kubernetes.io/part-of: neuralnav
+    spec:
+      containers:
+        - name: backend
+          image: quay.io/neuralnav/neuralnav-backend:latest
+          ports:
+            - containerPort: 8000
+          env:
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: neuralnav-secrets
+                  key: postgres-password
+            - name: DATABASE_URL
+              value: postgresql://neuralnav:$(POSTGRES_PASSWORD)@postgres:5432/neuralnav
+            - name: MODEL_CATALOG_URL
+              value: http://model-registry.odh-model-registries.svc:8080
+            - name: OLLAMA_HOST
+              value: http://ollama:11434
+            - name: OLLAMA_MODEL
+              value: granite3.3:2b
+            - name: API_HOST
+              value: "0.0.0.0"
+            - name: API_PORT
+              value: "8000"
+            - name: CORS_ORIGINS
+              value: "*"
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 20
+            periodSeconds: 30
+            timeoutSeconds: 5
+            failureThreshold: 10
+          resources:
+            requests:
+              cpu: 250m
+              memory: 512Mi
+            limits:
+              cpu: "2"
+              memory: 2Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend
+  namespace: neuralnav
+  labels:
+    app.kubernetes.io/name: backend
+    app.kubernetes.io/part-of: neuralnav
+spec:
+  selector:
+    app.kubernetes.io/name: backend
+  ports:
+    - port: 8000
+      targetPort: 8000

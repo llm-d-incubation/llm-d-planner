@@ -220,7 +220,7 @@ def extract_business_context(user_input: str) -> dict | None:
         response = requests.post(
             f"{API_BASE_URL}/api/v1/extract",
             json={"text": user_input},
-            timeout=60,
+            timeout=300,
         )
         if response.status_code == 200:
             result = response.json()
