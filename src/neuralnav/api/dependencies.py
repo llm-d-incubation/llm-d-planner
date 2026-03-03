@@ -38,6 +38,28 @@ def _get_benchmark_source_type() -> str:
     return os.getenv("NEURALNAV_BENCHMARK_SOURCE", "postgresql")
 
 
+def _preload_model_catalog_async(benchmark_source, catalog, quality_scorer) -> None:
+    """Preload Model Catalog caches in a background thread.
+
+    Runs in a daemon thread so the app starts serving immediately
+    (health probes, etc.) while caches warm in the background.
+    """
+    import threading
+
+    def _preload():
+        try:
+            logger.info("Background preload: loading Model Catalog data...")
+            benchmark_source.preload()
+            catalog.preload()
+            quality_scorer.preload()
+            logger.info("Background preload: Model Catalog data ready")
+        except Exception:
+            logger.exception("Background preload failed; data will load on first request")
+
+    thread = threading.Thread(target=_preload, name="model-catalog-preload", daemon=True)
+    thread.start()
+
+
 def get_workflow() -> RecommendationWorkflow:
     """Get the recommendation workflow singleton."""
     global _workflow
@@ -66,12 +88,9 @@ def get_workflow() -> RecommendationWorkflow:
                 quality_scorer=quality_scorer,
             )
             logger.info("Using Model Catalog as benchmark source")
-            logger.info("Preloading Model Catalog data...")
-            benchmark_source.preload()
-            catalog.preload()
-            quality_scorer.preload()
-            logger.info("Model Catalog data preloaded")
             _workflow = RecommendationWorkflow(config_finder=config_finder)
+            # Preload in background so the app starts serving health probes immediately
+            _preload_model_catalog_async(benchmark_source, catalog, quality_scorer)
         else:
             logger.info("Using PostgreSQL as benchmark source")
             _workflow = RecommendationWorkflow()

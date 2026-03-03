@@ -30,12 +30,11 @@ logger = logging.getLogger(__name__)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """Eagerly initialize singletons on startup to warm caches."""
+    """Initialize singletons on startup; cache warming runs in background."""
     from .dependencies import get_workflow
 
-    logger.info("Initializing workflow and warming caches...")
+    logger.info("Initializing workflow (cache warming in background)...")
     get_workflow()
-    logger.info("Startup initialization complete")
     yield
 
 
