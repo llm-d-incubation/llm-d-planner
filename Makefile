@@ -147,11 +147,11 @@ setup: check-prereqs setup-backend setup-ui setup-ollama ## Run all setup tasks
 	@printf "\n"
 	@printf "$(BLUE)Next steps:$(NC)\n"
 	@printf "  make cluster-start # Create Kubernetes cluster\n"
-	@printf "  make dev           # Start all services\n"
+	@printf "  make start         # Start all services\n"
 
 ##@ Development
 
-dev: setup-ollama ## Start all services (Ollama + Backend + UI)
+start: db-start setup-ollama ## Start all services (DB + Ollama + Backend + UI)
 	@printf "$(BLUE)Starting all services...$(NC)\n"
 	@mkdir -p $(PID_DIR)
 	@$(MAKE) start-ollama
@@ -166,13 +166,15 @@ dev: setup-ollama ## Start all services (Ollama + Backend + UI)
 	@printf "  UI:      http://localhost:8501\n"
 	@printf "  Backend: http://localhost:8000\n"
 	@printf "  Ollama:  http://localhost:11434\n"
+	@printf "  DB:      postgresql://postgres:neuralnav@localhost:5432/neuralnav\n"
 	@printf "\n"
 	@printf "$(BLUE)Logs:$(NC)\n"
 	@printf "  make logs-backend\n"
 	@printf "  make logs-ui\n"
 	@printf "\n"
 	@printf "$(BLUE)Stop:$(NC)\n"
-	@printf "  make stop\n"
+	@printf "  make stop          # Stop Backend + UI (leaves Ollama and DB running)\n"
+	@printf "  make stop-all      # Stop everything including Ollama and DB\n"
 
 start-ollama: ## Start Ollama service
 	@printf "$(BLUE)Starting Ollama...$(NC)\n"
@@ -205,7 +207,7 @@ start-ui: ## Start Streamlit UI
 		printf "$(GREEN)✓ UI started (PID: $$(cat $(UI_PID)))$(NC)\n"; \
 	fi
 
-stop: ## Stop all services
+stop: ## Stop Backend + UI (leaves Ollama and DB running)
 	@printf "$(BLUE)Stopping services...$(NC)\n"
 	@# Stop by PID files first
 	@if [ -f $(UI_PID) ]; then \
@@ -225,10 +227,15 @@ stop: ## Stop all services
 	@pkill -9 -f "streamlit run ui/app.py" 2>/dev/null || true
 	@pkill -9 -f "uvicorn neuralnav.api.app:app" 2>/dev/null || true
 	@printf "$(GREEN)✓ All NeuralNav services stopped$(NC)\n"
-	@# Don't stop Ollama as it might be used by other apps
-	@printf "$(YELLOW)Note: Ollama left running (use 'pkill ollama' to stop manually)$(NC)\n"
+	@# Don't stop Ollama or DB as they might be used by other apps/tools
+	@printf "$(YELLOW)Note: Ollama and PostgreSQL left running (use 'make stop-all' to stop everything)$(NC)\n"
 
-restart: stop dev ## Restart all services
+restart: stop start ## Restart all services
+
+stop-all: stop db-stop ## Stop everything (Backend + UI + Ollama + DB)
+	@pkill -x ollama 2>/dev/null || true
+	@printf "$(GREEN)✓ Ollama stopped$(NC)\n"
+	@printf "$(GREEN)✓ All services and infrastructure stopped$(NC)\n"
 
 logs-backend: ## Show backend logs (dump current log)
 	@cat $(LOG_DIR)/backend.log
@@ -411,7 +418,7 @@ clean-deployments: ## Delete all InferenceServices from cluster
 
 ##@ PostgreSQL Database
 
-db-start: ## Start PostgreSQL container for benchmark data
+db-start: ## Start PostgreSQL (initializes schema on first run)
 	@printf "$(BLUE)Starting PostgreSQL...$(NC)\n"
 	@if $(CONTAINER_TOOL) ps -a --format '{{.Names}}' | grep -q '^neuralnav-postgres$$'; then \
 		if $(CONTAINER_TOOL) ps --format '{{.Names}}' | grep -q '^neuralnav-postgres$$'; then \
@@ -428,6 +435,13 @@ db-start: ## Start PostgreSQL container for benchmark data
 			postgres:16; \
 		sleep 3; \
 		printf "$(GREEN)✓ PostgreSQL started on port 5432$(NC)\n"; \
+		printf "$(BLUE)Initializing database schema...$(NC)\n"; \
+		$(CONTAINER_TOOL) exec -i neuralnav-postgres psql -U postgres -d neuralnav < scripts/schema.sql; \
+		printf "$(GREEN)✓ Schema initialized$(NC)\n"; \
+		printf "$(YELLOW)Note: Database is empty. Load benchmark data with one of:$(NC)\n"; \
+		printf "  make db-load-blis          # BLIS benchmark data\n"; \
+		printf "  make db-load-estimated     # Estimated performance data\n"; \
+		printf "  make db-load-interpolated  # Interpolated benchmark data\n"; \
 	fi
 	@printf "$(BLUE)Database URL:$(NC) postgresql://postgres:neuralnav@localhost:5432/neuralnav\n"
 
@@ -440,12 +454,6 @@ db-remove: db-stop ## Stop and remove PostgreSQL container
 	@printf "$(BLUE)Removing PostgreSQL container...$(NC)\n"
 	@$(CONTAINER_TOOL) rm neuralnav-postgres 2>/dev/null || true
 	@printf "$(GREEN)✓ PostgreSQL container removed$(NC)\n"
-
-db-init: db-start ## Initialize PostgreSQL schema
-	@printf "$(BLUE)Initializing PostgreSQL schema...$(NC)\n"
-	@sleep 2
-	@$(CONTAINER_TOOL) exec -i neuralnav-postgres psql -U postgres -d neuralnav < scripts/schema.sql
-	@printf "$(GREEN)✓ Schema initialized$(NC)\n"
 
 db-load-blis: db-start ## Load BLIS benchmark data (appends)
 	@printf "$(BLUE)Loading BLIS benchmark data...$(NC)\n"
@@ -500,7 +508,7 @@ db-query-models: ## Query available models in database
 		GROUP BY model_hf_repo, hardware, hardware_count \
 		ORDER BY model_hf_repo, hardware, hardware_count;"
 
-db-reset: db-remove db-init ## Reset PostgreSQL (remove and reinitialize)
+db-reset: db-remove db-start ## Reset PostgreSQL (remove and reinitialize)
 	@printf "$(GREEN)✓ PostgreSQL reset complete$(NC)\n"
 
 ##@ Testing

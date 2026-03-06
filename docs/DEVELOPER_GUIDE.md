@@ -66,7 +66,6 @@ This means if you quit Docker Desktop, the Makefile will automatically use Podma
 **Option 1: Per-command override**
 ```bash
 CONTAINER_TOOL=podman make db-start
-CONTAINER_TOOL=podman make db-init
 CONTAINER_TOOL=podman make db-load-guidellm
 ```
 
@@ -74,7 +73,6 @@ CONTAINER_TOOL=podman make db-load-guidellm
 ```bash
 export CONTAINER_TOOL=podman
 make db-start
-make db-init
 make db-load-guidellm
 # All commands in this session will use Podman
 ```
@@ -145,7 +143,7 @@ Example workflow:
 ```bash
 # Use Podman for database
 export CONTAINER_TOOL=podman
-make db-init
+make db-start
 make db-load-guidellm
 
 # KIND still uses Docker (no change needed)
@@ -258,7 +256,7 @@ make cluster-status
 
 **Start all services:**
 ```bash
-make dev
+make start
 ```
 
 **Make code changes, then:**
@@ -268,7 +266,8 @@ make dev
 
 **Stop services:**
 ```bash
-make stop
+make stop       # Stop Backend + UI (leaves Ollama and DB running)
+make stop-all   # Stop everything including Ollama and DB
 ```
 
 ### Working on Specific Components
