@@ -228,7 +228,9 @@ stop: ## Stop Backend + UI (leaves Ollama and DB running)
 	@pkill -9 -f "uvicorn neuralnav.api.app:app" 2>/dev/null || true
 	@printf "$(GREEN)✓ All NeuralNav services stopped$(NC)\n"
 	@# Don't stop Ollama or DB as they might be used by other apps/tools
-	@printf "$(YELLOW)Note: Ollama and PostgreSQL left running (use 'make stop-all' to stop everything)$(NC)\n"
+	@if [ "$(MAKECMDGOALS)" != "stop-all" ]; then \
+		printf "$(YELLOW)Note: Ollama and PostgreSQL left running (use 'make stop-all' to stop everything)$(NC)\n"; \
+	fi
 
 restart: stop start ## Restart all services
 
@@ -425,6 +427,7 @@ db-start: ## Start PostgreSQL (initializes schema on first run)
 			printf "$(YELLOW)PostgreSQL already running$(NC)\n"; \
 		else \
 			$(CONTAINER_TOOL) start neuralnav-postgres; \
+			sleep 2; \
 			printf "$(GREEN)✓ PostgreSQL started$(NC)\n"; \
 		fi \
 	else \
@@ -438,6 +441,9 @@ db-start: ## Start PostgreSQL (initializes schema on first run)
 		printf "$(BLUE)Initializing database schema...$(NC)\n"; \
 		$(CONTAINER_TOOL) exec -i neuralnav-postgres psql -U postgres -d neuralnav < scripts/schema.sql; \
 		printf "$(GREEN)✓ Schema initialized$(NC)\n"; \
+	fi
+	@BENCH_COUNT=$$($(CONTAINER_TOOL) exec -i neuralnav-postgres psql -U postgres -d neuralnav -t -c "SELECT COUNT(*) FROM exported_summaries;" 2>/dev/null | tr -d ' \n'); \
+	if [ "$$BENCH_COUNT" = "0" ] || [ -z "$$BENCH_COUNT" ]; then \
 		printf "$(YELLOW)Note: Database is empty. Load benchmark data with one of:$(NC)\n"; \
 		printf "  make db-load-blis          # BLIS benchmark data\n"; \
 		printf "  make db-load-estimated     # Estimated performance data\n"; \

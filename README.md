@@ -36,11 +36,11 @@ The code in this repository implements the **NeuralNav Phase 2 MVP** with produc
 ## Prerequisites
 
 **Required before running `make setup`:**
+
 - **macOS or Linux** (Windows via WSL2)
 - **Docker Desktop** (must be running)
-
-**Installed automatically by `make setup`:**
-- **Python 3.11+**
+- **Python 3.13** - `brew install python@3.13`
+- **uv** - `curl -LsSf https://astral.sh/uv/install.sh | sh`
 - **Ollama** - `brew install ollama`
 - **kubectl** - `brew install kubectl`
 - **KIND** - `brew install kind`
@@ -71,41 +71,14 @@ make cluster-stop   # Delete cluster (optional)
 
 1. **Describe your use case** in the chat interface
    - Example: "I need a customer service chatbot for 5000 users with low latency"
-2. **Review recommendations** - Model, GPU configuration, SLO predictions, costs
-3. **Edit specifications** if needed (traffic, SLO targets, constraints)
-4. **Generate deployment YAML** - Click "Generate Deployment YAML"
-5. **Deploy to cluster** - Click "Deploy to Kubernetes"
-6. **Monitor deployment** - Switch to "Deployment Management" tab to see status
-7. **Test inference** - Send test prompts once deployment is Ready
+2. **Analyze use case** - Click "Analyze Use Case" to extract intent
+3. **Generate specification** - Click "Generate Specification" to create traffic profile and SLO targets
+4. **Review specification** - Edit SLO targets, priorities, or constraints if needed
+5. **Generate recommendations** - Click "Generate Recommendations" to find optimal configurations
+6. **Select a recommendation** - Review ranked options and click "Select"
+7. **Deploy** - Go to the "Deployment" tab to review, copy, or download generated deployment files
 
-## Demo Scenarios
-
-The POC includes 3 pre-configured scenarios (see [data/configuration/demo_scenarios.json](data/configuration/demo_scenarios.json)):
-
-1. **Customer Service Chatbot** - High volume (5000 users), strict latency (<500ms)
-   - Expected: Llama 3.1 8B on 2x A100-80GB
-
-2. **Code Generation Assistant** - Developer team (500 users), quality > speed
-   - Expected: Llama 3.1 70B on 4x A100-80GB (tensor parallel)
-
-3. **Document Summarization** - Batch processing (2000 users/day), cost-sensitive
-   - Expected: Mistral 7B on 2x A10G
-
-## Architecture Highlights
-
-NeuralNav implements an **8-component architecture** with:
-
-- **Conversational Interface** (Streamlit) - Chat-based requirement gathering with interactive exploration
-- **Context & Intent Engine** - LLM-powered extraction of deployment specs
-- **Recommendation Engine** - Traffic profiling, model scoring, capacity planning
-- **Deployment Automation** - YAML generation and Kubernetes deployment
-- **Knowledge Base** - Benchmarks, SLO templates, model catalog
-- **LLM Backend** - Ollama (qwen2.5:7b) for conversational AI and business context extraction
-- **Orchestration** - Multi-step workflow coordination
-- **Inference Observability** - Real-time deployment monitoring
-
-**Development Tools:**
-- **vLLM Simulator** - GPU-free local development and testing
+## Architecture
 
 See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for detailed system design.
 
@@ -128,10 +101,10 @@ See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for detailed system design.
 | Backend | FastAPI, Pydantic |
 | Frontend | Streamlit |
 | LLM | Ollama (qwen2.5:7b) |
-| Data | **PostgreSQL (Phase 2)**, psycopg2, JSON (Phase 1 - deprecated) |
+| Data | PostgreSQL |
 | YAML Generation | Jinja2 templates |
 | Kubernetes | KIND (local), KServe v0.13.0 |
-| Deployment | kubectl, Kubernetes Python client |
+| Deployment | kubectl |
 
 
 ## Development Commands
@@ -142,8 +115,8 @@ make start                   # Start all services (DB + Ollama + Backend + UI)
 make stop                    # Stop Backend + UI (leaves Ollama and DB running)
 make stop-all                # Stop everything including Ollama and DB
 make restart                 # Restart all services
-make logs-backend            # Tail backend logs
-make logs-ui                 # Tail UI logs
+make logs-backend            # Show backend logs
+make logs-ui                 # Show UI logs
 
 # Database (PostgreSQL)
 make db-start                # Start PostgreSQL (initializes schema on first run)
@@ -178,16 +151,10 @@ NeuralNav includes a **GPU-free simulator** for local development:
 - **Realistic latency** - Uses benchmark data to simulate TTFT/ITL
 - **Fast deployment** - Pods become Ready in ~10-15 seconds
 
-**Simulator Mode (default):**
-```python
-# In src/neuralnav/api/routes.py
-deployment_generator = DeploymentGenerator(simulator_mode=True)
-```
+The deployment mode defaults to **production** (real vLLM with GPUs). Switch between production and simulator modes at runtime using the **Configuration** tab in the UI, or via the REST API:
 
-**Production Mode (requires GPU cluster):**
-```python
-deployment_generator = DeploymentGenerator(simulator_mode=False)
-```
+- `GET /api/v1/deployment-mode` - Check current mode
+- `PUT /api/v1/deployment-mode` - Set mode (`{"mode": "simulator"}` or `{"mode": "production"}`)
 
 See [docs/DEVELOPER_GUIDE.md](docs/DEVELOPER_GUIDE.md#vllm-simulator-details) for details.
 
@@ -196,8 +163,6 @@ See [docs/DEVELOPER_GUIDE.md](docs/DEVELOPER_GUIDE.md#vllm-simulator-details) fo
 - **[Developer Guide](docs/DEVELOPER_GUIDE.md)** - Development workflows, testing, debugging
 - **[Architecture](docs/ARCHITECTURE.md)** - Detailed system design and component specifications
 - **[Traffic and SLOs](docs/traffic_and_slos.md)** - Traffic profile framework and experience-driven SLOs (Phase 2)
-- **[PostgreSQL Migration Plan](docs/POSTGRESQL_MIGRATION_PLAN.md)** - Phase 2 migration details
-- **[Architecture Diagrams](docs/architecture-diagram.md)** - Visual system representations
 - **[Logging Guide](docs/LOGGING.md)** - Logging system and debugging
 - **[Claude Code Guidance](CLAUDE.md)** - AI assistant instructions for contributors
 
