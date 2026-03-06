@@ -47,13 +47,12 @@ The code in this repository implements the **NeuralNav Phase 2 MVP** with produc
 
 ## Quick Start
 
-**Get up and running in 5 commands:**
+**Get up and running in 4 commands:**
 
 ```bash
 make setup          # Install dependencies, pull Ollama model
-make db-init        # Start PostgreSQL and initialize schema
+make start          # Start all services (DB + Ollama + Backend + UI)
 make db-load-blis   # Load BLIS benchmark data
-make dev            # Start all services (Ollama + Backend + UI)
 make cluster-start  # Optional: Create local KIND cluster with vLLM simulator for testing deployments
 ```
 
@@ -63,7 +62,8 @@ Then open [http://localhost:8501](http://localhost:8501) in your browser.
 
 **Stop everything:**
 ```bash
-make stop           # Stop services
+make stop           # Stop Backend + UI (leaves Ollama and DB running)
+make stop-all       # Stop all services including Ollama and DB
 make cluster-stop   # Delete cluster (optional)
 ```
 
@@ -138,15 +138,15 @@ See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for detailed system design.
 
 ```bash
 make help                    # Show all available commands
-make dev                     # Start all services (Ollama + Backend + UI)
-make stop                    # Stop all services
+make start                   # Start all services (DB + Ollama + Backend + UI)
+make stop                    # Stop Backend + UI (leaves Ollama and DB running)
+make stop-all                # Stop everything including Ollama and DB
 make restart                 # Restart all services
 make logs-backend            # Tail backend logs
 make logs-ui                 # Tail UI logs
 
 # Database (PostgreSQL)
-make db-start                # Start PostgreSQL container
-make db-init                 # Initialize schema (also starts container)
+make db-start                # Start PostgreSQL (initializes schema on first run)
 make db-load-blis            # Load BLIS benchmark data (appends)
 make db-load-estimated       # Load estimated performance data (appends)
 make db-load-interpolated    # Load interpolated benchmark data (appends)
