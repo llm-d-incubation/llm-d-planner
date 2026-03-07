@@ -124,7 +124,7 @@ check-prereqs: ## Check if required tools are installed
 
 setup-backend: ## Set up Python environment (includes backend and UI dependencies)
 	@printf "$(BLUE)Setting up Python environment...$(NC)\n"
-	uv sync
+	uv sync --extra ui --extra dev
 	@printf "$(GREEN)✓ Python environment ready (includes backend and UI dependencies)$(NC)\n"
 
 setup-ui: setup-backend ## Set up UI (uses shared venv)
