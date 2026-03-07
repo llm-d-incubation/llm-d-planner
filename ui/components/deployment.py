@@ -8,7 +8,7 @@ import zipfile
 
 import requests
 import streamlit as st
-from api_client import API_BASE_URL
+from api_client import API_BASE_URL, check_cluster_status, deploy_to_cluster
 
 
 def render_deployment_tab():
@@ -57,6 +57,11 @@ def render_deployment_tab():
     """,
         unsafe_allow_html=True,
     )
+
+    # Deploy to Kubernetes button
+    _render_deploy_to_cluster_button(selected_config)
+
+    st.markdown("---")
 
     # YAML Generation Section
     if not st.session_state.get("deployment_yaml_generated"):
@@ -169,3 +174,44 @@ def render_deployment_tab():
             st.session_state.deployment_id = None
             st.session_state.deployment_error = None
             st.rerun()
+
+
+def _render_deploy_to_cluster_button(selected_config: dict):
+    """Render the Deploy to Kubernetes button with cluster status check on click."""
+    already_deployed = st.session_state.get("deployed_to_cluster", False)
+
+    if st.button(
+        "Deployed to Cluster" if already_deployed else "Deploy to Kubernetes",
+        use_container_width=True,
+        type="primary",
+        disabled=already_deployed,
+        help="Already deployed to cluster" if already_deployed else "Deploy to Kubernetes cluster (YAML auto-generated)",
+        key="deploy_to_cluster_btn",
+    ):
+        # Check cluster accessibility when the user clicks
+        with st.spinner("Checking cluster connectivity..."):
+            status = check_cluster_status()
+        if not status.get("accessible", False):
+            st.error("Kubernetes cluster is not accessible. Please ensure the cluster is running and try again.")
+            return
+
+        with st.spinner("Deploying to Kubernetes cluster..."):
+            result = deploy_to_cluster(selected_config)
+
+        if result.get("success") or result.get("deployment_id"):
+            st.session_state.deployed_to_cluster = True
+            st.session_state.deployment_id = result.get("deployment_id")
+
+            # Store YAML files if returned
+            files = result.get("files", {})
+            if files:
+                st.session_state.deployment_yaml_files = files
+                st.session_state.deployment_yaml_generated = True
+
+            st.success(f"Successfully deployed to cluster! Deployment ID: `{result.get('deployment_id')}`")
+
+            deployment_result = result.get("deployment_result", {})
+            for applied_file in deployment_result.get("applied_files", []):
+                st.markdown(f"- {applied_file['file']}")
+        else:
+            st.error(f"Deployment failed: {result.get('message', 'Unknown error')}")

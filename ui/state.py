@@ -53,6 +53,10 @@ SESSION_DEFAULTS = {
     "deployment_yaml_files": {},
     "deployment_id": None,
     "deployment_yaml_generated": False,
+    # Cluster / deployment management
+    "cluster_accessible": None,
+    "deployed_to_cluster": False,
+    "selected_deployment": None,
 }
 # Ranking weights are initialized in the PRIORITIES section of the Tech Spec tab
 # using values from priority_weights.json. Do NOT hardcode defaults here.

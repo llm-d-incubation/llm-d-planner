@@ -278,6 +278,112 @@ def deploy_and_generate_yaml(recommendation: dict) -> dict | None:
 
 
 # =============================================================================
+# CLUSTER & DEPLOYMENT MANAGEMENT
+# =============================================================================
+
+
+def check_cluster_status() -> dict:
+    """Check if Kubernetes cluster is accessible.
+
+    Returns dict with 'accessible' bool and optional 'inference_services' list.
+    """
+    try:
+        response = requests.get(
+            f"{API_BASE_URL}/api/v1/cluster-status",
+            timeout=5,
+        )
+        if response.status_code == 200:
+            return response.json()
+        return {"accessible": False}
+    except Exception:
+        return {"accessible": False}
+
+
+def load_all_deployments() -> list | None:
+    """Load all InferenceServices from the cluster.
+
+    Returns list of deployment dicts, or None if cluster is not accessible.
+    """
+    try:
+        response = requests.get(
+            f"{API_BASE_URL}/api/v1/deployments",
+            timeout=DEFAULT_TIMEOUT,
+        )
+        if response.status_code == 200:
+            data = response.json()
+            return data.get("deployments", [])
+        elif response.status_code == 503:
+            return None
+        else:
+            logger.error(f"Failed to load deployments: {response.text}")
+            return None
+    except requests.exceptions.ConnectionError:
+        return None
+    except Exception:
+        logger.exception("Error loading deployments")
+        return None
+
+
+def deploy_to_cluster(recommendation: dict, namespace: str = "default") -> dict:
+    """Deploy a recommendation to the Kubernetes cluster.
+
+    Returns dict with deployment_id, files, deployment_result, and success status.
+    """
+    try:
+        response = requests.post(
+            f"{API_BASE_URL}/api/v1/deploy-to-cluster",
+            json={"recommendation": recommendation, "namespace": namespace},
+            timeout=60,
+        )
+        if response.status_code == 200:
+            return response.json()
+        elif response.status_code == 503:
+            return {"success": False, "message": "Kubernetes cluster not accessible"}
+        else:
+            return {"success": False, "message": response.text}
+    except requests.exceptions.ConnectionError:
+        return {"success": False, "message": "Cannot connect to backend API"}
+    except Exception as e:
+        return {"success": False, "message": str(e)}
+
+
+def delete_deployment(deployment_id: str) -> dict:
+    """Delete a deployment from the cluster.
+
+    Returns dict with 'success' bool and 'message'.
+    """
+    try:
+        response = requests.delete(
+            f"{API_BASE_URL}/api/v1/deployments/{deployment_id}",
+            timeout=30,
+        )
+        if response.status_code == 200:
+            return response.json()
+        else:
+            return {"success": False, "message": response.text}
+    except Exception as e:
+        return {"success": False, "message": str(e)}
+
+
+def get_k8s_status(deployment_id: str) -> dict | None:
+    """Get real Kubernetes status for a deployment.
+
+    Returns dict with inferenceservice status, pods, etc., or None on error.
+    """
+    try:
+        response = requests.get(
+            f"{API_BASE_URL}/api/v1/deployments/{deployment_id}/k8s-status",
+            timeout=DEFAULT_TIMEOUT,
+        )
+        if response.status_code == 200:
+            return response.json()
+        return None
+    except Exception as e:
+        logger.error(f"Failed to get K8s status for {deployment_id}: {e}")
+        return None
+
+
+# =============================================================================
 # DEPLOYMENT MODE
 # =============================================================================
 

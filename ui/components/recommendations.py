@@ -114,6 +114,7 @@ def _render_category_card(title, recs_list, highlight_field, category_key, col):
                     st.session_state.deployment_yaml_files = {}
                     st.session_state.deployment_id = None
                     st.session_state.deployment_error = None
+                    st.session_state.deployed_to_cluster = False
                     st.rerun()
             with nav_label:
                 st.markdown(
@@ -129,6 +130,7 @@ def _render_category_card(title, recs_list, highlight_field, category_key, col):
                     st.session_state.deployment_yaml_files = {}
                     st.session_state.deployment_id = None
                     st.session_state.deployment_error = None
+                    st.session_state.deployed_to_cluster = False
                     st.rerun()
 
         selected_category = st.session_state.get("deployment_selected_category")
@@ -144,6 +146,7 @@ def _render_category_card(title, recs_list, highlight_field, category_key, col):
                 st.session_state.deployment_yaml_files = {}
                 st.session_state.deployment_id = None
                 st.session_state.deployment_error = None
+                st.session_state.deployed_to_cluster = False
                 st.rerun()
         else:
             if st.button("Select", key=f"select_{category_key}", use_container_width=True):
@@ -152,6 +155,7 @@ def _render_category_card(title, recs_list, highlight_field, category_key, col):
                 st.session_state.deployment_yaml_generated = False
                 st.session_state.deployment_yaml_files = {}
                 st.session_state.deployment_id = None
+                st.session_state.deployed_to_cluster = False
 
                 result = deploy_and_generate_yaml(rec)
                 if result and result.get("success"):

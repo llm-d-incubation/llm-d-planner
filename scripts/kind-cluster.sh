@@ -9,7 +9,7 @@ set -e  # Exit on error
 
 # Configuration
 CLUSTER_NAME="neuralnav"
-KSERVE_VERSION="v0.13.0"
+KSERVE_VERSION="v0.14.0"
 CERT_MANAGER_VERSION="v1.14.4"
 CLUSTER_CONFIG="config/kind-cluster.yaml"
 
@@ -125,7 +125,7 @@ start_cluster() {
 
     # Install KServe
     print_step "Installing KServe ${KSERVE_VERSION}..."
-    kubectl apply -f "https://github.com/kserve/kserve/releases/download/${KSERVE_VERSION}/kserve.yaml"
+    kubectl apply --server-side -f "https://github.com/kserve/kserve/releases/download/${KSERVE_VERSION}/kserve.yaml"
 
     print_step "Waiting for KServe controller to be ready (this may take 2-3 minutes)..."
     kubectl wait --for=condition=available --timeout=300s \
@@ -143,7 +143,7 @@ start_cluster() {
 
     # Now apply cluster resources (requires webhook to be functional)
     print_step "Installing KServe cluster resources..."
-    kubectl apply -f "https://github.com/kserve/kserve/releases/download/${KSERVE_VERSION}/kserve-cluster-resources.yaml"
+    kubectl apply --server-side -f "https://github.com/kserve/kserve/releases/download/${KSERVE_VERSION}/kserve-cluster-resources.yaml"
     print_success "KServe cluster resources installed"
 
     # Configure KServe for RawDeployment mode

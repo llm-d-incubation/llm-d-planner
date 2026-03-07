@@ -62,6 +62,7 @@ def get_deployment_generator() -> DeploymentGenerator:
     global _deployment_generator
     if _deployment_generator is None:
         _deployment_generator = DeploymentGenerator(simulator_mode=False)
+        logger.info("Deployment generator initialized (simulator_mode=False)")
     return _deployment_generator
 
 
@@ -98,7 +99,7 @@ def get_cluster_manager(namespace: str = "default") -> KubernetesClusterManager 
             _cluster_manager = KubernetesClusterManager(namespace=namespace)
             logger.info("Kubernetes cluster manager initialized successfully")
         except KubernetesDeploymentError as e:
-            logger.warning(f"Kubernetes cluster not accessible: {e}")
+            logger.info(f"Kubernetes cluster not accessible: {e}")
             return None
     return _cluster_manager
 

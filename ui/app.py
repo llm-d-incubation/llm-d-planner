@@ -25,6 +25,7 @@ from api_client import (
     load_206_models,
 )
 from components.deployment import render_deployment_tab
+from components.deployment_management import render_deployment_management_tab
 from components.dialogs import (
     show_category_dialog,
     show_full_table_dialog,
@@ -510,9 +511,9 @@ def main():
     # Main Content - Compact hero
     render_hero()
 
-    # Tab-based navigation (5 tabs)
-    tab1, tab2, tab3, tab4, tab5 = st.tabs(
-        ["Define Use Case", "Technical Specification", "Recommendations", "Deployment", "Configuration"]
+    # Tab-based navigation (6 tabs)
+    tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs(
+        ["Define Use Case", "Technical Specification", "Recommendations", "Deployment", "Deployment Management", "Configuration"]
     )
 
     with tab1:
@@ -528,6 +529,9 @@ def main():
         render_deployment_tab()
 
     with tab5:
+        render_deployment_management_tab()
+
+    with tab6:
         render_configuration_tab()
 
     # Auto-switch to pending tab after rerun

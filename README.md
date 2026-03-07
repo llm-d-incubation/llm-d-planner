@@ -103,7 +103,7 @@ See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for detailed system design.
 | LLM | Ollama (qwen2.5:7b) |
 | Data | PostgreSQL |
 | YAML Generation | Jinja2 templates |
-| Kubernetes | KIND (local), KServe v0.13.0 |
+| Kubernetes | KIND (local), KServe v0.14.0 |
 | Deployment | kubectl |
 
 

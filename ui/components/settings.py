@@ -14,7 +14,7 @@ from api_client import (
 )
 
 
-_TAB_INDEX = 4  # Configuration is the 5th tab (0-indexed)
+_TAB_INDEX = 5  # Configuration is the 6th tab (0-indexed)
 
 
 def render_configuration_tab():
@@ -22,27 +22,41 @@ def render_configuration_tab():
     # --- Deployment Mode ---
     st.subheader("Deployment Mode")
 
+    # Sync deployment mode from backend on each render
     current_mode = fetch_deployment_mode()
-    modes = ["Production", "Simulator"]
-    current_index = 1 if current_mode == "simulator" else 0
+    st.session_state.deployment_mode_selection = (
+        "Simulator" if current_mode == "simulator" else "Production"
+    )
 
-    selected = st.radio(
+    def _on_mode_change():
+        new_mode = st.session_state.deployment_mode_radio.lower()
+        result = update_deployment_mode(new_mode)
+        if result:
+            st.session_state.deployment_mode_selection = st.session_state.deployment_mode_radio
+            st.session_state["_mode_msg"] = ("success", f"Deployment mode set to **{st.session_state.deployment_mode_radio}**.")
+        else:
+            st.session_state["_mode_msg"] = ("error", "Failed to update deployment mode.")
+        st.session_state["_pending_tab"] = _TAB_INDEX
+
+    modes = ["Production", "Simulator"]
+    st.radio(
         "YAML generation target",
         modes,
-        index=current_index,
+        index=modes.index(st.session_state.deployment_mode_selection),
         horizontal=True,
         key="deployment_mode_radio",
+        on_change=_on_mode_change,
         help="Production uses real vLLM with GPU resources. "
         "Simulator uses the vLLM simulator (no GPU required).",
     )
 
-    selected_mode = selected.lower()
-    if current_mode and selected_mode != current_mode:
-        result = update_deployment_mode(selected_mode)
-        if result:
-            st.success(f"Deployment mode set to **{selected}**.")
+    mode_msg = st.session_state.pop("_mode_msg", None)
+    if mode_msg:
+        level, text = mode_msg
+        if level == "success":
+            st.success(text)
         else:
-            st.error("Failed to update deployment mode.")
+            st.error(text)
 
     st.divider()
 

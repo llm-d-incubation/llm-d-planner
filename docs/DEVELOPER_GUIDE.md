@@ -885,8 +885,8 @@ kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/
 kubectl wait --for=condition=available --timeout=300s -n cert-manager deployment/cert-manager
 
 # Install KServe
-kubectl apply -f https://github.com/kserve/kserve/releases/download/v0.13.0/kserve.yaml
-kubectl apply -f https://github.com/kserve/kserve/releases/download/v0.13.0/kserve-cluster-resources.yaml
+kubectl apply --server-side -f https://github.com/kserve/kserve/releases/download/v0.14.0/kserve.yaml
+kubectl apply --server-side -f https://github.com/kserve/kserve/releases/download/v0.14.0/kserve-cluster-resources.yaml
 
 # Wait for KServe
 kubectl wait --for=condition=available --timeout=300s -n kserve deployment/kserve-controller-manager
