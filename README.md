@@ -1,5 +1,9 @@
 # <img src="docs/neuralnav-logo.ico" alt="NeuralNav" width="32" style="vertical-align: middle;"/> NeuralNav
 
+[![CI](https://github.com/redhat-et/neuralnav/actions/workflows/ci.yml/badge.svg)](https://github.com/redhat-et/neuralnav/actions/workflows/ci.yml)
+[![Python 3.11+](https://img.shields.io/badge/Python-3.11+-blue.svg)](https://www.python.org)
+[![License: Apache 2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
+
 **Confidently navigate LLM deployments from concept to production.**
 
 ---
