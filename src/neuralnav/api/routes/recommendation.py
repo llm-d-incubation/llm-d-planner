@@ -2,10 +2,12 @@
 
 import logging
 
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel
 
 from neuralnav.api.dependencies import get_deployment_generator, get_workflow
+from neuralnav.configuration import DeploymentGenerator
+from neuralnav.orchestration.workflow import RecommendationWorkflow
 from neuralnav.shared.schemas import DeploymentRecommendation
 
 logger = logging.getLogger(__name__)
@@ -59,7 +61,11 @@ class RankedRecommendationFromSpecRequest(BaseModel):
 
 
 @router.post("/recommend")
-async def simple_recommend(request: SimpleRecommendationRequest):
+async def simple_recommend(
+    request: SimpleRecommendationRequest,
+    workflow: RecommendationWorkflow = Depends(get_workflow),
+    deployment_generator: DeploymentGenerator = Depends(get_deployment_generator),
+):
     """
     Simplified recommendation endpoint for UI compatibility.
 
@@ -70,9 +76,6 @@ async def simple_recommend(request: SimpleRecommendationRequest):
         Recommendation as JSON dict with auto-generated YAML
     """
     try:
-        workflow = get_workflow()
-        deployment_generator = get_deployment_generator()
-
         logger.info(f"Received UI recommendation request: {request.message[:100]}...")
 
         # Always generate specification first (this cannot fail)
@@ -143,12 +146,16 @@ async def simple_recommend(request: SimpleRecommendationRequest):
     except Exception as e:
         logger.error(f"Failed to generate recommendation: {e}", exc_info=True)
         raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Failed to generate recommendation: {str(e)}"
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to generate recommendation: {str(e)}",
         ) from e
 
 
 @router.post("/ranked-recommend-from-spec")
-async def ranked_recommend_from_spec(request: RankedRecommendationFromSpecRequest):
+async def ranked_recommend_from_spec(
+    request: RankedRecommendationFromSpecRequest,
+    workflow: RecommendationWorkflow = Depends(get_workflow),
+):
     """
     Generate ranked recommendations from pre-built specification.
 
@@ -170,8 +177,6 @@ async def ranked_recommend_from_spec(request: RankedRecommendationFromSpecReques
         RankedRecommendationsResponse with 5 ranked lists
     """
     try:
-        workflow = get_workflow()
-
         # Log complete request for debugging
         logger.info("=" * 60)
         logger.info("RANKED-RECOMMEND-FROM-SPEC REQUEST")
@@ -248,12 +253,16 @@ async def ranked_recommend_from_spec(request: RankedRecommendationFromSpecReques
     except Exception as e:
         logger.error(f"Failed to generate ranked recommendations from spec: {e}", exc_info=True)
         raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Failed to generate ranked recommendations: {str(e)}"
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to generate ranked recommendations: {str(e)}",
         ) from e
 
 
 @router.post("/test")
-async def test_endpoint(message: str = "I need a chatbot for 1000 users"):
+async def test_endpoint(
+    workflow: RecommendationWorkflow = Depends(get_workflow),
+    message: str = "I need a chatbot for 1000 users",
+):
     """
     Quick test endpoint for validation.
 
@@ -264,7 +273,6 @@ async def test_endpoint(message: str = "I need a chatbot for 1000 users"):
         Simplified recommendation
     """
     try:
-        workflow = get_workflow()
         recommendation = workflow.generate_recommendation(message)
 
         return {

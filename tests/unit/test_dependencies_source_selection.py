@@ -1,24 +1,11 @@
-"""Test benchmark source selection via environment variable."""
+"""Test benchmark source selection and app state initialization."""
 
-from unittest.mock import patch
+from types import SimpleNamespace
+from unittest.mock import MagicMock, patch
 
 import pytest
 
 import neuralnav.api.dependencies as deps
-
-
-@pytest.fixture(autouse=True)
-def _reset_workflow_singleton():
-    """Ensure dependency singletons are reset before and after each test."""
-    prev_workflow = deps._workflow
-    prev_client = deps._model_catalog_client
-    deps._workflow = None
-    deps._model_catalog_client = None
-    try:
-        yield
-    finally:
-        deps._workflow = prev_workflow
-        deps._model_catalog_client = prev_client
 
 
 @pytest.mark.unit
@@ -59,10 +46,18 @@ def test_unknown_benchmark_source_defaults_to_postgresql():
     assert deps._get_benchmark_source_type() == "postgresql"
 
 
+def _make_mock_app():
+    """Create a mock FastAPI app with a state namespace."""
+    app = MagicMock()
+    app.state = SimpleNamespace()
+    return app
+
+
 @pytest.mark.unit
 @patch.dict("os.environ", {"NEURALNAV_BENCHMARK_SOURCE": "model_catalog"}, clear=False)
 def test_model_catalog_workflow_creates_correct_components():
-    """When source is model_catalog, get_workflow() should wire up Model Catalog components."""
+    """When source is model_catalog, init_app_state() should wire up Model Catalog components."""
+    app = _make_mock_app()
     with (
         patch(
             "neuralnav.knowledge_base.model_catalog_client.ModelCatalogClient"
@@ -79,8 +74,12 @@ def test_model_catalog_workflow_creates_correct_components():
         patch("neuralnav.recommendation.config_finder.ConfigFinder") as mock_finder_cls,
         patch("neuralnav.api.dependencies.RecommendationWorkflow") as mock_wf_cls,
         patch("neuralnav.api.dependencies._preload_model_catalog_async"),
+        patch("neuralnav.api.dependencies.ModelCatalog"),
+        patch("neuralnav.api.dependencies.SLOTemplateRepository"),
+        patch("neuralnav.api.dependencies.DeploymentGenerator"),
+        patch("neuralnav.api.dependencies.YAMLValidator"),
     ):
-        deps.get_workflow()
+        deps.init_app_state(app)
 
         # Verify client created once
         mock_client_cls.assert_called_once()
@@ -101,11 +100,44 @@ def test_model_catalog_workflow_creates_correct_components():
         # Verify workflow created with the custom config_finder
         mock_wf_cls.assert_called_once_with(config_finder=mock_finder_cls.return_value)
 
+        # Verify workflow stored on app.state
+        assert app.state.workflow == mock_wf_cls.return_value
+        assert app.state.model_catalog_client == client_instance
+
 
 @pytest.mark.unit
 @patch.dict("os.environ", {"NEURALNAV_BENCHMARK_SOURCE": "postgresql"}, clear=False)
 def test_postgresql_workflow_uses_defaults():
-    """When source is postgresql, get_workflow() creates default RecommendationWorkflow."""
-    with patch("neuralnav.api.dependencies.RecommendationWorkflow") as mock_wf_cls:
-        deps.get_workflow()
+    """When source is postgresql, init_app_state() creates default RecommendationWorkflow."""
+    app = _make_mock_app()
+    with (
+        patch("neuralnav.api.dependencies.RecommendationWorkflow") as mock_wf_cls,
+        patch("neuralnav.api.dependencies.ModelCatalog"),
+        patch("neuralnav.api.dependencies.SLOTemplateRepository"),
+        patch("neuralnav.api.dependencies.DeploymentGenerator"),
+        patch("neuralnav.api.dependencies.YAMLValidator"),
+    ):
+        deps.init_app_state(app)
         mock_wf_cls.assert_called_once_with()
+        assert app.state.workflow == mock_wf_cls.return_value
+        assert app.state.model_catalog_client is None
+
+
+@pytest.mark.unit
+def test_init_app_state_sets_all_singletons():
+    """init_app_state() populates all expected attributes on app.state."""
+    app = _make_mock_app()
+    with (
+        patch("neuralnav.api.dependencies.RecommendationWorkflow"),
+        patch("neuralnav.api.dependencies.ModelCatalog") as mock_mc,
+        patch("neuralnav.api.dependencies.SLOTemplateRepository") as mock_slo,
+        patch("neuralnav.api.dependencies.DeploymentGenerator") as mock_dg,
+        patch("neuralnav.api.dependencies.YAMLValidator") as mock_yv,
+    ):
+        deps.init_app_state(app)
+
+        assert app.state.model_catalog == mock_mc.return_value
+        assert app.state.slo_repo == mock_slo.return_value
+        assert app.state.deployment_generator == mock_dg.return_value
+        assert app.state.yaml_validator == mock_yv.return_value
+        assert app.state.cluster_manager is None

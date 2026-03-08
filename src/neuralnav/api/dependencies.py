@@ -1,12 +1,15 @@
 """Shared dependencies for API routes.
 
-This module provides singleton instances and dependency injection
-for the API routes. All shared state is initialized here.
+This module provides singleton instances via FastAPI's app.state and
+dependency injection via Depends(). All shared state is initialized
+during the application lifespan in init_app_state().
 """
 
 import logging
 import os
 import threading
+
+from fastapi import FastAPI, HTTPException, Request, status
 
 from neuralnav.cluster import KubernetesClusterManager, KubernetesDeploymentError
 from neuralnav.configuration import DeploymentGenerator, YAMLValidator
@@ -24,17 +27,6 @@ logging.basicConfig(
     datefmt="%Y-%m-%d %H:%M:%S",
 )
 logger = logging.getLogger(__name__)
-
-# Singleton instances
-_workflow: RecommendationWorkflow | None = None
-_model_catalog_client = None  # ModelCatalogClient, if created
-_model_catalog: ModelCatalog | None = None
-_slo_repo: SLOTemplateRepository | None = None
-_deployment_generator: DeploymentGenerator | None = None
-_yaml_validator: YAMLValidator | None = None
-_cluster_manager: KubernetesClusterManager | None = None
-_workflow_lock = threading.Lock()
-
 
 _VALID_BENCHMARK_SOURCES = {"postgresql", "model_catalog"}
 
@@ -57,7 +49,6 @@ def _preload_model_catalog_async(benchmark_source, catalog, quality_scorer) -> N
     Runs in a daemon thread so the app starts serving immediately
     (health probes, etc.) while caches warm in the background.
     """
-    import threading
 
     def _preload():
         try:
@@ -73,131 +64,119 @@ def _preload_model_catalog_async(benchmark_source, catalog, quality_scorer) -> N
     thread.start()
 
 
-def get_workflow() -> RecommendationWorkflow:
-    """Get the recommendation workflow singleton."""
-    global _workflow, _model_catalog_client
-    if _workflow is None:
-        with _workflow_lock:
-            if _workflow is None:
-                source_type = _get_benchmark_source_type()
-                if source_type == "model_catalog":
-                    from neuralnav.knowledge_base.model_catalog_benchmarks import (
-                        ModelCatalogBenchmarkSource,
-                    )
-                    from neuralnav.knowledge_base.model_catalog_client import (
-                        ModelCatalogClient,
-                    )
-                    from neuralnav.knowledge_base.model_catalog_models import (
-                        ModelCatalogModelSource,
-                    )
-                    from neuralnav.knowledge_base.model_catalog_quality import (
-                        ModelCatalogQualityScorer,
-                    )
-                    from neuralnav.recommendation.config_finder import ConfigFinder
-
-                    client = ModelCatalogClient()
-                    _model_catalog_client = client
-                    benchmark_source = ModelCatalogBenchmarkSource(client)
-                    catalog = ModelCatalogModelSource(client)
-                    quality_scorer = ModelCatalogQualityScorer(client)
-                    config_finder = ConfigFinder(
-                        benchmark_repo=benchmark_source,
-                        catalog=catalog,
-                        quality_scorer=quality_scorer,
-                    )
-                    logger.info("Using Model Catalog as benchmark source")
-                    _workflow = RecommendationWorkflow(config_finder=config_finder)
-                    _preload_model_catalog_async(
-                        benchmark_source, catalog, quality_scorer
-                    )
-                else:
-                    logger.info("Using PostgreSQL as benchmark source")
-                    _workflow = RecommendationWorkflow()
-    return _workflow
+# ---------------------------------------------------------------------------
+# Lifespan: initialize / close all singletons on app.state
+# ---------------------------------------------------------------------------
 
 
-def close_workflow_resources() -> None:
-    """Close long-lived resources created during workflow init."""
-    if _model_catalog_client is not None and hasattr(_model_catalog_client, "close"):
+def init_app_state(app: FastAPI) -> None:
+    """Initialize all singletons on app.state during lifespan startup."""
+    source_type = _get_benchmark_source_type()
+    if source_type == "model_catalog":
+        from neuralnav.knowledge_base.model_catalog_benchmarks import (
+            ModelCatalogBenchmarkSource,
+        )
+        from neuralnav.knowledge_base.model_catalog_client import (
+            ModelCatalogClient,
+        )
+        from neuralnav.knowledge_base.model_catalog_models import (
+            ModelCatalogModelSource,
+        )
+        from neuralnav.knowledge_base.model_catalog_quality import (
+            ModelCatalogQualityScorer,
+        )
+        from neuralnav.recommendation.config_finder import ConfigFinder
+
+        client = ModelCatalogClient()
+        app.state.model_catalog_client = client
+        benchmark_source = ModelCatalogBenchmarkSource(client)
+        catalog = ModelCatalogModelSource(client)
+        quality_scorer = ModelCatalogQualityScorer(client)
+        config_finder = ConfigFinder(
+            benchmark_repo=benchmark_source,
+            catalog=catalog,
+            quality_scorer=quality_scorer,
+        )
+        logger.info("Using Model Catalog as benchmark source")
+        app.state.workflow = RecommendationWorkflow(config_finder=config_finder)
+        _preload_model_catalog_async(benchmark_source, catalog, quality_scorer)
+    else:
+        app.state.model_catalog_client = None
+        logger.info("Using PostgreSQL as benchmark source")
+        app.state.workflow = RecommendationWorkflow()
+
+    app.state.model_catalog = ModelCatalog()
+    app.state.slo_repo = SLOTemplateRepository()
+    app.state.deployment_generator = DeploymentGenerator(simulator_mode=False)
+    app.state.yaml_validator = YAMLValidator()
+    app.state.cluster_manager = None  # Lazy — created on first request
+
+
+def close_app_state(app: FastAPI) -> None:
+    """Close resources and clear state."""
+    client = getattr(app.state, "model_catalog_client", None)
+    if client is not None and hasattr(client, "close"):
         try:
-            _model_catalog_client.close()
+            client.close()
         except Exception:
             logger.exception("Error closing Model Catalog client")
 
 
-def get_model_catalog() -> ModelCatalog:
+# ---------------------------------------------------------------------------
+# Depends() providers — read from request.app.state
+# ---------------------------------------------------------------------------
+
+
+def get_workflow(request: Request) -> RecommendationWorkflow:
+    """Get the recommendation workflow singleton."""
+    return request.app.state.workflow
+
+
+def get_model_catalog(request: Request) -> ModelCatalog:
     """Get the model catalog singleton."""
-    global _model_catalog
-    if _model_catalog is None:
-        _model_catalog = ModelCatalog()
-    return _model_catalog
+    return request.app.state.model_catalog
 
 
-def get_slo_repo() -> SLOTemplateRepository:
+def get_slo_repo(request: Request) -> SLOTemplateRepository:
     """Get the SLO template repository singleton."""
-    global _slo_repo
-    if _slo_repo is None:
-        _slo_repo = SLOTemplateRepository()
-    return _slo_repo
+    return request.app.state.slo_repo
 
 
-def get_deployment_generator() -> DeploymentGenerator:
+def get_deployment_generator(request: Request) -> DeploymentGenerator:
     """Get the deployment generator singleton."""
-    global _deployment_generator
-    if _deployment_generator is None:
-        _deployment_generator = DeploymentGenerator(simulator_mode=False)
-    return _deployment_generator
+    return request.app.state.deployment_generator
 
 
-def get_deployment_mode() -> DeploymentMode:
+def get_yaml_validator(request: Request) -> YAMLValidator:
+    """Get the YAML validator singleton."""
+    return request.app.state.yaml_validator
+
+
+def get_deployment_mode(request: Request) -> DeploymentMode:
     """Return the current deployment mode."""
-    gen = get_deployment_generator()
+    gen = request.app.state.deployment_generator
     return DeploymentMode.SIMULATOR if gen.simulator_mode else DeploymentMode.PRODUCTION
 
 
-def set_deployment_mode(mode: DeploymentMode) -> DeploymentMode:
+def set_deployment_mode(request: Request, mode: DeploymentMode) -> DeploymentMode:
     """Set the deployment mode and return the new mode."""
-    gen = get_deployment_generator()
+    gen = request.app.state.deployment_generator
     gen.simulator_mode = mode == DeploymentMode.SIMULATOR
     logger.info(f"Deployment mode changed to: {mode.value}")
     return mode
 
 
-def get_yaml_validator() -> YAMLValidator:
-    """Get the YAML validator singleton."""
-    global _yaml_validator
-    if _yaml_validator is None:
-        _yaml_validator = YAMLValidator()
-    return _yaml_validator
-
-
-def get_cluster_manager(namespace: str = "default") -> KubernetesClusterManager | None:
-    """Get or create a cluster manager.
-
-    Returns None if cluster is not accessible.
-    """
-    global _cluster_manager
-    if _cluster_manager is None:
+def get_cluster_manager_or_raise(
+    request: Request, namespace: str = "default"
+) -> KubernetesClusterManager:
+    """Get or create a cluster manager, raising an exception if not accessible."""
+    if request.app.state.cluster_manager is None:
         try:
-            _cluster_manager = KubernetesClusterManager(namespace=namespace)
+            request.app.state.cluster_manager = KubernetesClusterManager(namespace=namespace)
             logger.info("Kubernetes cluster manager initialized successfully")
         except KubernetesDeploymentError as e:
-            logger.warning(f"Kubernetes cluster not accessible: {e}")
-            return None
-    return _cluster_manager
-
-
-def get_cluster_manager_or_raise(namespace: str = "default") -> KubernetesClusterManager:
-    """Get or create a cluster manager, raising an exception if not accessible."""
-    manager = get_cluster_manager(namespace)
-    if manager is None:
-        try:
-            return KubernetesClusterManager(namespace=namespace)
-        except KubernetesDeploymentError as e:
-            from fastapi import HTTPException, status
-
             raise HTTPException(
                 status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-                detail=f"Kubernetes cluster not accessible: {str(e)}",
+                detail=f"Kubernetes cluster not accessible: {e}",
             ) from e
-    return manager
+    return request.app.state.cluster_manager

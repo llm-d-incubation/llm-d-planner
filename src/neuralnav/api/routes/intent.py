@@ -2,11 +2,12 @@
 
 import logging
 
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel
 
 from neuralnav.api.dependencies import get_workflow
 from neuralnav.intent_extraction import IntentExtractor
+from neuralnav.orchestration.workflow import RecommendationWorkflow
 
 logger = logging.getLogger(__name__)
 
@@ -20,7 +21,10 @@ class ExtractRequest(BaseModel):
 
 
 @router.post("/extract")
-async def extract_intent(request: ExtractRequest):
+async def extract_intent(
+    request: ExtractRequest,
+    workflow: RecommendationWorkflow = Depends(get_workflow),
+):
     """Extract business context from natural language using LLM.
 
     Takes a user's natural language description of their deployment needs
@@ -38,7 +42,6 @@ async def extract_intent(request: ExtractRequest):
     logger.info(f"  Input text: {request.text[:200]}{'...' if len(request.text) > 200 else ''}")
 
     try:
-        workflow = get_workflow()
         # Create intent extractor (uses workflow's LLM client)
         intent_extractor = IntentExtractor(workflow.llm_client)
 

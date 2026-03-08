@@ -4,7 +4,7 @@ import logging
 import random
 from datetime import datetime
 
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Request, status
 from pydantic import BaseModel
 
 from neuralnav.api.dependencies import (
@@ -15,6 +15,7 @@ from neuralnav.api.dependencies import (
     set_deployment_mode,
 )
 from neuralnav.cluster import KubernetesClusterManager
+from neuralnav.configuration import DeploymentGenerator, YAMLValidator
 from neuralnav.shared.schemas import DeploymentMode, DeploymentRecommendation
 
 logger = logging.getLogger(__name__)
@@ -58,24 +59,28 @@ class DeploymentModeRequest(BaseModel):
 
 
 @router.get("/deployment-mode")
-async def get_mode():
+async def get_mode(http_request: Request):
     """Return the current deployment mode ('production' or 'simulator')."""
-    return {"mode": get_deployment_mode()}
+    return {"mode": get_deployment_mode(http_request)}
 
 
 @router.put("/deployment-mode")
-async def set_mode(request: DeploymentModeRequest):
+async def set_mode(request: DeploymentModeRequest, http_request: Request):
     """Set the deployment mode.
 
     Args:
         request: Must contain mode as a DeploymentMode value.
     """
-    new_mode = set_deployment_mode(request.mode)
+    new_mode = set_deployment_mode(http_request, request.mode)
     return {"mode": new_mode}
 
 
 @router.post("/deploy", response_model=DeploymentResponse)
-async def deploy_model(request: DeploymentRequest):
+async def deploy_model(
+    request: DeploymentRequest,
+    deployment_generator: DeploymentGenerator = Depends(get_deployment_generator),
+    yaml_validator: YAMLValidator = Depends(get_yaml_validator),
+):
     """
     Generate deployment YAML files from recommendation.
 
@@ -89,9 +94,6 @@ async def deploy_model(request: DeploymentRequest):
         HTTPException: If deployment generation fails
     """
     try:
-        deployment_generator = get_deployment_generator()
-        yaml_validator = get_yaml_validator()
-
         logger.info(f"Generating deployment for model: {request.recommendation.model_name}")
 
         # Generate all YAML files
@@ -106,7 +108,8 @@ async def deploy_model(request: DeploymentRequest):
         except Exception as e:
             logger.error(f"YAML validation failed: {e}")
             raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Generated YAML validation failed: {str(e)}"
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=f"Generated YAML validation failed: {str(e)}",
             ) from e
 
         return DeploymentResponse(
@@ -120,7 +123,8 @@ async def deploy_model(request: DeploymentRequest):
     except Exception as e:
         logger.error(f"Failed to generate deployment: {e}", exc_info=True)
         raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Failed to generate deployment: {str(e)}"
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to generate deployment: {str(e)}",
         ) from e
 
 
@@ -206,11 +210,18 @@ async def get_deployment_status(deployment_id: str):
 
     except Exception as e:
         logger.error(f"Failed to get deployment status: {e}")
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Deployment not found: {deployment_id}") from e
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail=f"Deployment not found: {deployment_id}"
+        ) from e
 
 
 @router.post("/deploy-to-cluster")
-async def deploy_to_cluster(request: DeploymentRequest):
+async def deploy_to_cluster(
+    request: DeploymentRequest,
+    http_request: Request,
+    deployment_generator: DeploymentGenerator = Depends(get_deployment_generator),
+    yaml_validator: YAMLValidator = Depends(get_yaml_validator),
+):
     """
     Deploy model to Kubernetes cluster.
 
@@ -225,9 +236,7 @@ async def deploy_to_cluster(request: DeploymentRequest):
     Raises:
         HTTPException: If cluster not accessible or deployment fails
     """
-    manager = get_cluster_manager_or_raise(request.namespace)
-    deployment_generator = get_deployment_generator()
-    yaml_validator = get_yaml_validator()
+    manager = get_cluster_manager_or_raise(http_request, request.namespace)
 
     try:
         logger.info(f"Deploying model to cluster: {request.recommendation.model_name}")
@@ -247,7 +256,8 @@ async def deploy_to_cluster(request: DeploymentRequest):
         except Exception as e:
             logger.error(f"YAML validation failed: {e}")
             raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Generated YAML validation failed: {str(e)}"
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=f"Generated YAML validation failed: {str(e)}",
             ) from e
 
         # Step 3: Deploy to cluster
@@ -258,7 +268,8 @@ async def deploy_to_cluster(request: DeploymentRequest):
         if not deployment_result["success"]:
             logger.error(f"Deployment failed: {deployment_result['errors']}")
             raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Deployment failed: {deployment_result['errors']}"
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=f"Deployment failed: {deployment_result['errors']}",
             )
 
         logger.info(f"Successfully deployed {deployment_id} to cluster")
@@ -276,7 +287,10 @@ async def deploy_to_cluster(request: DeploymentRequest):
         raise
     except Exception as e:
         logger.error(f"Failed to deploy to cluster: {e}", exc_info=True)
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Failed to deploy to cluster: {str(e)}") from e
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to deploy to cluster: {str(e)}",
+        ) from e
 
 
 @router.get("/cluster-status")
@@ -304,7 +318,7 @@ async def get_cluster_status():
 
 
 @router.get("/deployments/{deployment_id}/k8s-status")
-async def get_k8s_deployment_status(deployment_id: str):
+async def get_k8s_deployment_status(deployment_id: str, http_request: Request):
     """
     Get actual Kubernetes deployment status (not mock data).
 
@@ -317,7 +331,7 @@ async def get_k8s_deployment_status(deployment_id: str):
     Raises:
         HTTPException: If cluster not accessible
     """
-    manager = get_cluster_manager_or_raise("default")
+    manager = get_cluster_manager_or_raise(http_request, "default")
 
     try:
         isvc_status = manager.get_inferenceservice_status(deployment_id)
@@ -333,12 +347,16 @@ async def get_k8s_deployment_status(deployment_id: str):
     except Exception as e:
         logger.error(f"Failed to get K8s deployment status: {e}", exc_info=True)
         raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Failed to get deployment status: {str(e)}"
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to get deployment status: {str(e)}",
         ) from e
 
 
 @router.get("/deployments/{deployment_id}/yaml")
-async def get_deployment_yaml(deployment_id: str):
+async def get_deployment_yaml(
+    deployment_id: str,
+    deployment_generator: DeploymentGenerator = Depends(get_deployment_generator),
+):
     """
     Retrieve generated YAML files for a deployment.
 
@@ -352,7 +370,6 @@ async def get_deployment_yaml(deployment_id: str):
         HTTPException: If YAML files not found
     """
     try:
-        deployment_generator = get_deployment_generator()
         output_dir = deployment_generator.output_dir
 
         yaml_files = {}
@@ -362,7 +379,8 @@ async def get_deployment_yaml(deployment_id: str):
 
         if not yaml_files:
             raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND, detail=f"No YAML files found for deployment {deployment_id}"
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"No YAML files found for deployment {deployment_id}",
             )
 
         return {"deployment_id": deployment_id, "files": yaml_files, "count": len(yaml_files)}
@@ -372,12 +390,13 @@ async def get_deployment_yaml(deployment_id: str):
     except Exception as e:
         logger.error(f"Failed to retrieve YAML files: {e}", exc_info=True)
         raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Failed to retrieve YAML files: {str(e)}"
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to retrieve YAML files: {str(e)}",
         ) from e
 
 
 @router.delete("/deployments/{deployment_id}")
-async def delete_deployment(deployment_id: str):
+async def delete_deployment(deployment_id: str, http_request: Request):
     """
     Delete a deployment from the cluster.
 
@@ -390,7 +409,7 @@ async def delete_deployment(deployment_id: str):
     Raises:
         HTTPException: If cluster not accessible or deletion fails
     """
-    manager = get_cluster_manager_or_raise("default")
+    manager = get_cluster_manager_or_raise(http_request, "default")
 
     try:
         result = manager.delete_inferenceservice(deployment_id)
@@ -407,11 +426,14 @@ async def delete_deployment(deployment_id: str):
         raise
     except Exception as e:
         logger.error(f"Failed to delete deployment: {e}", exc_info=True)
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Failed to delete deployment: {str(e)}") from e
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to delete deployment: {str(e)}",
+        ) from e
 
 
 @router.get("/deployments")
-async def list_all_deployments():
+async def list_all_deployments(http_request: Request):
     """
     List all InferenceServices in the cluster with their detailed status.
 
@@ -421,7 +443,7 @@ async def list_all_deployments():
     Raises:
         HTTPException: If cluster not accessible
     """
-    manager = get_cluster_manager_or_raise("default")
+    manager = get_cluster_manager_or_raise(http_request, "default")
 
     try:
         deployment_ids = manager.list_inferenceservices()
@@ -442,4 +464,7 @@ async def list_all_deployments():
 
     except Exception as e:
         logger.error(f"Failed to list deployments: {e}", exc_info=True)
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Failed to list deployments: {str(e)}") from e
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to list deployments: {str(e)}",
+        ) from e
