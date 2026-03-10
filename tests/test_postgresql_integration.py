@@ -14,7 +14,7 @@ Tests cover:
 
 import pytest
 
-from neuralnav.knowledge_base.benchmarks import BenchmarkRepository, BenchmarkData
+from neuralnav.knowledge_base.benchmarks import BenchmarkData, BenchmarkRepository
 from neuralnav.knowledge_base.slo_templates import SLOTemplateRepository
 
 
@@ -39,7 +39,7 @@ class TestBenchmarkRepository:
             hardware="H100",
             hardware_count=1,
             prompt_tokens=512,
-            output_tokens=256
+            output_tokens=256,
         )
 
         assert benchmark is not None
@@ -56,7 +56,7 @@ class TestBenchmarkRepository:
             hardware="H100",
             hardware_count=1,
             prompt_tokens=512,
-            output_tokens=256
+            output_tokens=256,
         )
 
         assert benchmark is None
@@ -68,13 +68,13 @@ class TestBenchmarkRepository:
             hardware="H100",
             hardware_count=1,
             prompt_tokens=512,
-            output_tokens=256
+            output_tokens=256,
         )
 
         assert benchmark is not None
-        assert hasattr(benchmark, 'ttft_p95')
-        assert hasattr(benchmark, 'itl_p95')
-        assert hasattr(benchmark, 'e2e_p95')
+        assert hasattr(benchmark, "ttft_p95")
+        assert hasattr(benchmark, "itl_p95")
+        assert hasattr(benchmark, "e2e_p95")
 
         assert benchmark.ttft_p95 > 0
         assert benchmark.itl_p95 > 0
@@ -88,12 +88,7 @@ class TestBenchmarkRepository:
         assert isinstance(profiles, list)
 
         # Test fixture includes the 4 GuideLLM profiles
-        expected_profiles = [
-            (512, 256),
-            (1024, 1024),
-            (4096, 512),
-            (10240, 1536)
-        ]
+        expected_profiles = [(512, 256), (1024, 1024), (4096, 512), (10240, 1536)]
 
         for prompt, output in expected_profiles:
             assert (prompt, output) in profiles, f"Missing profile ({prompt}, {output})"
@@ -106,7 +101,7 @@ class TestBenchmarkRepository:
             ttft_p95_max_ms=200,
             itl_p95_max_ms=50,
             e2e_p95_max_ms=10000,
-            min_qps=0
+            min_qps=0,
         )
 
         assert len(configs) > 0
@@ -124,7 +119,7 @@ class TestBenchmarkRepository:
             ttft_p95_max_ms=10,
             itl_p95_max_ms=5,
             e2e_p95_max_ms=100,
-            min_qps=0
+            min_qps=0,
         )
 
         assert len(configs) == 0
@@ -145,16 +140,21 @@ class TestBenchmarkRepository:
             hardware="H100",
             hardware_count=1,
             prompt_tokens=512,
-            output_tokens=256
+            output_tokens=256,
         )
 
         assert benchmark is not None
 
         required_fields = [
-            'model_hf_repo', 'hardware', 'hardware_count',
-            'prompt_tokens', 'output_tokens',
-            'ttft_p95', 'itl_p95', 'e2e_p95',
-            'requests_per_second'
+            "model_hf_repo",
+            "hardware",
+            "hardware_count",
+            "prompt_tokens",
+            "output_tokens",
+            "ttft_p95",
+            "itl_p95",
+            "e2e_p95",
+            "requests_per_second",
         ]
 
         for field in required_fields:
@@ -182,8 +182,8 @@ class TestSLOTemplates:
         template = repo.get_template("chatbot_conversational")
 
         assert template is not None
-        assert hasattr(template, 'prompt_tokens')
-        assert hasattr(template, 'output_tokens')
+        assert hasattr(template, "prompt_tokens")
+        assert hasattr(template, "output_tokens")
         assert template.prompt_tokens > 0
         assert template.output_tokens > 0
 
@@ -192,9 +192,9 @@ class TestSLOTemplates:
         template = repo.get_template("chatbot_conversational")
 
         assert template is not None
-        assert hasattr(template, 'experience_class')
+        assert hasattr(template, "experience_class")
 
-        valid_classes = ['instant', 'conversational', 'interactive', 'deferred', 'batch']
+        valid_classes = ["instant", "conversational", "interactive", "deferred", "batch"]
         assert template.experience_class in valid_classes
 
     def test_template_has_p95_slo_targets(self, repo):
@@ -203,9 +203,9 @@ class TestSLOTemplates:
 
         assert template is not None
 
-        assert hasattr(template, 'ttft_p95_target_ms')
-        assert hasattr(template, 'itl_p95_target_ms')
-        assert hasattr(template, 'e2e_p95_target_ms')
+        assert hasattr(template, "ttft_p95_target_ms")
+        assert hasattr(template, "itl_p95_target_ms")
+        assert hasattr(template, "e2e_p95_target_ms")
 
         assert template.ttft_p95_target_ms > 0
         assert template.itl_p95_target_ms > 0
@@ -214,15 +214,15 @@ class TestSLOTemplates:
     def test_all_9_use_cases_present(self, repo):
         """Test that all 9 use cases from traffic_and_slos.md are present."""
         expected_use_cases = [
-            'chatbot_conversational',
-            'code_completion',
-            'code_generation_detailed',
-            'translation',
-            'content_generation',
-            'summarization_short',
-            'document_analysis_rag',
-            'long_document_summarization',
-            'research_legal_analysis'
+            "chatbot_conversational",
+            "code_completion",
+            "code_generation_detailed",
+            "translation",
+            "content_generation",
+            "summarization_short",
+            "document_analysis_rag",
+            "long_document_summarization",
+            "research_legal_analysis",
         ]
 
         templates = repo.get_all_templates()
@@ -232,12 +232,7 @@ class TestSLOTemplates:
 
     def test_traffic_profiles_match_guidelm(self, repo):
         """Test that traffic profiles match the 4 GuideLLM configurations."""
-        expected_profiles = {
-            (512, 256),
-            (1024, 1024),
-            (4096, 512),
-            (10240, 1536)
-        }
+        expected_profiles = {(512, 256), (1024, 1024), (4096, 512), (10240, 1536)}
 
         templates = repo.get_all_templates()
         actual_profiles = set()
@@ -265,7 +260,7 @@ class TestTrafficProfileMatching:
             hardware="H100",
             hardware_count=1,
             prompt_tokens=512,
-            output_tokens=256
+            output_tokens=256,
         )
 
         assert benchmark is not None
@@ -279,7 +274,7 @@ class TestTrafficProfileMatching:
             hardware="H100",
             hardware_count=1,
             prompt_tokens=1024,
-            output_tokens=1024
+            output_tokens=1024,
         )
 
         assert benchmark is not None
@@ -293,7 +288,7 @@ class TestTrafficProfileMatching:
             hardware="H100",
             hardware_count=1,
             prompt_tokens=500,
-            output_tokens=250
+            output_tokens=250,
         )
 
         assert benchmark is None
@@ -315,7 +310,7 @@ class TestE2ELatencyCalculation:
             hardware="H100",
             hardware_count=1,
             prompt_tokens=512,
-            output_tokens=256
+            output_tokens=256,
         )
 
         assert benchmark is not None
@@ -332,7 +327,7 @@ class TestE2ELatencyCalculation:
             hardware="H100",
             hardware_count=1,
             prompt_tokens=512,
-            output_tokens=256
+            output_tokens=256,
         )
 
         assert benchmark is not None

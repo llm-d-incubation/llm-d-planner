@@ -20,8 +20,8 @@ class DeploymentIntent(BaseModel):
         "research_legal_analysis",
     ] = Field(..., description="Primary use case type")
 
-    experience_class: Literal["instant", "conversational", "interactive", "deferred", "batch"] = Field(
-        ..., description="User experience class defining latency expectations"
+    experience_class: Literal["instant", "conversational", "interactive", "deferred", "batch"] = (
+        Field(..., description="User experience class defining latency expectations")
     )
 
     user_count: int = Field(..., description="Number of users or scale")
@@ -35,7 +35,7 @@ class DeploymentIntent(BaseModel):
     preferred_gpu_types: list[str] = Field(
         default_factory=list,
         description="List of user's preferred GPU types (empty = any GPU). "
-                    "Canonical names: L4, A100-40, A100-80, H100, H200, B200"
+        "Canonical names: L4, A100-40, A100-80, H100, H200, B200",
     )
 
     # Priority hints extracted from natural language (used for weight calculation)

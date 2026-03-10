@@ -66,7 +66,9 @@ async def get_benchmarks():
 
         if not csv_path.exists():
             logger.error(f"Benchmark CSV not found at: {csv_path}")
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Benchmark data file not found")
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="Benchmark data file not found"
+            )
 
         # Read CSV using built-in csv module
         records = []
@@ -84,7 +86,10 @@ async def get_benchmarks():
         raise
     except Exception as e:
         logger.error(f"Failed to load benchmarks: {e}", exc_info=True)
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Failed to load benchmarks: {str(e)}") from e
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to load benchmarks: {str(e)}",
+        ) from e
 
 
 @router.get("/priority-weights")
@@ -99,7 +104,10 @@ async def get_priority_weights():
 
         if not json_path.exists():
             logger.error(f"Priority weights config not found at: {json_path}")
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Priority weights configuration not found")
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Priority weights configuration not found",
+            )
 
         with open(json_path) as f:
             data = json.load(f)
@@ -142,7 +150,8 @@ async def get_weighted_scores(use_case: str):
         if not csv_path.exists():
             logger.error(f"Weighted scores CSV not found at: {csv_path}")
             raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND, detail=f"Weighted scores file not found for use case: {use_case}"
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Weighted scores file not found for use case: {use_case}",
             )
 
         # Read CSV using built-in csv module
@@ -160,5 +169,6 @@ async def get_weighted_scores(use_case: str):
     except Exception as e:
         logger.error(f"Failed to load weighted scores: {e}", exc_info=True)
         raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Failed to load weighted scores: {str(e)}"
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to load weighted scores: {str(e)}",
         ) from e

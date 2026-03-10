@@ -1,9 +1,11 @@
 """Ollama client wrapper for LLM interactions."""
 
+from __future__ import annotations
+
 import json
 import logging
 import os
-from typing import Any
+from typing import Any, Literal
 
 try:
     import ollama
@@ -30,14 +32,15 @@ class OllamaClient:
             host: Optional Ollama host URL. Falls back to OLLAMA_HOST env var,
                   then localhost:11434.
         """
-        self.model = model or os.getenv("OLLAMA_MODEL", "qwen2.5:7b")
+        default_model = os.getenv("OLLAMA_MODEL", "qwen2.5:7b")
+        self.model: str = model if model else default_model
         self.host = host or os.getenv("OLLAMA_HOST")
 
+        self._client: ollama.Client | None = None
         if OLLAMA_AVAILABLE:
             client_kwargs = {"host": self.host} if self.host else {}
             self._client = ollama.Client(**client_kwargs)
         else:
-            self._client = None
             logger.error("Ollama library not installed. Install with: pip install ollama")
 
     def chat(
@@ -57,7 +60,7 @@ class OllamaClient:
         Returns:
             Response dict with 'message' containing 'content'
         """
-        if not OLLAMA_AVAILABLE:
+        if not OLLAMA_AVAILABLE or not self._client:
             raise RuntimeError("Ollama library not available")
 
         try:
@@ -71,16 +74,13 @@ class OllamaClient:
                     f"[LLM PROMPT] {last_msg.get('content', '')[:500]}..."
                 )  # Log first 500 chars at debug level
 
-            kwargs = {
-                "model": self.model,
-                "messages": messages,
-                "options": {"temperature": temperature},
-            }
-
-            if format_json:
-                kwargs["format"] = "json"
-
-            response = self._client.chat(**kwargs)
+            fmt: Literal["", "json"] = "json" if format_json else ""
+            response = self._client.chat(  # type: ignore[call-overload]
+                model=self.model,
+                messages=messages,
+                format=fmt,
+                options={"temperature": temperature},
+            )
 
             # Log the full response
             response_content = response.get("message", {}).get("content", "")
@@ -93,7 +93,7 @@ class OllamaClient:
             logger.info("[LLM RESPONSE CONTENT - END]")
             logger.info("=" * 80)
 
-            return response
+            return dict(response)
 
         except Exception as e:
             logger.error(f"Error calling Ollama: {e}")
@@ -122,7 +122,7 @@ class OllamaClient:
 
         messages = [{"role": "user", "content": prompt}]
         response = self.chat(messages, format_json=format_json, temperature=temperature)
-        return response["message"]["content"]
+        return str(response["message"]["content"])
 
     def extract_structured_data(
         self,
@@ -152,7 +152,8 @@ Return ONLY valid JSON matching the schema above. Do not include any explanation
         )
 
         try:
-            return json.loads(response_text)
+            result: dict[str, Any] = json.loads(response_text)
+            return result
         except json.JSONDecodeError as e:
             logger.error(f"Failed to parse JSON response: {response_text}")
             logger.error(f"JSON error: {e}")

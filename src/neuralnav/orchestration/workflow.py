@@ -205,10 +205,13 @@ class RecommendationWorkflow:
         all_configs.sort(key=lambda x: x.scores.balanced_score if x.scores else 0, reverse=True)
         best_recommendation = all_configs[0]
 
+        gpu_cfg = best_recommendation.gpu_config
         logger.info(
             f"Selected: {best_recommendation.model_name} on "
-            f"{best_recommendation.gpu_config.gpu_count}x {best_recommendation.gpu_config.gpu_type} "
+            f"{gpu_cfg.gpu_count}x {gpu_cfg.gpu_type} "
             f"(balanced score: {best_recommendation.scores.balanced_score if best_recommendation.scores else 0:.1f})"
+            if gpu_cfg
+            else f"Selected: {best_recommendation.model_name} (no GPU config)"
         )
 
         # Add top 3 alternatives

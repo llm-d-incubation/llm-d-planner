@@ -106,7 +106,8 @@ async def deploy_model(request: DeploymentRequest):
         except Exception as e:
             logger.error(f"YAML validation failed: {e}")
             raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Generated YAML validation failed: {str(e)}"
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=f"Generated YAML validation failed: {str(e)}",
             ) from e
 
         return DeploymentResponse(
@@ -120,7 +121,8 @@ async def deploy_model(request: DeploymentRequest):
     except Exception as e:
         logger.error(f"Failed to generate deployment: {e}", exc_info=True)
         raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Failed to generate deployment: {str(e)}"
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to generate deployment: {str(e)}",
         ) from e
 
 
@@ -206,7 +208,9 @@ async def get_deployment_status(deployment_id: str):
 
     except Exception as e:
         logger.error(f"Failed to get deployment status: {e}")
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Deployment not found: {deployment_id}") from e
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail=f"Deployment not found: {deployment_id}"
+        ) from e
 
 
 @router.post("/deploy-to-cluster")
@@ -247,7 +251,8 @@ async def deploy_to_cluster(request: DeploymentRequest):
         except Exception as e:
             logger.error(f"YAML validation failed: {e}")
             raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Generated YAML validation failed: {str(e)}"
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=f"Generated YAML validation failed: {str(e)}",
             ) from e
 
         # Step 3: Deploy to cluster
@@ -258,7 +263,8 @@ async def deploy_to_cluster(request: DeploymentRequest):
         if not deployment_result["success"]:
             logger.error(f"Deployment failed: {deployment_result['errors']}")
             raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Deployment failed: {deployment_result['errors']}"
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=f"Deployment failed: {deployment_result['errors']}",
             )
 
         logger.info(f"Successfully deployed {deployment_id} to cluster")
@@ -276,7 +282,10 @@ async def deploy_to_cluster(request: DeploymentRequest):
         raise
     except Exception as e:
         logger.error(f"Failed to deploy to cluster: {e}", exc_info=True)
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Failed to deploy to cluster: {str(e)}") from e
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to deploy to cluster: {str(e)}",
+        ) from e
 
 
 @router.get("/cluster-status")
@@ -333,7 +342,8 @@ async def get_k8s_deployment_status(deployment_id: str):
     except Exception as e:
         logger.error(f"Failed to get K8s deployment status: {e}", exc_info=True)
         raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Failed to get deployment status: {str(e)}"
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to get deployment status: {str(e)}",
         ) from e
 
 
@@ -362,7 +372,8 @@ async def get_deployment_yaml(deployment_id: str):
 
         if not yaml_files:
             raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND, detail=f"No YAML files found for deployment {deployment_id}"
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"No YAML files found for deployment {deployment_id}",
             )
 
         return {"deployment_id": deployment_id, "files": yaml_files, "count": len(yaml_files)}
@@ -372,7 +383,8 @@ async def get_deployment_yaml(deployment_id: str):
     except Exception as e:
         logger.error(f"Failed to retrieve YAML files: {e}", exc_info=True)
         raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Failed to retrieve YAML files: {str(e)}"
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to retrieve YAML files: {str(e)}",
         ) from e
 
 
@@ -407,7 +419,10 @@ async def delete_deployment(deployment_id: str):
         raise
     except Exception as e:
         logger.error(f"Failed to delete deployment: {e}", exc_info=True)
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Failed to delete deployment: {str(e)}") from e
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to delete deployment: {str(e)}",
+        ) from e
 
 
 @router.get("/deployments")
@@ -428,10 +443,10 @@ async def list_all_deployments():
 
         deployments = []
         for deployment_id in deployment_ids:
-            status = manager.get_inferenceservice_status(deployment_id)
+            svc_status = manager.get_inferenceservice_status(deployment_id)
             pods = manager.get_deployment_pods(deployment_id)
 
-            deployments.append({"deployment_id": deployment_id, "status": status, "pods": pods})
+            deployments.append({"deployment_id": deployment_id, "status": svc_status, "pods": pods})
 
         return {
             "success": True,
@@ -442,4 +457,7 @@ async def list_all_deployments():
 
     except Exception as e:
         logger.error(f"Failed to list deployments: {e}", exc_info=True)
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Failed to list deployments: {str(e)}") from e
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to list deployments: {str(e)}",
+        ) from e

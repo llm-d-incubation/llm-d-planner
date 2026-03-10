@@ -57,29 +57,29 @@ class GPUType:
         self.memory_gb = data["memory_gb"]
         self.compute_capability = data["compute_capability"]
         self.typical_use_cases = data["typical_use_cases"]
-        self.cost_per_hour_usd = data["cost_per_hour_usd"]  # Base/minimum price
+        self.cost_per_hour_usd: float = data["cost_per_hour_usd"]  # Base/minimum price
         # Cloud provider-specific pricing (optional)
-        self.cost_per_hour_aws = data.get("cost_per_hour_aws")
-        self.cost_per_hour_gcp = data.get("cost_per_hour_gcp")
-        self.cost_per_hour_azure = data.get("cost_per_hour_azure")
+        self.cost_per_hour_aws: float | None = data.get("cost_per_hour_aws")
+        self.cost_per_hour_gcp: float | None = data.get("cost_per_hour_gcp")
+        self.cost_per_hour_azure: float | None = data.get("cost_per_hour_azure")
         self.availability = data["availability"]
         self.notes = data.get("notes", "")
 
     def get_cost_for_provider(self, provider: str | None = None) -> float:
         """
         Get cost per hour for a specific cloud provider.
-        
+
         Args:
             provider: Cloud provider ("aws", "gcp", "azure") or None for base price
-            
+
         Returns:
             Cost per hour in USD
         """
-        if provider == "aws" and self.cost_per_hour_aws:
+        if provider == "aws" and self.cost_per_hour_aws is not None:
             return self.cost_per_hour_aws
-        elif provider == "gcp" and self.cost_per_hour_gcp:
+        elif provider == "gcp" and self.cost_per_hour_gcp is not None:
             return self.cost_per_hour_gcp
-        elif provider == "azure" and self.cost_per_hour_azure:
+        elif provider == "azure" and self.cost_per_hour_azure is not None:
             return self.cost_per_hour_azure
         return self.cost_per_hour_usd
 
@@ -111,7 +111,12 @@ class ModelCatalog:
             data_path: Path to model_catalog.json
         """
         if data_path is None:
-            data_path = Path(__file__).parent.parent.parent.parent / "data" / "configuration" / "model_catalog.json"
+            data_path = (
+                Path(__file__).parent.parent.parent.parent
+                / "data"
+                / "configuration"
+                / "model_catalog.json"
+            )
 
         self.data_path = data_path
         self._models: dict[str, ModelInfo] = {}
@@ -234,12 +239,12 @@ class ModelCatalog:
 
         Cost Calculation Formula:
             Monthly_Cost = GPU_hourly_rate × GPU_count × hours_per_month
-            
+
         For multi-GPU deployments:
             - TP=2 (2 GPUs): 2 × base_cost
-            - TP=4 (4 GPUs): 4 × base_cost  
+            - TP=4 (4 GPUs): 4 × base_cost
             - TP=8 (8 GPUs): 8 × base_cost
-            
+
         Example costs (730 hours/month):
             - 1x A100-40: $1.50 × 1 × 730 = $1,095/mo
             - 2x A100-80: $2.00 × 2 × 730 = $2,920/mo
@@ -252,7 +257,7 @@ class ModelCatalog:
             gpu_type: GPU type identifier
             gpu_count: Total number of GPUs (tensor_parallel × replicas)
             hours_per_month: Hours per month (default: 730 for 24/7 operation)
-            provider: Optional cloud provider ("aws", "gcp", "azure") for 
+            provider: Optional cloud provider ("aws", "gcp", "azure") for
                      provider-specific pricing, None for base/minimum price
 
         Returns:
@@ -265,14 +270,14 @@ class ModelCatalog:
 
         hourly_rate = gpu.get_cost_for_provider(provider)
         monthly_cost = hourly_rate * gpu_count * hours_per_month
-        
+
         logger.debug(
             f"Cost calculation: {gpu_count}x {gpu_type} @ ${hourly_rate:.2f}/hr "
             f"× {hours_per_month:.0f}hrs = ${monthly_cost:,.0f}/mo"
         )
-        
+
         return monthly_cost
-    
+
     def get_cost_breakdown(
         self,
         gpu_type: str,
@@ -296,7 +301,7 @@ class ModelCatalog:
 
         total_gpus = tensor_parallel * replicas
         hours_per_month = 730
-        
+
         return {
             "gpu_type": gpu.gpu_type,
             "tensor_parallel": tensor_parallel,
@@ -308,7 +313,25 @@ class ModelCatalog:
             "hourly_rate_azure": gpu.cost_per_hour_azure,
             "cost_per_hour_total": gpu.cost_per_hour_usd * total_gpus,
             "cost_per_month_base": gpu.cost_per_hour_usd * total_gpus * hours_per_month,
-            "cost_per_month_aws": (gpu.cost_per_hour_aws or gpu.cost_per_hour_usd) * total_gpus * hours_per_month,
-            "cost_per_month_gcp": (gpu.cost_per_hour_gcp or gpu.cost_per_hour_usd) * total_gpus * hours_per_month,
-            "cost_per_month_azure": (gpu.cost_per_hour_azure or gpu.cost_per_hour_usd) * total_gpus * hours_per_month,
+            "cost_per_month_aws": (
+                gpu.cost_per_hour_aws
+                if gpu.cost_per_hour_aws is not None
+                else gpu.cost_per_hour_usd
+            )
+            * total_gpus
+            * hours_per_month,
+            "cost_per_month_gcp": (
+                gpu.cost_per_hour_gcp
+                if gpu.cost_per_hour_gcp is not None
+                else gpu.cost_per_hour_usd
+            )
+            * total_gpus
+            * hours_per_month,
+            "cost_per_month_azure": (
+                gpu.cost_per_hour_azure
+                if gpu.cost_per_hour_azure is not None
+                else gpu.cost_per_hour_usd
+            )
+            * total_gpus
+            * hours_per_month,
         }

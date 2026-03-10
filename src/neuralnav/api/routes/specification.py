@@ -24,7 +24,12 @@ def _calculate_percentile_value(min_val: int, max_val: int, percentile: float = 
 
 def _get_slo_workload_path() -> Path:
     """Get path to the SLO workload config file."""
-    return Path(__file__).parent.parent.parent.parent.parent / "data" / "configuration" / "usecase_slo_workload.json"
+    return (
+        Path(__file__).parent.parent.parent.parent.parent
+        / "data"
+        / "configuration"
+        / "usecase_slo_workload.json"
+    )
 
 
 @router.get("/slo-defaults/{use_case}")
@@ -39,14 +44,18 @@ async def get_slo_defaults(use_case: str):
 
         if not json_path.exists():
             logger.error(f"SLO workload config not found at: {json_path}")
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="SLO workload configuration not found")
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="SLO workload configuration not found"
+            )
 
         with open(json_path) as f:
             data = json.load(f)
 
         use_case_data = data.get("use_case_slo_workload", {}).get(use_case)
         if not use_case_data:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Use case '{use_case}' not found")
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail=f"Use case '{use_case}' not found"
+            )
 
         slo_targets = use_case_data.get("slo_targets", {})
 
@@ -81,7 +90,9 @@ async def get_slo_defaults(use_case: str):
         raise
     except KeyError as e:
         logger.error(f"Missing SLO data for {use_case}: {e}")
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Missing SLO data: {e}") from e
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Missing SLO data: {e}"
+        ) from e
     except Exception as e:
         logger.error(f"Failed to get SLO defaults for {use_case}: {e}")
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e)) from e
@@ -99,14 +110,18 @@ async def get_workload_profile(use_case: str):
 
         if not json_path.exists():
             logger.error(f"SLO workload config not found at: {json_path}")
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="SLO workload configuration not found")
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="SLO workload configuration not found"
+            )
 
         with open(json_path) as f:
             data = json.load(f)
 
         use_case_data = data.get("use_case_slo_workload", {}).get(use_case)
         if not use_case_data:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Use case '{use_case}' not found")
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail=f"Use case '{use_case}' not found"
+            )
 
         workload = use_case_data.get("workload", {})
 
@@ -136,7 +151,9 @@ async def get_workload_profile(use_case: str):
         raise
     except KeyError as e:
         logger.error(f"Missing workload data for {use_case}: {e}")
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Missing workload data: {e}") from e
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Missing workload data: {e}"
+        ) from e
     except Exception as e:
         logger.error(f"Failed to get workload profile for {use_case}: {e}")
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e)) from e
@@ -157,14 +174,18 @@ async def get_expected_rps(use_case: str, user_count: int = 1000):
 
         if not json_path.exists():
             logger.error(f"SLO workload config not found at: {json_path}")
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="SLO workload configuration not found")
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="SLO workload configuration not found"
+            )
 
         with open(json_path) as f:
             data = json.load(f)
 
         use_case_data = data.get("use_case_slo_workload", {}).get(use_case)
         if not use_case_data:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Use case '{use_case}' not found")
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail=f"Use case '{use_case}' not found"
+            )
 
         workload = use_case_data.get("workload", {})
 
@@ -201,7 +222,9 @@ async def get_expected_rps(use_case: str, user_count: int = 1000):
         raise
     except KeyError as e:
         logger.error(f"Missing workload data for {use_case}: {e}")
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Missing workload data: {e}") from e
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Missing workload data: {e}"
+        ) from e
     except Exception as e:
         logger.error(f"Failed to calculate expected RPS for {use_case}: {e}")
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e)) from e

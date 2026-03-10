@@ -73,7 +73,12 @@ class SLOTemplateRepository:
             data_path: Path to slo_templates.json
         """
         if data_path is None:
-            data_path = Path(__file__).parent.parent.parent.parent / "data" / "configuration" / "slo_templates.json"
+            data_path = (
+                Path(__file__).parent.parent.parent.parent
+                / "data"
+                / "configuration"
+                / "slo_templates.json"
+            )
 
         self.data_path = data_path
         self._templates: dict[str, SLOTemplate] = {}
@@ -111,7 +116,9 @@ class SLOTemplateRepository:
         """Get list of all supported use case IDs."""
         return list(self._templates.keys())
 
-    def get_templates_by_traffic_profile(self, prompt_tokens: int, output_tokens: int) -> list[SLOTemplate]:
+    def get_templates_by_traffic_profile(
+        self, prompt_tokens: int, output_tokens: int
+    ) -> list[SLOTemplate]:
         """
         Get all templates that use a specific traffic profile.
 
@@ -123,7 +130,8 @@ class SLOTemplateRepository:
             List of templates using this traffic profile
         """
         return [
-            template for template in self._templates.values()
+            template
+            for template in self._templates.values()
             if template.prompt_tokens == prompt_tokens and template.output_tokens == output_tokens
         ]
 
@@ -138,6 +146,7 @@ class SLOTemplateRepository:
             List of templates for this experience class
         """
         return [
-            template for template in self._templates.values()
+            template
+            for template in self._templates.values()
             if template.experience_class == experience_class
         ]

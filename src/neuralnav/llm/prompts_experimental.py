@@ -26,7 +26,7 @@ Keep your response concise (2-3 sentences max).
 
 
 def build_conversational_prompt(
-    user_message: str, current_understanding: dict, conversation_history: list = None
+    user_message: str, current_understanding: dict, conversation_history: list | None = None
 ) -> str:
     """
     Build prompt for conversational AI responses.

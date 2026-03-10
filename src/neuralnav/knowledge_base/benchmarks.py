@@ -23,7 +23,6 @@ testing, or future UI features that may need to display available options.
 
 import logging
 import os
-from typing import Optional
 
 import psycopg2
 from psycopg2.extras import RealDictCursor
@@ -75,7 +74,7 @@ class BenchmarkData:
         # Throughput (legacy fields kept for backwards compatibility)
         self.tokens_per_second = data["tokens_per_second"]
         self.requests_per_second = data["requests_per_second"]
-        
+
         # Estimated flag (True for interpolated benchmarks)
         self.estimated = data.get("estimated", False)
 
@@ -115,7 +114,7 @@ class BenchmarkData:
 class BenchmarkRepository:
     """Repository for querying model benchmark data from PostgreSQL."""
 
-    def __init__(self, database_url: Optional[str] = None):
+    def __init__(self, database_url: str | None = None):
         """
         Initialize benchmark repository.
 
@@ -123,8 +122,7 @@ class BenchmarkRepository:
             database_url: PostgreSQL connection string (defaults to DATABASE_URL env var)
         """
         self.database_url = database_url or os.getenv(
-            "DATABASE_URL",
-            "postgresql://postgres:neuralnav@localhost:5432/neuralnav"
+            "DATABASE_URL", "postgresql://postgres:neuralnav@localhost:5432/neuralnav"
         )
         self._test_connection()
 
@@ -149,8 +147,8 @@ class BenchmarkRepository:
         hardware: str,
         hardware_count: int,
         prompt_tokens: int,
-        output_tokens: int
-    ) -> Optional[BenchmarkData]:
+        output_tokens: int,
+    ) -> BenchmarkData | None:
         """
         Get benchmark for specific configuration and traffic profile.
 
@@ -183,7 +181,9 @@ class BenchmarkRepository:
         conn = self._get_connection()
         try:
             cursor = conn.cursor()
-            cursor.execute(query, (model_hf_repo, hardware, hardware_count, prompt_tokens, output_tokens))
+            cursor.execute(
+                query, (model_hf_repo, hardware, hardware_count, prompt_tokens, output_tokens)
+            )
             row = cursor.fetchone()
             cursor.close()
 
@@ -199,7 +199,7 @@ class BenchmarkRepository:
         hardware: str,
         hardware_count: int,
         prompt_tokens: int,
-        output_tokens: int
+        output_tokens: int,
     ) -> list[BenchmarkData]:
         """
         Get all benchmarks matching model, hardware, and traffic profile.
@@ -229,7 +229,9 @@ class BenchmarkRepository:
         conn = self._get_connection()
         try:
             cursor = conn.cursor()
-            cursor.execute(query, (model_hf_repo, hardware, hardware_count, prompt_tokens, output_tokens))
+            cursor.execute(
+                query, (model_hf_repo, hardware, hardware_count, prompt_tokens, output_tokens)
+            )
             rows = cursor.fetchall()
             cursor.close()
 
@@ -341,7 +343,9 @@ class BenchmarkRepository:
             gpu_filter = "AND hardware = ANY(%s)"
             logger.info(f"Filtering by GPU types: {gpu_types}")
 
-        logger.info(f"Querying benchmarks with percentile={percentile} (columns: {ttft_col}, {itl_col}, {e2e_col})")
+        logger.info(
+            f"Querying benchmarks with percentile={percentile} (columns: {ttft_col}, {itl_col}, {e2e_col})"
+        )
 
         # Use window function to rank benchmarks by requests_per_second within each
         # system configuration, then select only the highest QPS that meets SLO.
@@ -378,7 +382,14 @@ class BenchmarkRepository:
         """
 
         # Build query parameters
-        params: list = [prompt_tokens, output_tokens, ttft_p95_max_ms, itl_p95_max_ms, e2e_p95_max_ms, min_qps]
+        params: list = [
+            prompt_tokens,
+            output_tokens,
+            ttft_p95_max_ms,
+            itl_p95_max_ms,
+            e2e_p95_max_ms,
+            min_qps,
+        ]
         if gpu_types:
             params.append(gpu_types)
 

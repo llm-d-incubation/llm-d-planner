@@ -1,6 +1,6 @@
 """Recommendation-related schemas for GPU configs, scores, and ranked responses."""
 
-from typing import Literal, Optional
+from typing import Literal
 
 from pydantic import BaseModel, Field
 
@@ -54,7 +54,9 @@ class DeploymentRecommendation(BaseModel):
     predicted_throughput_qps: float | None = None
 
     # All percentile metrics from benchmark (for UI to display based on user selection)
-    benchmark_metrics: Optional[dict] = Field(default=None, description="All percentile metrics from benchmark")
+    benchmark_metrics: dict | None = Field(
+        default=None, description="All percentile metrics from benchmark"
+    )
 
     # Cost estimation (None when no viable config found)
     cost_per_hour_usd: float | None = None

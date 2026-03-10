@@ -17,13 +17,14 @@ import json
 import logging
 import re
 from pathlib import Path
-from typing import Optional
+from typing import Literal
 
 logger = logging.getLogger(__name__)
 
 # Try to import use-case quality scorer
 try:
     from .quality import score_model_quality
+
     USE_CASE_QUALITY_AVAILABLE = True
 except ImportError:
     USE_CASE_QUALITY_AVAILABLE = False
@@ -97,7 +98,7 @@ class Scorer:
             with open(config_path) as f:
                 data = json.load(f)
             logger.debug(f"Loaded SLO ranges from {config_path}")
-            return data.get("use_case_slo_workload", {})
+            return dict(data.get("use_case_slo_workload", {}))
         except (FileNotFoundError, json.JSONDecodeError) as e:
             logger.warning(f"Could not load SLO ranges from {config_path}: {e}")
             return {}
@@ -134,11 +135,12 @@ class Scorer:
             overage_ratio = actual_ms / max_ms
             return max(0, 60 - (overage_ratio - 1) * 60)
 
-    def score_accuracy(self, model_size_str: str, model_name: Optional[str] = None,
-                        use_case: Optional[str] = None) -> int:
+    def score_accuracy(
+        self, model_size_str: str, model_name: str | None = None, use_case: str | None = None
+    ) -> int:
         """
         Score model accuracy/quality.
-        
+
         Priority:
         1. Use-case specific benchmark score (Artificial Analysis data) if available
         2. Fallback to model size-based heuristic (Andre's original logic)
@@ -157,10 +159,10 @@ class Scorer:
             if quality_score > 0:
                 logger.debug(f"Quality score for {model_name} ({use_case}): {quality_score:.1f}")
                 return int(quality_score)
-        
+
         # Fallback to size-based heuristic (Andre's original logic)
         return self._score_accuracy_by_size(model_size_str)
-    
+
     def _score_accuracy_by_size(self, model_size_str: str) -> int:
         """
         Score model accuracy based on parameter count tier (fallback).
@@ -189,13 +191,13 @@ class Scorer:
         Score price using non-linear formula for better differentiation.
 
         Enhanced Formula: 100 * (1 - (Monthly_Cost / Max_Monthly_Cost)^0.7)
-        
+
         This creates more spread between configurations:
         - 1x A100: ~$1,100/mo → Score: 95
-        - 2x A100: ~$2,200/mo → Score: 85  
+        - 2x A100: ~$2,200/mo → Score: 85
         - 4x H100: ~$7,900/mo → Score: 60
         - 8x H100: ~$15,800/mo → Score: 35
-        
+
         The power of 0.7 creates non-linear scaling that:
         - Rewards cheaper configurations more significantly
         - Creates meaningful gaps between similar-cost options
@@ -210,25 +212,25 @@ class Scorer:
             Score 0-100 (100 = cheapest, 0 = most expensive)
         """
         import math
-        
+
         if max_cost == 0:
             return 100
-            
+
         if max_cost == min_cost:
             # All configs have same cost - give them high score
             return 95
 
         # Clamp cost to range
         cost = max(min_cost, min(max_cost, cost_per_month))
-        
+
         # Non-linear scoring formula
         # Power of 0.7 creates better spread than linear
         cost_ratio = cost / max_cost
         score = int(100 * (1 - math.pow(cost_ratio, 0.7)))
-        
+
         # Ensure minimum score of 5 for any valid config
         score = max(5, min(100, score))
-        
+
         logger.debug(
             f"Price score for ${cost_per_month:,.0f}/mo: {score} "
             f"(ratio: {cost_ratio:.2f}, min: ${min_cost:,.0f}, max: ${max_cost:,.0f})"
@@ -243,9 +245,9 @@ class Scorer:
         target_ttft_ms: int,
         target_itl_ms: int,
         target_e2e_ms: int,
-        use_case: str = None,
+        use_case: str | None = None,
         near_miss_tolerance: float = 0.0,
-    ) -> tuple[int, str]:
+    ) -> tuple[int, Literal["compliant", "near_miss", "exceeds"]]:
         """
         Score latency using CAPPED RANGE SCORING.
 
@@ -293,6 +295,7 @@ class Scorer:
         worst_ratio = max(ratios)
 
         # Determine SLO status using the tolerance passed from config_finder
+        slo_status: Literal["compliant", "near_miss", "exceeds"]
         if worst_ratio <= 1.0:
             slo_status = "compliant"
         elif worst_ratio <= (1.0 + near_miss_tolerance):
@@ -323,11 +326,13 @@ class Scorer:
         e2e_range = slo_range.get("e2e_ms", {})
 
         # Require both min and max for each metric
-        if not all([
-            ttft_range.get("min") and ttft_range.get("max"),
-            itl_range.get("min") and itl_range.get("max"),
-            e2e_range.get("min") and e2e_range.get("max"),
-        ]):
+        if not all(
+            [
+                ttft_range.get("min") and ttft_range.get("max"),
+                itl_range.get("min") and itl_range.get("max"),
+                e2e_range.get("min") and e2e_range.get("max"),
+            ]
+        ):
             logger.warning(
                 f"Incomplete SLO ranges for use_case='{use_case}'. "
                 f"All compliant configs will receive max latency score."
@@ -343,15 +348,9 @@ class Scorer:
         # - At or below min: 100 (no extra credit)
         # - Between min and max: linear 100→60
         # - Above max: penalty (<60)
-        ttft_score = self._calculate_capped_latency_score(
-            predicted_ttft_ms, ttft_min, ttft_max
-        )
-        itl_score = self._calculate_capped_latency_score(
-            predicted_itl_ms, itl_min, itl_max
-        )
-        e2e_score = self._calculate_capped_latency_score(
-            predicted_e2e_ms, e2e_min, e2e_max
-        )
+        ttft_score = self._calculate_capped_latency_score(predicted_ttft_ms, ttft_min, ttft_max)
+        itl_score = self._calculate_capped_latency_score(predicted_itl_ms, itl_min, itl_max)
+        e2e_score = self._calculate_capped_latency_score(predicted_e2e_ms, e2e_min, e2e_max)
 
         # Weight: TTFT 34%, ITL 33%, E2E 33%
         final_score = ttft_score * 0.34 + itl_score * 0.33 + e2e_score * 0.33
@@ -396,7 +395,7 @@ class Scorer:
         price_score: int,
         latency_score: int,
         complexity_score: int,
-        weights: Optional[dict] = None,
+        weights: dict | None = None,
     ) -> float:
         """
         Calculate weighted composite score.

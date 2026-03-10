@@ -1,6 +1,7 @@
 """Recommendation endpoints."""
 
 import logging
+from typing import Literal
 
 from fastapi import APIRouter, HTTPException, status
 from pydantic import BaseModel
@@ -49,7 +50,7 @@ class RankedRecommendationFromSpecRequest(BaseModel):
     ttft_target_ms: int
     itl_target_ms: int
     e2e_target_ms: int
-    percentile: str = "p95"  # "mean", "p90", "p95", "p99"
+    percentile: Literal["mean", "p90", "p95", "p99"] = "p95"
 
     # Ranking options
     min_accuracy: int | None = None
@@ -92,7 +93,7 @@ async def simple_recommend(request: SimpleRecommendationRequest):
                     recommendation=recommendation, namespace="default"
                 )
                 deployment_id = yaml_result["deployment_id"]
-                yaml_files = yaml_result["files"]
+                yaml_files: dict = yaml_result["files"]
                 logger.info(
                     f"Auto-generated YAML files for {deployment_id}: {list(yaml_files.keys())}"
                 )
@@ -143,7 +144,8 @@ async def simple_recommend(request: SimpleRecommendationRequest):
     except Exception as e:
         logger.error(f"Failed to generate recommendation: {e}", exc_info=True)
         raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Failed to generate recommendation: {str(e)}"
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to generate recommendation: {str(e)}",
         ) from e
 
 
@@ -248,7 +250,8 @@ async def ranked_recommend_from_spec(request: RankedRecommendationFromSpecReques
     except Exception as e:
         logger.error(f"Failed to generate ranked recommendations from spec: {e}", exc_info=True)
         raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Failed to generate ranked recommendations: {str(e)}"
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to generate ranked recommendations: {str(e)}",
         ) from e
 
 
@@ -270,7 +273,9 @@ async def test_endpoint(message: str = "I need a chatbot for 1000 users"):
         return {
             "success": True,
             "model": recommendation.model_name,
-            "gpu_config": f"{recommendation.gpu_config.gpu_count}x {recommendation.gpu_config.gpu_type}",
+            "gpu_config": f"{recommendation.gpu_config.gpu_count}x {recommendation.gpu_config.gpu_type}"
+            if recommendation.gpu_config
+            else "N/A",
             "cost_per_month": f"${recommendation.cost_per_month_usd:.2f}",
             "meets_slo": recommendation.meets_slo,
             "reasoning": recommendation.reasoning,

@@ -77,7 +77,7 @@ class DeploymentGenerator:
         use_case = recommendation.intent.use_case.replace("_", "-")
 
         # Clean model name: remove special chars, keep alphanumeric and hyphens
-        model_name = recommendation.model_id.split("/")[-1].lower()
+        model_name = (recommendation.model_id or "unknown").split("/")[-1].lower()
         model_name = re.sub(r"[^a-z0-9-]", "-", model_name)
         # Remove consecutive hyphens
         model_name = re.sub(r"-+", "-", model_name).strip("-")
@@ -119,6 +119,8 @@ class DeploymentGenerator:
         gpu_config = recommendation.gpu_config
         traffic = recommendation.traffic_profile
         slo = recommendation.slo_targets
+
+        assert gpu_config is not None, "gpu_config is required for template context"
 
         # Calculate GPU hourly rate from ModelCatalog
         gpu_info = self._catalog.get_gpu_type(gpu_config.gpu_type)
@@ -166,7 +168,8 @@ class DeploymentGenerator:
         # Calculate max_num_seqs based on expected QPS and latency
         # Rule of thumb: concurrent requests = QPS × avg_latency_seconds
         avg_latency_sec = slo.e2e_p95_target_ms / 1000.0
-        max_num_seqs = max(32, int(traffic.expected_qps * avg_latency_sec * 1.5))
+        expected_qps = traffic.expected_qps or 0.0
+        max_num_seqs = max(32, int(expected_qps * avg_latency_sec * 1.5))
 
         # Max batched tokens (vLLM parameter)
         max_num_batched_tokens = max_num_seqs * (traffic.prompt_tokens + traffic.output_tokens)
@@ -228,7 +231,7 @@ class DeploymentGenerator:
 
     def generate_all(
         self, recommendation: DeploymentRecommendation, namespace: str = "default"
-    ) -> dict[str, str]:
+    ) -> dict[str, Any]:
         """
         Generate all deployment YAML files.
 
@@ -237,7 +240,7 @@ class DeploymentGenerator:
             namespace: Kubernetes namespace
 
         Returns:
-            Dictionary mapping config type to file path
+            Dictionary with deployment_id, namespace, files, and metadata
         """
         deployment_id = self.generate_deployment_id(recommendation)
         context = self._prepare_template_context(recommendation, deployment_id, namespace)

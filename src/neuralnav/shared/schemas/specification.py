@@ -1,5 +1,7 @@
 """Specification-related schemas for traffic profiles and SLO targets."""
 
+from typing import Literal
+
 from pydantic import BaseModel, Field
 
 from .intent import DeploymentIntent
@@ -19,7 +21,9 @@ class SLOTargets(BaseModel):
     ttft_p95_target_ms: int = Field(..., description="Time to First Token target (ms)")
     itl_p95_target_ms: int = Field(..., description="Inter-Token Latency target (ms/token)")
     e2e_p95_target_ms: int = Field(..., description="End-to-end latency target (ms)")
-    percentile: str = Field(default="p95", description="Percentile for SLO comparison (mean, p90, p95, p99)")
+    percentile: Literal["mean", "p90", "p95", "p99"] = Field(
+        default="p95", description="Percentile for SLO comparison (mean, p90, p95, p99)"
+    )
 
 
 class DeploymentSpecification(BaseModel):

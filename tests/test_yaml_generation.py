@@ -9,20 +9,19 @@ This script tests the complete workflow:
 
 import logging
 
-from neuralnav.shared.schemas import (
-    DeploymentIntent,
-    TrafficProfile,
-    SLOTargets,
-    GPUConfig,
-    DeploymentRecommendation
-)
 from neuralnav.configuration.generator import DeploymentGenerator
 from neuralnav.configuration.validator import YAMLValidator
+from neuralnav.shared.schemas import (
+    DeploymentIntent,
+    DeploymentRecommendation,
+    GPUConfig,
+    SLOTargets,
+    TrafficProfile,
+)
 
 # Configure logging
 logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 )
 logger = logging.getLogger(__name__)
 
@@ -37,27 +36,14 @@ def create_test_recommendation() -> DeploymentRecommendation:
         latency_requirement="high",
         throughput_priority="high",
         budget_constraint="moderate",
-        domain_specialization=["general"]
+        domain_specialization=["general"],
     )
 
-    traffic_profile = TrafficProfile(
-        prompt_tokens=512,
-        output_tokens=256,
-        expected_qps=50.0
-    )
+    traffic_profile = TrafficProfile(prompt_tokens=512, output_tokens=256, expected_qps=50.0)
 
-    slo_targets = SLOTargets(
-        ttft_p95_target_ms=200,
-        itl_p95_target_ms=50,
-        e2e_p95_target_ms=2000
-    )
+    slo_targets = SLOTargets(ttft_p95_target_ms=200, itl_p95_target_ms=50, e2e_p95_target_ms=2000)
 
-    gpu_config = GPUConfig(
-        gpu_type="A100-80",
-        gpu_count=2,
-        tensor_parallel=2,
-        replicas=1
-    )
+    gpu_config = GPUConfig(gpu_type="A100-80", gpu_count=2, tensor_parallel=2, replicas=1)
 
     recommendation = DeploymentRecommendation(
         intent=intent,
@@ -74,9 +60,9 @@ def create_test_recommendation() -> DeploymentRecommendation:
         cost_per_month_usd=6570.0,
         meets_slo=True,
         reasoning="Llama 3.1 8B Instruct provides excellent latency for chatbot use cases. "
-                  "2x A100-80 GPUs in tensor parallel configuration meets all SLO targets "
-                  "with headroom for traffic spikes. Cost-effective for 5000 concurrent users.",
-        alternative_options=None
+        "2x A100-80 GPUs in tensor parallel configuration meets all SLO targets "
+        "with headroom for traffic spikes. Cost-effective for 5000 concurrent users.",
+        alternative_options=None,
     )
 
     return recommendation
@@ -92,8 +78,10 @@ def test_yaml_generation():
     # Step 1: Create test recommendation
     logger.info("\n[1/4] Creating test recommendation...")
     recommendation = create_test_recommendation()
-    logger.info(f"✓ Recommendation created: {recommendation.model_name} on "
-                f"{recommendation.gpu_config.gpu_count}x {recommendation.gpu_config.gpu_type}")
+    logger.info(
+        f"✓ Recommendation created: {recommendation.model_name} on "
+        f"{recommendation.gpu_config.gpu_count}x {recommendation.gpu_config.gpu_type}"
+    )
 
     # Step 2: Generate YAML files
     logger.info("\n[2/4] Generating deployment YAML files...")
@@ -101,11 +89,11 @@ def test_yaml_generation():
 
     result = generator.generate_all(recommendation, namespace="default")
     assert result is not None
-    assert 'deployment_id' in result
-    assert 'files' in result
+    assert "deployment_id" in result
+    assert "files" in result
 
     # Step 3: Validate generated YAMLs
     validator = YAMLValidator()
-    validation_results = validator.validate_all(result['files'])
+    validation_results = validator.validate_all(result["files"])
     for config_type, valid in validation_results.items():
         assert valid, f"YAML validation failed for {config_type}"

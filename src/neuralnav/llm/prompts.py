@@ -35,7 +35,9 @@ Experience class guidance:
 """
 
 
-def build_intent_extraction_prompt(user_message: str, conversation_history: list = None) -> str:
+def build_intent_extraction_prompt(
+    user_message: str, conversation_history: list | None = None
+) -> str:
     """
     Build prompt for extracting deployment intent from user conversation.
 
@@ -105,4 +107,3 @@ Examples:
 {INTENT_EXTRACTION_SCHEMA}
 """
     return prompt
-
