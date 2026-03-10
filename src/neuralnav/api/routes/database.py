@@ -41,9 +41,10 @@ async def db_status():
         finally:
             conn.close()
     except Exception as e:
-        logger.error(f"Failed to get DB status: {e}")
+        logger.error(f"Failed to get DB status: {e}", exc_info=True)
         raise HTTPException(
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=f"Database not accessible: {e}"
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Database not accessible",
         ) from e
 
 
@@ -95,10 +96,10 @@ async def upload_benchmarks(file: UploadFile = File(...)):
         finally:
             conn.close()
     except Exception as e:
-        logger.error(f"Failed to load benchmarks: {e}")
+        logger.error(f"Failed to load benchmarks: {e}", exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to load benchmarks: {e}",
+            detail="Failed to load benchmarks",
         ) from e
 
 
@@ -126,8 +127,8 @@ async def reset_database():
         finally:
             conn.close()
     except Exception as e:
-        logger.error(f"Failed to reset database: {e}")
+        logger.error(f"Failed to reset database: {e}", exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to reset database: {e}",
+            detail="Failed to reset database",
         ) from e
