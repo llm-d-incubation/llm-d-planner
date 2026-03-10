@@ -9,7 +9,7 @@ import time
 
 import pandas as pd
 import streamlit as st
-from api_client import delete_deployment, get_k8s_status, load_all_deployments
+from api_client import delete_deployment, load_all_deployments
 
 
 def render_deployment_management_tab():

@@ -13,7 +13,6 @@ from api_client import (
     upload_benchmarks,
 )
 
-
 _TAB_INDEX = 5  # Configuration is the 6th tab (0-indexed)
 
 
