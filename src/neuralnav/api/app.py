@@ -1,12 +1,14 @@
 """FastAPI application factory for NeuralNav API."""
 
+import asyncio
 import logging
 import os
+from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from .routes import (
+from neuralnav.api.routes import (
     configuration_router,
     database_router,
     health_router,
@@ -27,12 +29,30 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Initialize all singletons on app.state during startup."""
+    from neuralnav.api.dependencies import init_app_state
+
+    logger.info("Initializing app state...")
+    try:
+        await asyncio.to_thread(init_app_state, app)
+    except Exception:
+        logger.exception("App state initialization failed during startup")
+        raise
+    # Create asyncio.Lock in the event loop thread (not in the worker thread
+    # where init_app_state runs) to avoid cross-loop binding issues.
+    app.state.cluster_manager_lock = asyncio.Lock()
+    yield
+
+
 def create_app() -> FastAPI:
     """Create and configure the FastAPI application."""
     app = FastAPI(
         title="NeuralNav API",
         description="API for LLM deployment recommendations",
         version="0.1.0",
+        lifespan=lifespan,
     )
 
     # Add CORS middleware

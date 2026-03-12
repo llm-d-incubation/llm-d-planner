@@ -1,18 +1,23 @@
 """Shared dependencies for API routes.
 
-This module provides singleton instances and dependency injection
-for the API routes. All shared state is initialized here.
+This module provides singleton instances via FastAPI's app.state and
+dependency injection via Depends(). All shared state is initialized
+during the application lifespan in init_app_state().
 """
 
+import asyncio
 import logging
 import os
+from typing import cast
+
+from fastapi import FastAPI, HTTPException, Request, status
+from starlette.concurrency import run_in_threadpool
 
 from neuralnav.cluster import KubernetesClusterManager, KubernetesDeploymentError
 from neuralnav.configuration import DeploymentGenerator, YAMLValidator
 from neuralnav.knowledge_base.model_catalog import ModelCatalog
 from neuralnav.knowledge_base.slo_templates import SLOTemplateRepository
 from neuralnav.orchestration.workflow import RecommendationWorkflow
-from neuralnav.shared.schemas import DeploymentMode
 
 # Configure logging
 debug_mode = os.getenv("NEURALNAV_DEBUG", "false").lower() == "true"
@@ -24,97 +29,80 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-# Singleton instances
-_workflow: RecommendationWorkflow | None = None
-_model_catalog: ModelCatalog | None = None
-_slo_repo: SLOTemplateRepository | None = None
-_deployment_generator: DeploymentGenerator | None = None
-_yaml_validator: YAMLValidator | None = None
-_cluster_manager: KubernetesClusterManager | None = None
+
+# ---------------------------------------------------------------------------
+# Lifespan: initialize all singletons on app.state
+# ---------------------------------------------------------------------------
 
 
-def get_workflow() -> RecommendationWorkflow:
+def init_app_state(app: FastAPI) -> None:
+    """Initialize all singletons on app.state during lifespan startup."""
+    app.state.model_catalog = ModelCatalog()
+    app.state.slo_repo = SLOTemplateRepository()
+    app.state.deployment_generator = DeploymentGenerator(simulator_mode=False)
+    app.state.yaml_validator = YAMLValidator()
+    app.state.cluster_managers = {}  # dict[str, KubernetesClusterManager]
+    app.state.workflow = RecommendationWorkflow()
+
+
+# ---------------------------------------------------------------------------
+# Depends() providers — read from request.app.state
+# ---------------------------------------------------------------------------
+
+
+def get_workflow(request: Request) -> RecommendationWorkflow:
     """Get the recommendation workflow singleton."""
-    global _workflow
-    if _workflow is None:
-        _workflow = RecommendationWorkflow()
-    return _workflow
+    return cast(RecommendationWorkflow, request.app.state.workflow)
 
 
-def get_model_catalog() -> ModelCatalog:
+def get_model_catalog(request: Request) -> ModelCatalog:
     """Get the model catalog singleton."""
-    global _model_catalog
-    if _model_catalog is None:
-        _model_catalog = ModelCatalog()
-    return _model_catalog
+    return cast(ModelCatalog, request.app.state.model_catalog)
 
 
-def get_slo_repo() -> SLOTemplateRepository:
+def get_slo_repo(request: Request) -> SLOTemplateRepository:
     """Get the SLO template repository singleton."""
-    global _slo_repo
-    if _slo_repo is None:
-        _slo_repo = SLOTemplateRepository()
-    return _slo_repo
+    return cast(SLOTemplateRepository, request.app.state.slo_repo)
 
 
-def get_deployment_generator() -> DeploymentGenerator:
+def get_deployment_generator(request: Request) -> DeploymentGenerator:
     """Get the deployment generator singleton."""
-    global _deployment_generator
-    if _deployment_generator is None:
-        _deployment_generator = DeploymentGenerator(simulator_mode=False)
-        logger.info("Deployment generator initialized (simulator_mode=False)")
-    return _deployment_generator
+    return cast(DeploymentGenerator, request.app.state.deployment_generator)
 
 
-def get_deployment_mode() -> DeploymentMode:
-    """Return the current deployment mode."""
-    gen = get_deployment_generator()
-    return DeploymentMode.SIMULATOR if gen.simulator_mode else DeploymentMode.PRODUCTION
-
-
-def set_deployment_mode(mode: DeploymentMode) -> DeploymentMode:
-    """Set the deployment mode and return the new mode."""
-    gen = get_deployment_generator()
-    gen.simulator_mode = mode == DeploymentMode.SIMULATOR
-    logger.info(f"Deployment mode changed to: {mode.value}")
-    return mode
-
-
-def get_yaml_validator() -> YAMLValidator:
+def get_yaml_validator(request: Request) -> YAMLValidator:
     """Get the YAML validator singleton."""
-    global _yaml_validator
-    if _yaml_validator is None:
-        _yaml_validator = YAMLValidator()
-    return _yaml_validator
+    return cast(YAMLValidator, request.app.state.yaml_validator)
 
 
-def get_cluster_manager(namespace: str = "default") -> KubernetesClusterManager | None:
-    """Get or create a cluster manager.
-
-    Returns None if cluster is not accessible.
-    """
-    global _cluster_manager
-    if _cluster_manager is None:
-        try:
-            _cluster_manager = KubernetesClusterManager(namespace=namespace)
-            logger.info("Kubernetes cluster manager initialized successfully")
-        except KubernetesDeploymentError as e:
-            logger.info(f"Kubernetes cluster not accessible: {e}")
-            return None
-    return _cluster_manager
+_MAX_CACHED_NAMESPACES = 32
 
 
-def get_cluster_manager_or_raise(namespace: str = "default") -> KubernetesClusterManager:
+async def get_cluster_manager_or_raise(
+    request: Request, namespace: str = "default"
+) -> KubernetesClusterManager:
     """Get or create a cluster manager, raising an exception if not accessible."""
-    manager = get_cluster_manager(namespace)
-    if manager is None:
-        try:
-            return KubernetesClusterManager(namespace=namespace)
-        except KubernetesDeploymentError as e:
-            from fastapi import HTTPException, status
-
-            raise HTTPException(
-                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-                detail=f"Kubernetes cluster not accessible: {str(e)}",
-            ) from e
-    return manager
+    managers: dict[str, KubernetesClusterManager] = request.app.state.cluster_managers
+    if namespace not in managers:
+        lock = cast(asyncio.Lock, request.app.state.cluster_manager_lock)
+        async with lock:
+            if namespace not in managers:
+                if len(managers) >= _MAX_CACHED_NAMESPACES:
+                    raise HTTPException(
+                        status_code=status.HTTP_400_BAD_REQUEST,
+                        detail=f"Too many namespaces (limit {_MAX_CACHED_NAMESPACES})",
+                    )
+                try:
+                    managers[namespace] = await run_in_threadpool(
+                        KubernetesClusterManager, namespace=namespace
+                    )
+                    logger.info(
+                        "Kubernetes cluster manager initialized for namespace=%s",
+                        namespace,
+                    )
+                except KubernetesDeploymentError as e:
+                    raise HTTPException(
+                        status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                        detail=f"Kubernetes cluster not accessible: {e}",
+                    ) from e
+    return managers[namespace]

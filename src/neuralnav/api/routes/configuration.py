@@ -1,20 +1,21 @@
 """Configuration and deployment endpoints."""
 
+import glob as glob_module
 import logging
 import random
 from datetime import datetime
+from typing import Any
 
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Request, status
 from pydantic import BaseModel
+from starlette.concurrency import run_in_threadpool
 
 from neuralnav.api.dependencies import (
     get_cluster_manager_or_raise,
     get_deployment_generator,
-    get_deployment_mode,
     get_yaml_validator,
-    set_deployment_mode,
 )
-from neuralnav.cluster import KubernetesClusterManager
+from neuralnav.configuration import DeploymentGenerator, YAMLValidator
 from neuralnav.shared.schemas import DeploymentMode, DeploymentRecommendation
 
 logger = logging.getLogger(__name__)
@@ -34,7 +35,7 @@ class DeploymentResponse(BaseModel):
 
     deployment_id: str
     namespace: str
-    files: dict
+    files: dict[str, Any]
     success: bool = True
     message: str | None = None
 
@@ -44,10 +45,10 @@ class DeploymentStatusResponse(BaseModel):
 
     deployment_id: str
     status: str
-    slo_compliance: dict
-    resource_utilization: dict
-    cost_analysis: dict
-    traffic_patterns: dict
+    slo_compliance: dict[str, Any]
+    resource_utilization: dict[str, Any]
+    cost_analysis: dict[str, Any]
+    traffic_patterns: dict[str, Any]
     recommendations: list[str] | None = None
 
 
@@ -58,24 +59,28 @@ class DeploymentModeRequest(BaseModel):
 
 
 @router.get("/deployment-mode")
-async def get_mode():
+async def get_mode(http_request: Request):
     """Return the current deployment mode ('production' or 'simulator')."""
-    return {"mode": get_deployment_mode()}
+    gen = http_request.app.state.deployment_generator
+    mode = DeploymentMode.SIMULATOR if gen.simulator_mode else DeploymentMode.PRODUCTION
+    return {"mode": mode}
 
 
 @router.put("/deployment-mode")
-async def set_mode(request: DeploymentModeRequest):
-    """Set the deployment mode.
-
-    Args:
-        request: Must contain mode as a DeploymentMode value.
-    """
-    new_mode = set_deployment_mode(request.mode)
-    return {"mode": new_mode}
+async def set_mode(request: DeploymentModeRequest, http_request: Request):
+    """Set the deployment mode."""
+    gen = http_request.app.state.deployment_generator
+    gen.simulator_mode = request.mode == DeploymentMode.SIMULATOR
+    logger.info(f"Deployment mode changed to: {request.mode.value}")
+    return {"mode": request.mode}
 
 
 @router.post("/deploy", response_model=DeploymentResponse)
-async def deploy_model(request: DeploymentRequest):
+async def deploy_model(
+    request: DeploymentRequest,
+    deployment_generator: DeploymentGenerator = Depends(get_deployment_generator),
+    yaml_validator: YAMLValidator = Depends(get_yaml_validator),
+):
     """
     Generate deployment YAML files from recommendation.
 
@@ -89,9 +94,6 @@ async def deploy_model(request: DeploymentRequest):
         HTTPException: If deployment generation fails
     """
     try:
-        deployment_generator = get_deployment_generator()
-        yaml_validator = get_yaml_validator()
-
         logger.info(f"Generating deployment for model: {request.recommendation.model_name}")
 
         # Generate all YAML files
@@ -214,7 +216,12 @@ async def get_deployment_status(deployment_id: str):
 
 
 @router.post("/deploy-to-cluster")
-async def deploy_to_cluster(request: DeploymentRequest):
+async def deploy_to_cluster(
+    request: DeploymentRequest,
+    http_request: Request,
+    deployment_generator: DeploymentGenerator = Depends(get_deployment_generator),
+    yaml_validator: YAMLValidator = Depends(get_yaml_validator),
+):
     """
     Deploy model to Kubernetes cluster.
 
@@ -229,9 +236,7 @@ async def deploy_to_cluster(request: DeploymentRequest):
     Raises:
         HTTPException: If cluster not accessible or deployment fails
     """
-    manager = get_cluster_manager_or_raise(request.namespace)
-    deployment_generator = get_deployment_generator()
-    yaml_validator = get_yaml_validator()
+    manager = await get_cluster_manager_or_raise(http_request, request.namespace)
 
     try:
         logger.info(f"Deploying model to cluster: {request.recommendation.model_name}")
@@ -258,7 +263,7 @@ async def deploy_to_cluster(request: DeploymentRequest):
         # Step 3: Deploy to cluster
         yaml_file_paths = [files["inferenceservice"], files["autoscaling"]]
 
-        deployment_result = manager.deploy_all(yaml_file_paths)
+        deployment_result = await run_in_threadpool(manager.deploy_all, yaml_file_paths)
 
         if not deployment_result["success"]:
             logger.error(f"Deployment failed: {deployment_result['errors']}")
@@ -289,7 +294,7 @@ async def deploy_to_cluster(request: DeploymentRequest):
 
 
 @router.get("/cluster-status")
-async def get_cluster_status():
+async def get_cluster_status(http_request: Request, namespace: str = "default"):
     """
     Get Kubernetes cluster status.
 
@@ -297,28 +302,34 @@ async def get_cluster_status():
         Cluster accessibility and basic info
     """
     try:
-        temp_manager = KubernetesClusterManager(namespace="default")
-        deployments = temp_manager.list_inferenceservices()
+        manager = await get_cluster_manager_or_raise(http_request, namespace)
+        deployments = await run_in_threadpool(manager.list_inferenceservices)
 
         return {
             "accessible": True,
-            "namespace": temp_manager.namespace,
+            "namespace": manager.namespace,
             "inference_services": deployments,
             "count": len(deployments),
             "message": "Cluster accessible",
         }
+    except HTTPException as e:
+        logger.error("Failed to query cluster status: %s", e.detail)
+        return {"accessible": False, "error": e.detail}
     except Exception as e:
         logger.error(f"Failed to query cluster status: {e}")
         return {"accessible": False, "error": str(e)}
 
 
 @router.get("/deployments/{deployment_id}/k8s-status")
-async def get_k8s_deployment_status(deployment_id: str):
+async def get_k8s_deployment_status(
+    deployment_id: str, http_request: Request, namespace: str = "default"
+):
     """
     Get actual Kubernetes deployment status (not mock data).
 
     Args:
         deployment_id: InferenceService name
+        namespace: Kubernetes namespace
 
     Returns:
         Real deployment status from cluster
@@ -326,11 +337,11 @@ async def get_k8s_deployment_status(deployment_id: str):
     Raises:
         HTTPException: If cluster not accessible
     """
-    manager = get_cluster_manager_or_raise("default")
+    manager = await get_cluster_manager_or_raise(http_request, namespace)
 
     try:
-        isvc_status = manager.get_inferenceservice_status(deployment_id)
-        pods = manager.get_deployment_pods(deployment_id)
+        isvc_status = await run_in_threadpool(manager.get_inferenceservice_status, deployment_id)
+        pods = await run_in_threadpool(manager.get_deployment_pods, deployment_id)
 
         return {
             "deployment_id": deployment_id,
@@ -348,7 +359,10 @@ async def get_k8s_deployment_status(deployment_id: str):
 
 
 @router.get("/deployments/{deployment_id}/yaml")
-async def get_deployment_yaml(deployment_id: str):
+async def get_deployment_yaml(
+    deployment_id: str,
+    deployment_generator: DeploymentGenerator = Depends(get_deployment_generator),
+):
     """
     Retrieve generated YAML files for a deployment.
 
@@ -362,11 +376,11 @@ async def get_deployment_yaml(deployment_id: str):
         HTTPException: If YAML files not found
     """
     try:
-        deployment_generator = get_deployment_generator()
         output_dir = deployment_generator.output_dir
 
         yaml_files = {}
-        for file_path in output_dir.glob(f"{deployment_id}*.yaml"):
+        safe_id = glob_module.escape(deployment_id)
+        for file_path in output_dir.glob(f"{safe_id}*.yaml"):
             with open(file_path) as f:
                 yaml_files[file_path.name] = f.read()
 
@@ -389,12 +403,13 @@ async def get_deployment_yaml(deployment_id: str):
 
 
 @router.delete("/deployments/{deployment_id}")
-async def delete_deployment(deployment_id: str):
+async def delete_deployment(deployment_id: str, http_request: Request, namespace: str = "default"):
     """
     Delete a deployment from the cluster.
 
     Args:
         deployment_id: InferenceService name to delete
+        namespace: Kubernetes namespace
 
     Returns:
         Deletion result
@@ -402,10 +417,10 @@ async def delete_deployment(deployment_id: str):
     Raises:
         HTTPException: If cluster not accessible or deletion fails
     """
-    manager = get_cluster_manager_or_raise("default")
+    manager = await get_cluster_manager_or_raise(http_request, namespace)
 
     try:
-        result = manager.delete_inferenceservice(deployment_id)
+        result = await run_in_threadpool(manager.delete_inferenceservice, deployment_id)
 
         if not result["success"]:
             raise HTTPException(
@@ -426,9 +441,12 @@ async def delete_deployment(deployment_id: str):
 
 
 @router.get("/deployments")
-async def list_all_deployments():
+async def list_all_deployments(http_request: Request, namespace: str = "default"):
     """
     List all InferenceServices in the cluster with their detailed status.
+
+    Args:
+        namespace: Kubernetes namespace
 
     Returns:
         List of deployments with status information
@@ -436,15 +454,15 @@ async def list_all_deployments():
     Raises:
         HTTPException: If cluster not accessible
     """
-    manager = get_cluster_manager_or_raise("default")
+    manager = await get_cluster_manager_or_raise(http_request, namespace)
 
     try:
-        deployment_ids = manager.list_inferenceservices()
+        deployment_ids = await run_in_threadpool(manager.list_inferenceservices)
 
         deployments = []
         for deployment_id in deployment_ids:
-            svc_status = manager.get_inferenceservice_status(deployment_id)
-            pods = manager.get_deployment_pods(deployment_id)
+            svc_status = await run_in_threadpool(manager.get_inferenceservice_status, deployment_id)
+            pods = await run_in_threadpool(manager.get_deployment_pods, deployment_id)
 
             deployments.append({"deployment_id": deployment_id, "status": svc_status, "pods": pods})
 

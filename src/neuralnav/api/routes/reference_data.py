@@ -5,9 +5,11 @@ import json
 import logging
 from pathlib import Path
 
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status
 
 from neuralnav.api.dependencies import get_model_catalog, get_slo_repo
+from neuralnav.knowledge_base.model_catalog import ModelCatalog
+from neuralnav.knowledge_base.slo_templates import SLOTemplateRepository
 
 logger = logging.getLogger(__name__)
 
@@ -20,10 +22,9 @@ def _get_data_path() -> Path:
 
 
 @router.get("/models")
-async def list_models():
+async def list_models(model_catalog: ModelCatalog = Depends(get_model_catalog)):
     """Get list of available models."""
     try:
-        model_catalog = get_model_catalog()
         models = model_catalog.get_all_models()
         return {"models": [model.to_dict() for model in models], "count": len(models)}
     except Exception as e:
@@ -32,10 +33,9 @@ async def list_models():
 
 
 @router.get("/gpu-types")
-async def list_gpu_types():
+async def list_gpu_types(model_catalog: ModelCatalog = Depends(get_model_catalog)):
     """Get list of available GPU types."""
     try:
-        model_catalog = get_model_catalog()
         gpu_types = model_catalog.get_all_gpu_types()
         return {"gpu_types": [gpu.to_dict() for gpu in gpu_types], "count": len(gpu_types)}
     except Exception as e:
@@ -44,10 +44,9 @@ async def list_gpu_types():
 
 
 @router.get("/use-cases")
-async def list_use_cases():
+async def list_use_cases(slo_repo: SLOTemplateRepository = Depends(get_slo_repo)):
     """Get list of supported use cases with SLO templates."""
     try:
-        slo_repo = get_slo_repo()
         templates = slo_repo.get_all_templates()
         return {
             "use_cases": {use_case: template.to_dict() for use_case, template in templates.items()},
