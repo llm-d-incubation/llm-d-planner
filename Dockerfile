@@ -29,9 +29,12 @@ COPY data ./data
 # Copy scripts (schema init, benchmark loading — used by db-init Job)
 COPY scripts ./scripts
 
-# Create directories for generated files
-RUN mkdir -p /app/generated_configs /app/logs/prompts && \
-    chmod -R 770 /app/generated_configs /app/logs
+# Create non-root user and directories for generated files
+RUN groupadd --gid 1001 appuser && \
+    useradd --uid 1001 --gid 0 --no-create-home appuser && \
+    mkdir -p /app/generated_configs /app/logs/prompts && \
+    chown -R appuser:0 /app && \
+    chmod -R g=u /app/generated_configs /app/logs
 
 # Set environment variables
 ENV PYTHONPATH=/app/src
@@ -40,6 +43,9 @@ ENV PYTHONUNBUFFERED=1
 ENV PATH="/app/.venv/bin:$PATH"
 
 ARG MODEL_CATALOG_URL
+
+# Switch to non-root user
+USER appuser
 
 # Expose backend API port
 EXPOSE 8000

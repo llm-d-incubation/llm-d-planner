@@ -60,6 +60,16 @@ services:
       API_HOST: 0.0.0.0
       API_PORT: 8000
 
+      # Benchmark data source: "postgresql" (default) or "model_catalog" (RHOAI)
+      NEURALNAV_BENCHMARK_SOURCE: ${NEURALNAV_BENCHMARK_SOURCE:-postgresql}
+
+      # Model Catalog connection (only used when NEURALNAV_BENCHMARK_SOURCE=model_catalog)
+      MODEL_CATALOG_URL: ${MODEL_CATALOG_URL:-}
+      MODEL_CATALOG_TOKEN: ${MODEL_CATALOG_TOKEN:-}
+      MODEL_CATALOG_SOURCE_ID: ${MODEL_CATALOG_SOURCE_ID:-redhat_ai_validated_models}
+      MODEL_CATALOG_VERIFY_SSL: ${MODEL_CATALOG_VERIFY_SSL:-true}
+      MODEL_CATALOG_CA_BUNDLE: ${MODEL_CATALOG_CA_BUNDLE:-}
+
       # Enable CORS for local development
       CORS_ORIGINS: http://localhost:8501,http://ui:8501
     volumes:

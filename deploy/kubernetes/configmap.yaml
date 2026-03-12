@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: neuralnav-config
+  namespace: neuralnav
+  labels:
+    app.kubernetes.io/part-of: neuralnav
+data:
+  # Benchmark data source: "postgresql" (default) or "model_catalog" (RHOAI)
+  NEURALNAV_BENCHMARK_SOURCE: postgresql
+
+  # Model Catalog connection (only used when NEURALNAV_BENCHMARK_SOURCE=model_catalog)
+  MODEL_CATALOG_URL: https://model-catalog.rhoai-model-registries.svc:8443
+  MODEL_CATALOG_SOURCE_ID: redhat_ai_validated_models
+  MODEL_CATALOG_VERIFY_SSL: "true"
+  # Path to the OpenShift service-serving CA bundle (mounted via service-ca ConfigMap)
+  MODEL_CATALOG_CA_BUNDLE: /etc/pki/service-ca/service-ca.crt

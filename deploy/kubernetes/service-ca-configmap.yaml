@@ -1,0 +1,11 @@
+# OpenShift injects the service-serving CA bundle into this ConfigMap.
+# The annotation triggers automatic injection of the cluster's service CA.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: neuralnav-service-ca
+  namespace: neuralnav
+  labels:
+    app.kubernetes.io/part-of: neuralnav
+  annotations:
+    service.beta.openshift.io/inject-cabundle: "true"

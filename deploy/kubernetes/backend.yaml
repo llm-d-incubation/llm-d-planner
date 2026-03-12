@@ -17,11 +17,23 @@ spec:
         app.kubernetes.io/name: backend
         app.kubernetes.io/part-of: neuralnav
     spec:
+      securityContext:
+        runAsNonRoot: true
+        seccompProfile:
+          type: RuntimeDefault
       containers:
         - name: backend
           image: quay.io/neuralnav/neuralnav-backend:latest
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
           ports:
             - containerPort: 8000
+          envFrom:
+            - configMapRef:
+                name: neuralnav-config
           env:
             - name: POSTGRES_PASSWORD
               valueFrom:
@@ -30,8 +42,12 @@ spec:
                   key: postgres-password
             - name: DATABASE_URL
               value: postgresql://neuralnav:$(POSTGRES_PASSWORD)@postgres:5432/neuralnav
-            - name: MODEL_CATALOG_URL
-              value: http://model-registry.odh-model-registries.svc:8080
+            - name: MODEL_CATALOG_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: neuralnav-secrets
+                  key: model-catalog-token
+                  optional: true
             - name: OLLAMA_HOST
               value: http://ollama:11434
             - name: OLLAMA_MODEL
@@ -42,6 +58,10 @@ spec:
               value: "8000"
             - name: CORS_ORIGINS
               value: "*"
+          volumeMounts:
+            - name: service-ca
+              mountPath: /etc/pki/service-ca
+              readOnly: true
           readinessProbe:
             httpGet:
               path: /health
@@ -63,6 +83,11 @@ spec:
             limits:
               cpu: "2"
               memory: 2Gi
+      volumes:
+        - name: service-ca
+          configMap:
+            name: neuralnav-service-ca
+            optional: true
 ---
 apiVersion: v1
 kind: Service
