@@ -146,6 +146,7 @@ class ConfigFinder:
         include_near_miss: bool = False,  # Strict SLO filtering - no tolerance
         near_miss_tolerance: float = 0.0,  # No near-miss tolerance
         weights: dict[str, int] | None = None,  # Custom weights for balanced score
+        cluster_gpu_types: list[str] | None = None,
     ) -> list[DeploymentRecommendation]:
         """
         Plan GPU capacity and return ALL viable configurations meeting SLO.
@@ -182,10 +183,41 @@ class ConfigFinder:
         # Get percentile from SLO targets (default to p95 for backwards compatibility)
         percentile = getattr(slo_targets, "percentile", "p95")
 
-        # Normalize GPU types for database filtering (empty list = no filter)
-        normalized_gpus = normalize_gpu_types(intent.preferred_gpu_types)
-        if normalized_gpus:
-            logger.info(f"Filtering by preferred GPUs: {normalized_gpus}")
+        # Normalize user's preferred GPU types
+        normalized_user_gpus = normalize_gpu_types(intent.preferred_gpu_types)
+
+        # Determine effective GPU filter by intersecting cluster and user preferences
+        # cluster_gpu_types semantics:
+        #   None or [] = no cluster detection / detection failed -> use user prefs only
+        #   non-empty list = detected cluster GPUs -> intersect with user prefs
+        if cluster_gpu_types:
+            if normalized_user_gpus:
+                effective_gpus = sorted(set(cluster_gpu_types) & set(normalized_user_gpus))
+                logger.info(
+                    f"Cluster GPUs: {cluster_gpu_types}. "
+                    f"User preference: {normalized_user_gpus}. "
+                    f"Effective filter: {effective_gpus}"
+                )
+                if not effective_gpus:
+                    logger.warning(
+                        "No overlap between cluster GPUs and user preference — "
+                        "no configurations possible"
+                    )
+                    return []
+            else:
+                effective_gpus = sorted(cluster_gpu_types)
+                logger.info(f"Using cluster GPUs as filter: {effective_gpus}")
+        elif normalized_user_gpus:
+            effective_gpus = normalized_user_gpus
+            logger.info(f"Filtering by user preferred GPUs: {effective_gpus}")
+        else:
+            effective_gpus = []
+
+        normalized_gpus = effective_gpus
+
+        # Track whether the GPU filter came from cluster detection (vs user preference)
+        # so we can fall back to all GPUs if cluster GPUs have no benchmark data.
+        gpu_filter_from_cluster = bool(cluster_gpu_types) and not normalized_user_gpus
 
         # Query PostgreSQL for configurations meeting relaxed SLO targets
         matching_configs = self.benchmark_repo.find_configurations_meeting_slo(
@@ -198,6 +230,24 @@ class ConfigFinder:
             percentile=percentile,
             gpu_types=normalized_gpus if normalized_gpus else None,
         )
+
+        # Fallback: if cluster-detected GPUs had no benchmark data, retry
+        # without GPU filter so the user still gets recommendations.
+        if not matching_configs and normalized_gpus and gpu_filter_from_cluster:
+            logger.warning(
+                f"No benchmarks found for cluster GPUs {normalized_gpus} — "
+                f"falling back to all available GPUs"
+            )
+            matching_configs = self.benchmark_repo.find_configurations_meeting_slo(
+                prompt_tokens=traffic_profile.prompt_tokens,
+                output_tokens=traffic_profile.output_tokens,
+                ttft_p95_max_ms=query_ttft,
+                itl_p95_max_ms=query_itl,
+                e2e_p95_max_ms=query_e2e,
+                min_qps=0,
+                percentile=percentile,
+                gpu_types=None,
+            )
 
         if not matching_configs:
             logger.warning(
