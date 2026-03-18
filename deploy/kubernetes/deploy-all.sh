@@ -9,6 +9,7 @@ oc apply -f deploy/kubernetes/namespace.yaml \
          -f deploy/kubernetes/secrets.yaml \
          -f deploy/kubernetes/configmap.yaml \
          -f deploy/kubernetes/service-ca-configmap.yaml \
+         -f deploy/kubernetes/gpu-reader-rbac.yaml \
          -f deploy/kubernetes/postgres.yaml \
          -f deploy/kubernetes/ollama.yaml \
          -f deploy/kubernetes/ui.yaml \
