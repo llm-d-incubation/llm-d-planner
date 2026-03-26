@@ -108,23 +108,26 @@ class BenchmarkData:
             "tps_p99": self.tps_p99,
             "tokens_per_second": self.tokens_per_second,
             "requests_per_second": self.requests_per_second,
+            "estimated": self.estimated,
         }
 
 
 class BenchmarkRepository:
     """Repository for querying model benchmark data from PostgreSQL."""
 
-    def __init__(self, database_url: str | None = None):
+    def __init__(self, database_url: str | None = None, *, validate_connection: bool = False):
         """
         Initialize benchmark repository.
 
         Args:
             database_url: PostgreSQL connection string (defaults to DATABASE_URL env var)
+            validate_connection: If True, test DB connectivity on init (default: False)
         """
         self.database_url = database_url or os.getenv(
-            "DATABASE_URL", "postgresql://postgres:neuralnav@localhost:5432/neuralnav"
+            "DATABASE_URL", "postgresql://postgres:postgres@localhost:5432/neuralnav"
         )
-        self._test_connection()
+        if validate_connection:
+            self._test_connection()
 
     def _test_connection(self):
         """Test database connection on initialization."""
@@ -134,7 +137,6 @@ class BenchmarkRepository:
             logger.info("Successfully connected to PostgreSQL benchmark database")
         except Exception as e:
             logger.error(f"Failed to connect to PostgreSQL: {e}")
-            logger.error(f"Database URL: {self.database_url}")
             raise
 
     def _get_connection(self):
