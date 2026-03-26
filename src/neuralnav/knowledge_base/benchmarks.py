@@ -78,6 +78,9 @@ class BenchmarkData:
         # Estimated flag (True for interpolated benchmarks)
         self.estimated = data.get("estimated", False)
 
+        # Model artifact URI (e.g., OCI registry URI)
+        self.model_uri = data.get("model_uri")
+
     def to_dict(self) -> dict:
         """Convert to dictionary."""
         return {
@@ -108,6 +111,7 @@ class BenchmarkData:
             "tps_p99": self.tps_p99,
             "tokens_per_second": self.tokens_per_second,
             "requests_per_second": self.requests_per_second,
+            "model_uri": self.model_uri,
         }
 
 
@@ -375,7 +379,8 @@ class BenchmarkRepository:
                 tps_mean, tps_p90, tps_p95, tps_p99,
                 hardware, hardware_count, framework, requests_per_second, tokens_per_second,
                 mean_input_tokens, mean_output_tokens,
-                prompt_tokens, output_tokens
+                prompt_tokens, output_tokens,
+                model_uri
             FROM ranked_configs
             WHERE rn = 1
             ORDER BY model_hf_repo, hardware, hardware_count

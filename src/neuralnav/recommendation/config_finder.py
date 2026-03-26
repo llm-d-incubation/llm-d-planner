@@ -330,6 +330,7 @@ class ConfigFinder:
                 slo_targets=slo_targets,
                 model_id=model_id,
                 model_name=model_name,
+                model_uri=getattr(bench, "model_uri", None),
                 gpu_config=gpu_config,
                 predicted_ttft_p95_ms=predicted_ttft,
                 predicted_itl_p95_ms=predicted_itl,

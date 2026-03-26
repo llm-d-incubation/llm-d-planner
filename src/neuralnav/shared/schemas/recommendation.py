@@ -45,6 +45,7 @@ class DeploymentRecommendation(BaseModel):
     # Recommended configuration (None when no viable config found)
     model_id: str | None = Field(None, description="Recommended model identifier")
     model_name: str | None = Field(None, description="Human-readable model name")
+    model_uri: str | None = Field(None, description="Model artifact URI (e.g., OCI registry URI)")
     gpu_config: GPUConfig | None = None
 
     # Performance predictions (None when no viable config found)
@@ -87,6 +88,7 @@ class DeploymentRecommendation(BaseModel):
         return {
             "model_name": self.model_name,
             "model_id": self.model_id,
+            "model_uri": self.model_uri,
             "gpu_config": self.gpu_config.model_dump() if self.gpu_config else None,
             "predicted_ttft_p95_ms": self.predicted_ttft_p95_ms,
             "predicted_itl_p95_ms": self.predicted_itl_p95_ms,

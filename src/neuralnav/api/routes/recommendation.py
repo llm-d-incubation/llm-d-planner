@@ -125,6 +125,7 @@ async def simple_recommend(
                 slo_targets=specification.slo_targets,
                 model_id=None,
                 model_name=None,
+                model_uri=None,
                 gpu_config=None,
                 predicted_ttft_p95_ms=None,
                 predicted_itl_p95_ms=None,

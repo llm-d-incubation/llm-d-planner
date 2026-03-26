@@ -13,10 +13,16 @@ metadata:
     {% if simulator_mode %}
     neuralnav/simulator-mode: "true"
     {% endif %}
+    {% if model_uri %}
+    neuralnav/model-uri: "{{ model_uri }}"
+    {% endif %}
 spec:
   predictor:
     minReplicas: {{ min_replicas }}
     maxReplicas: {{ max_replicas }}
+    {% if model_uri and not simulator_mode %}
+    storageUri: "{{ model_uri }}"
+    {% endif %}
     containers:
     - name: kserve-container
       {% if simulator_mode %}

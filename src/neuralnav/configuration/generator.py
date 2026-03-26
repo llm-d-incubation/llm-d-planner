@@ -186,6 +186,7 @@ class DeploymentGenerator:
             "namespace": namespace,
             "model_id": recommendation.model_id,
             "model_name": recommendation.model_name,
+            "model_uri": recommendation.model_uri,
             "use_case": recommendation.intent.use_case,
             "reasoning": recommendation.reasoning,
             "generated_at": datetime.now().isoformat(),
