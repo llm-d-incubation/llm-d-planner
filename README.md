@@ -101,7 +101,7 @@ Compass implements an **8-component architecture** with:
 - **Recommendation Engine** - Traffic profiling, model scoring, capacity planning
 - **Deployment Automation** - YAML generation and Kubernetes deployment
 - **Knowledge Base** - Benchmarks, SLO templates, model catalog
-- **LLM Backend** - Ollama (llama3.1:8b) for conversational AI
+- **LLM Backend** - Ollama (qwen2.5:7b) for conversational AI and business context extraction
 - **Orchestration** - Multi-step workflow coordination
 - **Inference Observability** - Real-time deployment monitoring
 
@@ -127,7 +127,7 @@ See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for detailed system design.
 |-----------|-----------|
 | Backend | FastAPI, Pydantic |
 | Frontend | Streamlit |
-| LLM | Ollama (llama3.1:8b) |
+| LLM | Ollama (qwen2.5:7b) |
 | Data | **PostgreSQL (Phase 2)**, psycopg2, JSON (Phase 1 - deprecated) |
 | YAML Generation | Jinja2 templates |
 | Kubernetes | KIND (local), KServe v0.13.0 |

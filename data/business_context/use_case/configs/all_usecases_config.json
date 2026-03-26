@@ -1,0 +1,241 @@
+{
+  "_description": "Complete configuration for all 9 predefined use cases + custom use cases",
+  "_updated": "2024 - Based on research from SCORPIO, vLLM, Splitwise, Azure OpenAI, Nielsen UX guidelines",
+  "_source": "This is the master config - compass/data/slo_templates.json should mirror these values",
+  
+  "predefined_use_cases": {
+    
+    "chatbot_conversational": {
+      "description": "Real-time conversational chatbots (short prompts, short responses)",
+      "weights": {
+        "mmlu_pro": 0.30,
+        "ifbench": 0.30,
+        "hle": 0.20,
+        "artificial_analysis_intelligence_index": 0.15,
+        "gpqa": 0.05
+      },
+      "workload": {
+        "distribution": "poisson",
+        "active_fraction": 0.20,
+        "requests_per_active_user_per_min": 0.4,
+        "peak_multiplier": 2.0
+      },
+      "slo_targets": {
+        "ttft_ms": {"min": 100, "max": 500},
+        "itl_ms": {"min": 15, "max": 50},
+        "e2e_ms": {"min": 3000, "max": 12000}
+      }
+    },
+    
+    "code_completion": {
+      "description": "Fast code completion/autocomplete (short prompts, short completions)",
+      "weights": {
+        "livecodebench": 0.35,
+        "scicode": 0.30,
+        "artificial_analysis_coding_index": 0.20,
+        "terminalbench_hard": 0.10,
+        "ifbench": 0.05
+      },
+      "workload": {
+        "distribution": "compound_poisson",
+        "active_fraction": 0.25,
+        "requests_per_active_user_per_min": 2.0,
+        "burst_size": 3,
+        "peak_multiplier": 2.5
+      },
+      "slo_targets": {
+        "ttft_ms": {"min": 50, "max": 200},
+        "itl_ms": {"min": 10, "max": 35},
+        "e2e_ms": {"min": 500, "max": 2500}
+      }
+    },
+    
+    "code_generation_detailed": {
+      "description": "Detailed code generation with explanations (medium prompts, long responses)",
+      "weights": {
+        "livecodebench": 0.30,
+        "scicode": 0.25,
+        "ifbench": 0.20,
+        "artificial_analysis_coding_index": 0.15,
+        "hle": 0.10
+      },
+      "workload": {
+        "distribution": "poisson",
+        "active_fraction": 0.15,
+        "requests_per_active_user_per_min": 0.3,
+        "peak_multiplier": 2.0
+      },
+      "slo_targets": {
+        "ttft_ms": {"min": 150, "max": 600},
+        "itl_ms": {"min": 15, "max": 45},
+        "e2e_ms": {"min": 5000, "max": 20000}
+      }
+    },
+    
+    "translation": {
+      "description": "Document translation (medium prompts, medium responses)",
+      "weights": {
+        "ifbench": 0.35,
+        "mmlu_pro": 0.30,
+        "hle": 0.20,
+        "artificial_analysis_intelligence_index": 0.15
+      },
+      "workload": {
+        "distribution": "poisson",
+        "active_fraction": 0.15,
+        "requests_per_active_user_per_min": 0.2,
+        "peak_multiplier": 1.8
+      },
+      "slo_targets": {
+        "ttft_ms": {"min": 200, "max": 800},
+        "itl_ms": {"min": 20, "max": 50},
+        "e2e_ms": {"min": 5000, "max": 20000}
+      }
+    },
+    
+    "content_generation": {
+      "description": "Content creation, marketing copy (medium prompts, medium responses)",
+      "weights": {
+        "mmlu_pro": 0.30,
+        "hle": 0.25,
+        "ifbench": 0.25,
+        "artificial_analysis_intelligence_index": 0.20
+      },
+      "workload": {
+        "distribution": "poisson_with_bursts",
+        "active_fraction": 0.20,
+        "requests_per_active_user_per_min": 0.5,
+        "burst_size": 2.5,
+        "peak_multiplier": 2.2
+      },
+      "slo_targets": {
+        "ttft_ms": {"min": 200, "max": 800},
+        "itl_ms": {"min": 20, "max": 50},
+        "e2e_ms": {"min": 5000, "max": 25000}
+      }
+    },
+    
+    "summarization_short": {
+      "description": "Short document summarization (medium prompts, short summaries)",
+      "weights": {
+        "hle": 0.30,
+        "mmlu_pro": 0.25,
+        "ifbench": 0.25,
+        "artificial_analysis_intelligence_index": 0.20
+      },
+      "workload": {
+        "distribution": "poisson",
+        "active_fraction": 0.15,
+        "requests_per_active_user_per_min": 0.2,
+        "peak_multiplier": 1.8
+      },
+      "slo_targets": {
+        "ttft_ms": {"min": 200, "max": 800},
+        "itl_ms": {"min": 20, "max": 50},
+        "e2e_ms": {"min": 3000, "max": 15000}
+      }
+    },
+    
+    "document_analysis_rag": {
+      "description": "RAG-based document Q&A (long prompts with context, medium responses)",
+      "weights": {
+        "lcr": 0.40,
+        "mmlu_pro": 0.20,
+        "hle": 0.20,
+        "ifbench": 0.10,
+        "tau2": 0.10
+      },
+      "workload": {
+        "distribution": "poisson_clustered",
+        "active_fraction": 0.20,
+        "requests_per_active_user_per_min": 1.0,
+        "peak_multiplier": 2.5
+      },
+      "slo_targets": {
+        "ttft_ms": {"min": 400, "max": 1200},
+        "itl_ms": {"min": 25, "max": 60},
+        "e2e_ms": {"min": 10000, "max": 40000}
+      }
+    },
+    
+    "long_document_summarization": {
+      "description": "Long document summarization (very long prompts, medium summaries)",
+      "weights": {
+        "lcr": 0.45,
+        "mmlu_pro": 0.20,
+        "hle": 0.20,
+        "ifbench": 0.15
+      },
+      "workload": {
+        "distribution": "poisson",
+        "active_fraction": 0.10,
+        "requests_per_active_user_per_min": 0.1,
+        "peak_multiplier": 1.5
+      },
+      "slo_targets": {
+        "ttft_ms": {"min": 800, "max": 3000},
+        "itl_ms": {"min": 30, "max": 70},
+        "e2e_ms": {"min": 20000, "max": 90000}
+      }
+    },
+    
+    "research_legal_analysis": {
+      "description": "Research/legal document analysis (very long prompts, detailed analysis)",
+      "weights": {
+        "lcr": 0.40,
+        "mmlu_pro": 0.25,
+        "hle": 0.15,
+        "gpqa": 0.10,
+        "ifbench": 0.05,
+        "tau2": 0.05
+      },
+      "workload": {
+        "distribution": "uniform_periodic",
+        "active_fraction": 0.10,
+        "requests_per_active_user_per_min": 0.03,
+        "peak_multiplier": 2.5
+      },
+      "slo_targets": {
+        "ttft_ms": {"min": 1500, "max": 5000},
+        "itl_ms": {"min": 30, "max": 80},
+        "e2e_ms": {"min": 60000, "max": 300000}
+      }
+    }
+  },
+  
+  "custom_use_case_template": {
+    "_comment": "Use this template to define a custom use case",
+    "type": "custom",
+    "name": "my_custom_task",
+    "description": "Describe your use case in natural language",
+    "weights": {
+      "mmlu_pro": 0.25,
+      "hle": 0.25,
+      "ifbench": 0.25,
+      "lcr": 0.25
+    }
+  },
+  
+  "available_benchmarks": [
+    "mmlu_pro",
+    "hle",
+    "ifbench",
+    "lcr",
+    "gpqa",
+    "livecodebench",
+    "scicode",
+    "terminalbench_hard",
+    "tau2",
+    "artificial_analysis_intelligence_index",
+    "artificial_analysis_coding_index",
+    "artificial_analysis_math_index"
+  ],
+  
+  "workload_distributions": [
+    "poisson",
+    "compound_poisson",
+    "poisson_with_bursts",
+    "poisson_clustered",
+    "uniform_periodic"
+  ]
+}

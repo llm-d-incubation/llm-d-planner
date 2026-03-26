@@ -1,17 +1,42 @@
-"""Model recommendation engine."""
+"""Model recommendation engine.
+
+INTEGRATION NOTE (Yuval's Quality Scoring):
+This module integrates use-case-specific quality scores from Artificial Analysis
+benchmarks (weighted_scores CSVs). Quality scoring uses actual benchmark data
+(MMLU-Pro, LiveCodeBench, IFBench, etc.) rather than model size heuristics.
+
+Andre's latency/throughput benchmarks from PostgreSQL are kept as-is.
+The final recommendation combines: Yuval's quality + Andre's latency/cost/complexity.
+"""
 
 import logging
+from typing import Optional
 
 from ..context_intent.schema import DeploymentIntent
 from ..knowledge_base.model_catalog import ModelCatalog, ModelInfo
 
 logger = logging.getLogger(__name__)
 
+# Try to import use-case quality scorer (Yuval's contribution)
+try:
+    from .usecase_quality_scorer import score_model_quality, get_quality_scorer
+    USE_CASE_QUALITY_AVAILABLE = True
+    logger.info("Use-case quality scorer loaded (Artificial Analysis benchmarks)")
+except ImportError:
+    USE_CASE_QUALITY_AVAILABLE = False
+    logger.warning("Use-case quality scorer not available, using size-based heuristics")
+
 
 class ModelEvaluator:
-    """Evaluate models for deployment intent and calculate accuracy scores."""
+    """Evaluate models for deployment intent and calculate accuracy scores.
+    
+    Quality Scoring (updated):
+    - If use-case quality data is available: Uses Artificial Analysis benchmark scores
+      weighted by use case (e.g., code_completion uses LiveCodeBench 35%, SciCode 30%)
+    - Fallback: Uses model size heuristics if quality data unavailable
+    """
 
-    def __init__(self, catalog: ModelCatalog | None = None):
+    def __init__(self, catalog: "Optional[ModelCatalog]" = None):
         """
         Initialize model evaluator.
 
@@ -19,6 +44,7 @@ class ModelEvaluator:
             catalog: Model catalog (creates default if not provided)
         """
         self.catalog = catalog or ModelCatalog()
+        self._quality_scorer = get_quality_scorer() if USE_CASE_QUALITY_AVAILABLE else None
 
     def score_model(self, model: ModelInfo, intent: DeploymentIntent) -> float:
         """
@@ -33,39 +59,53 @@ class ModelEvaluator:
         """
         score = 0.0
 
-        # 1. Use case match (40 points)
-        if intent.use_case in model.recommended_for:
-            score += 40
-        elif any(task in model.supported_tasks for task in ["chat", "instruction_following"]):
-            score += 20  # Generic capability
+        # 1. Use case quality match (50 points) - ENHANCED with Artificial Analysis data
+        quality_score = self._get_usecase_quality_score(model.name, intent.use_case)
+        score += 50 * (quality_score / 100)  # Normalize to 50 points max
 
-        # 2. Domain specialization match (20 points)
-        domain_overlap = set(intent.domain_specialization) & set(model.domain_specialization)
-        if domain_overlap:
-            score += 20 * (len(domain_overlap) / len(intent.domain_specialization))
+        # 2. Domain specialization match (15 points)
+        if intent.domain_specialization:
+            domain_overlap = set(intent.domain_specialization) & set(model.domain_specialization)
+            if domain_overlap:
+                score += 15 * (len(domain_overlap) / len(intent.domain_specialization))
 
-        # 3. Latency requirement vs model size (20 points)
-        # Smaller models are better for low latency
+        # 3. Latency requirement vs model size (20 points) - Andre's logic preserved
         size_score = self._score_model_size_for_latency(
             model.size_parameters, intent.latency_requirement
         )
         score += 20 * size_score
 
-        # 4. Budget constraint (10 points)
-        # Smaller models are more cost-effective
+        # 4. Budget constraint (10 points) - Andre's logic preserved
         budget_score = self._score_model_for_budget(model.size_parameters, intent.budget_constraint)
         score += 10 * budget_score
 
-        # 5. Context length requirement (10 points)
-        # Longer context is better for some use cases
-        if intent.use_case in ["summarization", "qa_retrieval"]:
+        # 5. Context length requirement (5 points)
+        if intent.use_case in ["summarization", "qa_retrieval", "document_analysis_rag", 
+                               "long_document_summarization", "research_legal_analysis"]:
             if model.context_length >= 32000:
-                score += 10
-            elif model.context_length >= 8192:
                 score += 5
+            elif model.context_length >= 8192:
+                score += 2.5
 
-        logger.debug(f"Scored {model.name}: {score:.1f}")
+        logger.debug(f"Scored {model.name}: {score:.1f} (quality: {quality_score:.1f})")
         return score
+
+    def _get_usecase_quality_score(self, model_name: str, use_case: str) -> float:
+        """
+        Get use-case-specific quality score from Artificial Analysis benchmarks.
+        
+        Args:
+            model_name: Model name
+            use_case: Use case identifier
+            
+        Returns:
+            Quality score 0-100 (from weighted benchmarks or fallback heuristic)
+        """
+        if self._quality_scorer:
+            return self._quality_scorer.get_quality_score(model_name, use_case)
+        
+        # Fallback to simple heuristic if quality scorer not available
+        return 60.0  # Default moderate score
 
     def _score_model_size_for_latency(self, size_str: str, latency_requirement: str) -> float:
         """

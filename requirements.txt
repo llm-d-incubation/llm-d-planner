@@ -28,3 +28,4 @@ httpx==0.27.2
 
 # Development tools
 ruff==0.8.4
+plotly>=5.0.0

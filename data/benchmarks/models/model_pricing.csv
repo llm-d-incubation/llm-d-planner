@@ -1,0 +1,205 @@
+model_name,provider,price_per_1m_input_tokens,price_per_1m_output_tokens,price_blended,median_output_tokens_per_sec,median_ttft_seconds
+Apriel-v1.5-15B-Thinker,ServiceNow,0,0,0,145.221,0.179
+Arctic Instruct,Snowflake,0,0,0,,
+Aya Expanse 32B,Cohere,0.5,1.5,0.75,42.043,0.311
+Aya Expanse 8B,Cohere,0.5,1.5,0.75,81.177,0.229
+Codestral (May '24),Mistral,0,0,0,0,0
+Codestral-Mamba,Mistral,0,0,0,0,0
+Cogito v2.1 (Reasoning),Deep Cogito,0,0,0,,
+Command A,Cohere,2.5,10,4.375,59.115,0.357
+Command-R (Aug '24),Cohere,0.15,0.6,0.263,59.329,0.244
+Command-R (Mar '24),Cohere,0.5,1.5,0.75,0,0
+Command-R+ (Apr '24),Cohere,3,15,6,0,0
+DBRX Instruct,Databricks,0,0,0,,
+DeepHermes 3 - Llama-3.1 8B Preview (Non-reasoning),Nous Research,0,0,0,0,0
+DeepHermes 3 - Mistral 24B Preview (Non-reasoning),Nous Research,0,0,0,0,0
+DeepSeek Coder V2 Lite Instruct,DeepSeek,0,0,0,0,0
+DeepSeek LLM 67B Chat (V1),DeepSeek,0,0,0,0,0
+DeepSeek R1 (Jan '25),DeepSeek,1.35,4,2.362,0,0
+DeepSeek R1 0528 (May '25),DeepSeek,1.35,4,2.362,0,0
+DeepSeek R1 0528 Qwen3 8B,DeepSeek,0.06,0.09,0.068,73.952,0.861
+DeepSeek R1 Distill Llama 70B,DeepSeek,0.8,1.05,0.875,100.064,0.902
+DeepSeek R1 Distill Llama 8B,DeepSeek,0,0,0,0,0
+DeepSeek R1 Distill Qwen 1.5B,DeepSeek,0,0,0,0,0
+DeepSeek R1 Distill Qwen 14B,DeepSeek,0.15,0.15,0.15,50.505,1.05
+DeepSeek R1 Distill Qwen 32B,DeepSeek,0.285,0.285,0.285,92.115,0.544
+DeepSeek V3 (Dec '24),DeepSeek,0.4,0.89,0.625,0,0
+DeepSeek V3 0324,DeepSeek,1.14,1.25,1.25,0,0
+DeepSeek V3.1 (Non-reasoning),DeepSeek,0.56,1.66,0.84,0,0
+DeepSeek V3.1 (Reasoning),DeepSeek,0.425,1.34,0.654,0,0
+DeepSeek V3.1 Terminus (Non-reasoning),DeepSeek,0.4,1.68,0.8,0,0
+DeepSeek V3.1 Terminus (Reasoning),DeepSeek,0.4,2,0.8,0,0
+DeepSeek V3.2 Exp (Non-reasoning),DeepSeek,0.28,0.42,0.315,27.227,1.147
+DeepSeek V3.2 Exp (Reasoning),DeepSeek,0.28,0.42,0.315,29.104,1.326
+DeepSeek-Coder-V2,DeepSeek,0,0,0,0,0
+DeepSeek-OCR,DeepSeek,0.03,0.1,0.048,313.776,0.186
+DeepSeek-V2-Chat,DeepSeek,0,0,0,0,0
+DeepSeek-V2.5,DeepSeek,0,0,0,0,0
+DeepSeek-V2.5 (Dec '24),DeepSeek,0,0,0,0,0
+Devstral Small (Jul '25),Mistral,0.1,0.3,0.15,242.032,0.426
+Devstral Small (May '25),Mistral,0.1,0.3,0.15,202.965,0.433
+Doubao Seed Code,ByteDance Seed,0.17,1.12,0.407,0,0
+ERNIE 4.5 300B A47B,Baidu,0,0,0,,
+EXAONE 4.0 32B (Non-reasoning),LG AI Research,0.6,1,0.7,86.851,0.41
+EXAONE 4.0 32B (Reasoning),LG AI Research,0.6,1,0.7,105.542,0.372
+Exaone 4.0 1.2B (Non-reasoning),LG AI Research,0,0,0,0,0
+Exaone 4.0 1.2B (Reasoning),LG AI Research,0,0,0,0,0
+GLM-4.5 (Reasoning),Z AI,0.575,2.195,0.98,51.119,0.709
+GLM-4.5-Air,Z AI,0.2,1.1,0.425,106.695,0.675
+GLM-4.5V (Non-reasoning),Z AI,0.6,1.8,0.9,73.974,1.078
+GLM-4.5V (Reasoning),Z AI,0.55,1.75,0.85,74.501,0.854
+GLM-4.6 (Non-reasoning),Z AI,0.6,2.2,1,42.326,0.728
+GLM-4.6 (Reasoning),Z AI,0.6,2.2,1,109.154,0.589
+Gemma 2 27B,Google,0,0,0,0,0
+Gemma 2 9B,Google,0.03,0.09,0.045,0,0
+Gemma 3 12B Instruct,Google,0,0,0,48.565,3.143
+Gemma 3 1B Instruct,Google,0,0,0,47.355,0.496
+Gemma 3 270M,Google,0,0,0,0,0
+Gemma 3 27B Instruct,Google,0,0,0,50.608,0.685
+Gemma 3 4B Instruct,Google,0,0,0,46.922,1.04
+Gemma 3n E2B Instruct,Google,0,0,0,51.169,0.315
+Gemma 3n E4B Instruct,Google,0.02,0.04,0.025,49.326,0.54
+Granite 3.3 8B (Non-reasoning),IBM,0.03,0.25,0.085,455.084,7.274
+Granite 4.0 1B,IBM,0,0,0,0,0
+Granite 4.0 350M,IBM,0,0,0,0,0
+Granite 4.0 H 1B,IBM,0,0,0,0,0
+Granite 4.0 H 350M,IBM,0,0,0,0,0
+Granite 4.0 H Small,IBM,0.06,0.25,0.107,424.475,8.843
+Granite 4.0 Micro,IBM,0,0,0,0,0
+Grok 2 (Dec '24),xAI,0,0,0,,
+Grok-1,xAI,0,0,0,,
+Hermes 3 - Llama-3.1 70B,Nous Research,0.3,0.3,0.3,37.181,0.278
+Hermes 4 - Llama-3.1 405B (Non-reasoning),Nous Research,1,3,1.5,32.429,0.743
+Hermes 4 - Llama-3.1 405B (Reasoning),Nous Research,1,3,1.5,35.964,0.778
+Hermes 4 - Llama-3.1 70B (Non-reasoning),Nous Research,0.13,0.4,0.198,67.905,0.614
+Hermes 4 - Llama-3.1 70B (Reasoning),Nous Research,0.13,0.4,0.198,75.66,0.631
+Jamba 1.6 Large,AI21 Labs,2,8,3.5,30.622,0.836
+Jamba 1.6 Mini,AI21 Labs,0.2,0.4,0.25,148.661,0.714
+Jamba 1.7 Large,AI21 Labs,2,8,3.5,31.178,0.794
+Jamba 1.7 Mini,AI21 Labs,0.2,0.4,0.25,153.355,0.636
+Jamba Reasoning 3B,AI21 Labs,0,0,0,0,0
+Kimi K2,Moonshot AI,0.6,2.5,1.075,53.869,0.779
+Kimi K2 0905,Moonshot AI,0.99,2.5,1.2,94.231,0.494
+Kimi K2 Thinking,Moonshot AI,0.6,2.5,1.075,87.903,0.813
+Kimi Linear 48B A3B Instruct,Moonshot AI,0,0,0,0,0
+LFM 40B,Liquid AI,0,0,0,,
+LFM2 1.2B,Liquid AI,0,0,0,,
+LFM2 2.6B,Liquid AI,0,0,0,,
+LFM2 8B A1B,Liquid AI,0,0,0,,
+Ling-1T,InclusionAI,0.57,2.28,0.998,0,0
+Ling-flash-2.0,InclusionAI,0.14,0.57,0.247,54.67,1.698
+Ling-mini-2.0,InclusionAI,0.07,0.28,0.122,149.511,1.641
+Llama 2 Chat 13B,Meta,0,0,0,0,0
+Llama 2 Chat 70B,Meta,0,0,0,0,0
+Llama 2 Chat 7B,Meta,0.05,0.25,0.1,109.348,0.531
+Llama 3 Instruct 70B,Meta,0.65,0.88,0.88,41.153,0.413
+Llama 3 Instruct 8B,Meta,0.045,0.155,0.07,67.71,0.384
+Llama 3.1 Instruct 405B,Meta,3.75,6.75,4.188,23.919,0.871
+Llama 3.1 Instruct 70B,Meta,0.56,0.56,0.56,43.786,0.474
+Llama 3.1 Instruct 8B,Meta,0.1,0.1,0.1,170.649,0.34
+Llama 3.1 Nemotron Instruct 70B,NVIDIA,0.6,0.6,0.6,38.818,0.345
+Llama 3.1 Nemotron Nano 4B v1.1 (Reasoning),NVIDIA,0,0,0,0,0
+Llama 3.1 Nemotron Ultra 253B v1 (Reasoning),NVIDIA,0.6,1.8,0.9,38.586,0.73
+Llama 3.1 Tulu3 405B,Allen Institute for AI,0,0,0,0,0
+Llama 3.2 Instruct 11B (Vision),Meta,0.16,0.16,0.16,69.318,0.378
+Llama 3.2 Instruct 1B,Meta,0.053,0.055,0.053,74.412,0.424
+Llama 3.2 Instruct 3B,Meta,0.06,0.06,0.06,111.755,0.461
+Llama 3.2 Instruct 90B (Vision),Meta,0.72,0.72,0.72,37.374,0.335
+Llama 3.3 Instruct 70B,Meta,0.54,0.71,0.62,98.782,0.516
+Llama 3.3 Nemotron Super 49B v1 (Non-reasoning),NVIDIA,0,0,0,0,0
+Llama 3.3 Nemotron Super 49B v1 (Reasoning),NVIDIA,0,0,0,0,0
+Llama 4 Maverick,Meta,0.27,0.85,0.422,129.863,0.446
+Llama 4 Scout,Meta,0.14,0.545,0.241,136.602,0.554
+Llama Nemotron Super 49B v1.5 (Non-reasoning),NVIDIA,0.1,0.4,0.175,67.897,0.244
+Llama Nemotron Super 49B v1.5 (Reasoning),NVIDIA,0.1,0.4,0.175,76.137,0.236
+Magistral Medium 1.2,Mistral,2,5,2.75,100.805,0.478
+Magistral Small 1.2,Mistral,0.5,1.5,0.75,194.943,0.333
+MiniMax M1 40k,MiniMax,0.4,2.1,0.825,0,0
+MiniMax M1 80k,MiniMax,0.4,2.1,0.825,0,0
+MiniMax-M2,MiniMax,0.3,1.2,0.525,106.995,1.508
+MiniMax-Text-01,MiniMax,0.2,1.1,0.425,29.396,1.307
+Ministral 8B,Mistral,0.1,0.1,0.1,193.589,0.364
+Mistral 7B Instruct,Mistral,0.25,0.25,0.25,119.828,0.34
+Mistral Large 2 (Jul '24),Mistral,2,6,3,0,0
+Mistral Large 2 (Nov '24),Mistral,2,6,3,40.87,0.51
+Mistral Medium 3.1,Mistral,0.4,2,0.8,59.92,0.439
+Mistral NeMo,Mistral,0.15,0.15,0.15,185.686,0.361
+Mistral Small (Sep '24),Mistral,0.2,0.6,0.3,85.828,0.348
+Mistral Small 3,Mistral,0.1,0.3,0.15,181.462,0.349
+Mistral Small 3.1,Mistral,0.1,0.3,0.15,159.471,0.301
+Mistral Small 3.2,Mistral,0.1,0.3,0.15,133.808,0.333
+Mixtral 8x22B Instruct,Mistral,0,0,0,0,0
+Mixtral 8x7B Instruct,Mistral,0.54,0.6,0.54,0,0
+Molmo 7B-D,Allen Institute for AI,0,0,0,0,0
+NVIDIA Nemotron Nano 9B V2 (Non-reasoning),NVIDIA,0.04,0.16,0.07,91.497,0.22
+NVIDIA Nemotron Nano 9B V2 (Reasoning),NVIDIA,0.04,0.16,0.07,93.225,0.202
+OLMo 2 32B,Allen Institute for AI,0.2,0.35,0.237,0,0
+OLMo 2 7B,Allen Institute for AI,0,0,0,0,0
+OpenChat 3.5 (1210),OpenChat,0,0,0,,
+Phi-3 Medium Instruct 14B,Microsoft Azure,0.17,0.68,0.297,41.893,0.414
+Phi-3 Mini Instruct 3.8B,Microsoft Azure,0.13,0.52,0.228,69.234,0.355
+Phi-4,Microsoft Azure,0.125,0.5,0.219,10.956,0.734
+Phi-4 Mini Instruct,Microsoft Azure,0,0,0,43.761,0.331
+Phi-4 Multimodal Instruct,Microsoft Azure,0,0,0,17.944,0.333
+Pixtral 12B (2409),Mistral,0.15,0.15,0.15,147.336,0.446
+Pixtral Large,Mistral,2,6,3,36.695,0.542
+QwQ 32B,Alibaba,0.43,0.6,0.473,31.14,1.537
+QwQ 32B-Preview,Alibaba,0.12,0.18,0.135,105.316,0.305
+Qwen2.5 Coder Instruct 32B,Alibaba,0.13,0.175,0.141,52.996,0.773
+Qwen2.5 Coder Instruct 7B ,Alibaba,0,0,0,0,0
+Qwen2.5 Instruct 32B,Alibaba,0,0,0,0,0
+Qwen2.5 Instruct 72B,Alibaba,0,0,0,44.371,1.156
+Qwen2.5 Max,Alibaba,1.6,6.4,2.8,28.104,1.261
+Qwen2.5 Turbo,Alibaba,0.05,0.2,0.087,74.247,1.197
+Qwen3 0.6B (Non-reasoning),Alibaba,0.11,0.42,0.188,189.492,1.031
+Qwen3 0.6B (Reasoning),Alibaba,0.11,1.26,0.398,201.737,0.996
+Qwen3 1.7B (Non-reasoning),Alibaba,0.11,0.42,0.188,113.155,1.113
+Qwen3 1.7B (Reasoning),Alibaba,0.11,1.26,0.398,125.169,1.009
+Qwen3 14B (Non-reasoning),Alibaba,0.35,1.4,0.613,54.83,1.24
+Qwen3 14B (Reasoning),Alibaba,0.35,4.2,1.313,57.908,1.22
+Qwen3 235B A22B (Non-reasoning),Alibaba,0.7,2.8,1.225,46.811,1.216
+Qwen3 235B A22B (Reasoning),Alibaba,0.7,8.4,2.625,61.129,1.268
+Qwen3 235B A22B 2507 (Reasoning),Alibaba,0.7,8.4,2.625,78.154,1.205
+Qwen3 235B A22B 2507 Instruct,Alibaba,0.7,2.8,1.225,42.828,1.266
+Qwen3 30B A3B (Non-reasoning),Alibaba,0.2,0.8,0.35,73.94,1.194
+Qwen3 30B A3B (Reasoning),Alibaba,0.2,2.4,0.75,80.171,1.171
+Qwen3 30B A3B 2507 (Reasoning),Alibaba,0.2,2.4,0.75,186.972,1.108
+Qwen3 30B A3B 2507 Instruct,Alibaba,0.2,0.8,0.35,63.665,1.133
+Qwen3 32B (Non-reasoning),Alibaba,0.7,2.8,1.225,90.233,1.129
+Qwen3 32B (Reasoning),Alibaba,0.7,8.4,2.625,99.003,1.191
+Qwen3 4B (Non-reasoning),Alibaba,0.11,0.42,0.188,84.505,1.024
+Qwen3 4B (Reasoning),Alibaba,0.11,1.26,0.398,91.379,1.095
+Qwen3 4B 2507 (Reasoning),Alibaba,0,0,0,0,0
+Qwen3 4B 2507 Instruct,Alibaba,0,0,0,0,0
+Qwen3 8B (Non-reasoning),Alibaba,0.18,0.7,0.31,80.497,1.167
+Qwen3 8B (Reasoning),Alibaba,0.18,2.1,0.66,86.529,1.157
+Qwen3 Coder 30B A3B Instruct,Alibaba,0.45,2.25,0.9,88.977,1.591
+Qwen3 Coder 480B A35B Instruct,Alibaba,1.5,7.5,3,48.508,1.66
+Qwen3 Max,Alibaba,1.2,6,2.4,28.554,1.706
+Qwen3 Max Thinking,Alibaba,1.2,6,2.4,38.224,1.728
+Qwen3 Next 80B A3B (Reasoning),Alibaba,0.5,6,1.875,0,0
+Qwen3 Next 80B A3B Instruct,Alibaba,0.5,2,0.875,154.53,1.328
+Qwen3 Omni 30B A3B (Reasoning),Alibaba,0.25,0.97,0.43,96.815,1.09
+Qwen3 Omni 30B A3B Instruct,Alibaba,0.25,0.97,0.43,95.139,1.041
+Qwen3 VL 235B A22B (Reasoning),Alibaba,0.7,8.4,2.625,43.913,1.261
+Qwen3 VL 235B A22B Instruct,Alibaba,0.7,2.8,1.225,33.658,1.219
+Qwen3 VL 30B A3B (Reasoning),Alibaba,0.2,2.4,0.75,107.229,0.999
+Qwen3 VL 30B A3B Instruct,Alibaba,0.2,0.8,0.35,94.857,1.097
+Qwen3 VL 32B (Reasoning),Alibaba,0.7,8.4,2.625,50.943,1.137
+Qwen3 VL 32B Instruct,Alibaba,0.7,2.8,1.225,45.585,1.206
+Qwen3 VL 4B (Reasoning),Alibaba,0,0,0,0,0
+Qwen3 VL 4B Instruct,Alibaba,0,0,0,0,0
+Qwen3 VL 8B (Reasoning),Alibaba,0.18,2.1,0.66,63.263,1.073
+Qwen3 VL 8B Instruct,Alibaba,0.18,0.7,0.31,98.767,1.126
+R1 1776,Perplexity,0,0,0,,
+Reka Flash 3,Reka AI,0,0,0,,
+Ring-1T,InclusionAI,0.57,2.28,0.998,0,0
+Ring-flash-2.0,InclusionAI,0.14,0.57,0.247,69.741,1.639
+Seed-OSS-36B-Instruct,ByteDance Seed,0.21,0.57,0.3,25.028,1.688
+Solar Mini,Upstage,0,0,0,,
+Solar Pro 2 (Non-reasoning),Upstage,0,0,0,,
+Solar Pro 2 (Reasoning),Upstage,0,0,0,,
+gpt-oss-120B (high),OpenAI,0,0,0,,
+gpt-oss-120B (low),OpenAI,0,0,0,,
+gpt-oss-20B (high),OpenAI,0,0,0,,
+gpt-oss-20B (low),OpenAI,0,0,0,,

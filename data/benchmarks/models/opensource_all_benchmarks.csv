@@ -1,0 +1,205 @@
+Model Name,Provider,Dataset,aime,aime_25,artificial_analysis_coding_index,artificial_analysis_intelligence_index,artificial_analysis_math_index,gpqa,hle,ifbench,lcr,livecodebench,math_500,mmlu_pro,scicode,tau2,terminalbench_hard
+gpt-oss-120B (high),OpenAI,OpenAI training dataset,N/A,93.40%,49.60%,60.50%,93.40%,78.20%,18.50%,69.00%,50.70%,87.80%,N/A,80.80%,38.90%,65.80%,22.00%
+gpt-oss-20B (low),OpenAI,OpenAI training dataset,N/A,62.30%,34.50%,44.30%,62.30%,61.10%,5.10%,57.80%,31.00%,65.20%,N/A,71.80%,34.00%,50.30%,4.30%
+gpt-oss-20B (high),OpenAI,OpenAI training dataset,N/A,89.30%,40.70%,52.40%,89.30%,68.80%,9.80%,65.10%,34.30%,77.70%,N/A,74.80%,34.40%,60.20%,9.90%
+gpt-oss-120B (low),OpenAI,OpenAI training dataset,N/A,66.70%,37.20%,47.50%,66.70%,67.20%,5.20%,58.30%,43.70%,70.70%,N/A,77.50%,36.00%,45.00%,5.00%
+Grok-1,xAI,xAI training dataset,N/A,N/A,N/A,18.20%,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A
+Llama 3.3 Instruct 70B,Meta,Meta training dataset,30.00%,7.70%,19.20%,27.90%,7.70%,49.80%,4.00%,47.10%,15.00%,28.80%,77.30%,71.30%,26.00%,26.60%,2.80%
+Llama 3.1 Instruct 405B,Meta,Meta training dataset,21.30%,3.00%,22.20%,28.10%,3.00%,51.50%,4.20%,39.00%,24.30%,30.50%,70.30%,73.20%,29.90%,19.00%,6.40%
+Llama 3.2 Instruct 90B (Vision),Meta,Meta training dataset,5.00%,N/A,N/A,18.90%,N/A,43.20%,4.90%,N/A,N/A,21.40%,62.90%,67.10%,24.00%,N/A,N/A
+Llama 3.2 Instruct 11B (Vision),Meta,Meta training dataset,9.30%,1.70%,7.70%,15.50%,1.70%,22.10%,5.20%,30.40%,11.70%,11.00%,51.60%,46.40%,11.20%,14.60%,0.70%
+Llama 4 Maverick,Meta,Meta training dataset,39.00%,19.30%,26.40%,35.80%,19.30%,67.10%,4.80%,43.00%,46.00%,39.70%,88.90%,80.90%,33.10%,17.80%,6.40%
+Llama 4 Scout,Meta,Meta training dataset,28.30%,14.00%,16.10%,28.10%,14.00%,58.70%,4.30%,39.50%,25.80%,29.90%,84.40%,75.20%,17.00%,15.50%,1.40%
+Gemma 3 4B Instruct,Google,Google training dataset,6.30%,12.70%,6.40%,14.70%,12.70%,29.10%,5.20%,28.30%,5.70%,11.20%,76.60%,41.70%,7.30%,5.00%,0.70%
+Gemma 3n E2B Instruct,Google,Google training dataset,9.00%,10.30%,5.20%,11.30%,10.30%,22.90%,4.00%,22.00%,0.00%,9.50%,69.10%,37.80%,5.20%,0.00%,0.70%
+Gemma 3 1B Instruct,Google,Google training dataset,0.00%,3.30%,80.00%,6.80%,3.30%,23.70%,5.20%,19.90%,0.00%,1.70%,48.40%,13.50%,0.70%,0.00%,0.00%
+Gemma 3 12B Instruct,Google,Google training dataset,22.00%,18.30%,10.60%,20.40%,18.30%,34.90%,4.80%,36.70%,6.70%,13.70%,85.30%,59.50%,17.40%,10.80%,0.70%
+Gemma 3n E4B Instruct,Google,Google training dataset,13.70%,14.30%,8.30%,15.50%,14.30%,29.60%,4.40%,27.90%,0.00%,14.60%,77.10%,48.80%,8.10%,5.00%,2.10%
+Gemma 3 27B Instruct,Google,Google training dataset,25.30%,20.70%,12.80%,22.10%,20.70%,42.80%,4.70%,31.80%,5.70%,13.70%,88.30%,66.90%,21.20%,10.50%,3.50%
+Gemma 3 270M,Google,Google training dataset,N/A,2.30%,10.00%,5.60%,2.30%,22.40%,4.20%,12.10%,0.00%,0.30%,N/A,5.50%,0.00%,9.10%,0.00%
+Ministral 8B,Mistral,Mistral training dataset,3.70%,3.00%,7.60%,12.40%,3.00%,27.60%,4.90%,19.30%,7.70%,11.20%,57.10%,38.90%,11.50%,0.00%,0.00%
+Mistral Medium 3.1,Mistral,Mistral training dataset,N/A,38.30%,28.10%,35.40%,38.30%,58.80%,4.40%,39.80%,19.70%,40.60%,N/A,68.30%,33.80%,40.60%,9.90%
+Magistral Small 1.2,Mistral,Mistral training dataset,N/A,80.30%,37.20%,43.00%,80.30%,66.30%,6.10%,44.40%,16.30%,72.30%,N/A,76.80%,35.20%,27.80%,4.30%
+Mistral Small 3.2,Mistral,Mistral training dataset,32.30%,27.00%,20.10%,29.10%,27.00%,50.50%,4.30%,33.50%,17.30%,27.50%,88.30%,68.10%,26.40%,29.50%,6.40%
+Devstral Small (Jul '25),Mistral,Mistral training dataset,0.30%,29.30%,18.50%,27.20%,29.30%,41.40%,3.70%,34.60%,17.00%,25.40%,63.50%,62.20%,24.30%,28.40%,5.70%
+Magistral Medium 1.2,Mistral,Mistral training dataset,N/A,82.00%,42.30%,52.00%,82.00%,73.90%,9.60%,43.00%,51.30%,75.00%,N/A,81.50%,39.20%,52.00%,12.80%
+DeepSeek R1 Distill Llama 70B,DeepSeek,DeepSeek training dataset,67.00%,53.70%,19.70%,29.90%,53.70%,40.20%,6.10%,27.60%,11.00%,26.60%,93.50%,79.50%,31.20%,21.90%,1.40%
+DeepSeek R1 0528 (May '25),DeepSeek,DeepSeek training dataset,89.30%,76.00%,44.10%,52.00%,76.00%,81.30%,14.90%,39.60%,54.70%,77.00%,98.30%,84.90%,40.30%,36.50%,14.90%
+DeepSeek V3.1 Terminus (Reasoning),DeepSeek,DeepSeek training dataset,N/A,89.70%,49.60%,57.70%,89.70%,79.20%,15.20%,57.00%,65.00%,79.80%,N/A,85.10%,40.60%,37.10%,28.40%
+DeepSeek-OCR,DeepSeek,DeepSeek training dataset,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A
+DeepSeek R1 0528 Qwen3 8B,DeepSeek,DeepSeek training dataset,65.00%,63.70%,24.40%,31.00%,63.70%,61.20%,5.60%,19.90%,13.00%,51.30%,93.20%,73.90%,20.40%,0.00%,1.40%
+DeepSeek V3.2 Exp (Non-reasoning),DeepSeek,DeepSeek training dataset,N/A,57.70%,39.60%,46.30%,57.70%,73.80%,8.60%,43.10%,43.00%,55.40%,N/A,83.60%,39.90%,33.90%,23.40%
+DeepSeek V3.1 Terminus (Non-reasoning),DeepSeek,DeepSeek training dataset,N/A,53.70%,38.30%,45.70%,53.70%,75.10%,8.40%,41.20%,43.30%,52.90%,N/A,83.60%,32.10%,37.10%,29.80%
+DeepSeek V3.2 Exp (Reasoning),DeepSeek,DeepSeek training dataset,N/A,87.70%,48.60%,56.90%,87.70%,79.70%,13.80%,54.10%,69.00%,78.90%,N/A,85.00%,37.70%,33.90%,29.10%
+R1 1776,Perplexity,Perplexity training dataset,N/A,N/A,N/A,19.10%,N/A,N/A,N/A,N/A,N/A,N/A,95.40%,N/A,N/A,N/A,N/A
+Phi-4,Microsoft Azure,Microsoft Azure training dataset,14.30%,18.00%,17.60%,22.70%,18.00%,57.50%,4.10%,23.50%,0.00%,23.10%,81.00%,71.40%,26.00%,0.00%,3.50%
+Phi-4 Mini Instruct,Microsoft Azure,Microsoft Azure training dataset,3.00%,6.70%,7.80%,15.70%,6.70%,33.10%,4.20%,21.10%,13.70%,12.60%,69.60%,46.50%,10.80%,8.20%,0.00%
+Phi-4 Multimodal Instruct,Microsoft Azure,Microsoft Azure training dataset,9.30%,N/A,N/A,12.40%,N/A,31.50%,4.40%,N/A,N/A,13.10%,69.30%,48.50%,11.00%,N/A,N/A
+LFM2 1.2B,Liquid AI,Liquid AI training dataset,N/A,3.30%,1.50%,9.70%,3.30%,22.80%,5.70%,22.00%,0.00%,2.00%,N/A,25.70%,2.50%,12.60%,0.00%
+LFM2 2.6B,Liquid AI,Liquid AI training dataset,N/A,8.30%,3.80%,11.80%,8.30%,30.60%,5.20%,19.50%,0.00%,8.10%,N/A,29.80%,2.50%,13.50%,0.70%
+LFM2 8B A1B,Liquid AI,Liquid AI training dataset,N/A,25.30%,7.30%,17.40%,25.30%,34.40%,4.90%,26.30%,0.00%,15.10%,N/A,50.50%,6.80%,10.50%,0.00%
+Solar Pro 2 (Reasoning),Upstage,Upstage training dataset,69.00%,61.30%,31.50%,37.70%,61.30%,68.70%,7.00%,37.10%,0.00%,61.60%,96.70%,80.50%,30.20%,28.10%,2.80%
+Solar Pro 2 (Non-reasoning),Upstage,Upstage training dataset,40.70%,30.00%,23.80%,30.20%,30.00%,56.10%,3.80%,33.70%,0.00%,42.40%,88.90%,75.00%,24.80%,31.90%,4.30%
+MiniMax-Text-01,MiniMax,MiniMax training dataset,13.00%,12.30%,17.30%,28.30%,12.30%,57.80%,4.20%,32.70%,33.00%,24.70%,75.30%,75.90%,25.00%,15.50%,2.10%
+MiniMax-M2,MiniMax,MiniMax training dataset,N/A,78.30%,47.60%,61.40%,78.30%,77.70%,12.50%,72.30%,61.00%,82.60%,N/A,82.00%,36.10%,86.80%,24.10%
+Llama 3.1 Nemotron Instruct 70B,NVIDIA,NVIDIA training dataset,24.70%,11.00%,14.80%,23.60%,11.00%,46.50%,4.60%,30.70%,7.00%,16.90%,73.30%,69.00%,23.30%,23.10%,4.30%
+Llama 3.3 Nemotron Super 49B v1 (Non-reasoning),NVIDIA,NVIDIA training dataset,19.30%,7.70%,17.00%,25.90%,7.70%,51.70%,3.50%,39.50%,11.30%,28.00%,77.50%,69.80%,22.90%,N/A,0.00%
+Llama Nemotron Super 49B v1.5 (Reasoning),NVIDIA,NVIDIA training dataset,86.00%,76.70%,37.80%,45.20%,76.70%,74.80%,6.80%,37.00%,34.00%,73.70%,98.30%,81.40%,34.80%,28.10%,5.00%
+NVIDIA Nemotron Nano 9B V2 (Reasoning),NVIDIA,NVIDIA training dataset,N/A,69.70%,31.90%,37.20%,69.70%,57.00%,4.60%,27.60%,21.00%,72.40%,N/A,74.20%,22.00%,21.90%,1.40%
+NVIDIA Nemotron Nano 9B V2 (Non-reasoning),NVIDIA,NVIDIA training dataset,N/A,62.30%,30.60%,36.10%,62.30%,55.70%,4.00%,27.10%,22.70%,70.10%,N/A,73.90%,20.90%,23.40%,0.70%
+Llama 3.3 Nemotron Super 49B v1 (Reasoning),NVIDIA,NVIDIA training dataset,58.30%,54.70%,18.70%,35.50%,54.70%,64.30%,6.50%,38.10%,17.00%,27.70%,95.90%,78.50%,28.20%,N/A,0.00%
+Llama Nemotron Super 49B v1.5 (Non-reasoning),NVIDIA,NVIDIA training dataset,13.70%,8.00%,18.80%,26.60%,8.00%,48.10%,4.30%,32.90%,22.00%,29.00%,77.00%,69.20%,23.80%,25.10%,3.50%
+Llama 3.1 Nemotron Ultra 253B v1 (Reasoning),NVIDIA,NVIDIA training dataset,74.70%,63.70%,33.70%,38.50%,63.70%,72.80%,8.10%,38.20%,7.30%,64.10%,95.20%,82.50%,34.70%,11.40%,2.10%
+Llama 3.1 Nemotron Nano 4B v1.1 (Reasoning),NVIDIA,NVIDIA training dataset,70.70%,50.00%,N/A,26.10%,50.00%,40.80%,5.10%,25.50%,0.00%,49.30%,94.70%,55.60%,10.10%,11.70%,N/A
+Kimi K2 0905,Moonshot AI,Moonshot AI training dataset,N/A,57.30%,38.10%,50.40%,57.30%,76.70%,6.30%,41.70%,52.30%,61.00%,N/A,81.90%,30.70%,73.40%,22.70%
+Kimi K2 Thinking,Moonshot AI,Moonshot AI training dataset,N/A,94.70%,52.20%,67.00%,94.70%,83.80%,22.30%,68.10%,66.30%,85.30%,N/A,84.80%,42.40%,93.00%,29.10%
+Kimi Linear 48B A3B Instruct,Moonshot AI,Moonshot AI training dataset,N/A,36.30%,22.80%,N/A,36.30%,41.20%,2.70%,28.10%,25.70%,37.80%,N/A,58.50%,19.90%,N/A,10.60%
+OLMo 2 7B,Allen Institute for AI,Allen Institute for AI training dataset,N/A,0.70%,2.60%,9.50%,70.00%,28.80%,5.50%,24.40%,0.00%,4.10%,N/A,28.20%,3.70%,0.00%,0.00%
+Molmo 7B-D,Allen Institute for AI,Allen Institute for AI training dataset,N/A,0.00%,2.50%,9.30%,0.00%,24.00%,5.10%,19.70%,0.00%,3.90%,N/A,37.10%,3.60%,0.00%,0.00%
+OLMo 2 32B,Allen Institute for AI,Allen Institute for AI training dataset,N/A,3.30%,4.90%,14.40%,3.30%,32.80%,3.70%,38.10%,0.00%,6.80%,N/A,51.10%,8.00%,0.00%,0.00%
+Granite 4.0 H 1B,IBM,IBM training dataset,N/A,6.30%,6.60%,13.70%,6.30%,26.30%,5.00%,26.20%,6.30%,11.50%,N/A,27.70%,8.20%,19.60%,0.00%
+Granite 4.0 H 350M,IBM,IBM training dataset,N/A,1.30%,1.20%,8.20%,1.30%,25.70%,6.40%,17.60%,0.00%,1.90%,N/A,12.70%,1.70%,14.60%,0.00%
+Granite 4.0 Micro,IBM,IBM training dataset,N/A,6.00%,10.40%,16.20%,6.00%,33.60%,5.10%,24.80%,4.00%,18.00%,N/A,44.70%,11.90%,12.60%,1.40%
+Granite 4.0 H Small,IBM,IBM training dataset,N/A,13.70%,16.10%,22.70%,13.70%,41.60%,3.70%,31.50%,9.00%,25.10%,N/A,62.40%,20.90%,17.30%,2.10%
+Granite 4.0 1B,IBM,IBM training dataset,N/A,6.30%,4.50%,13.30%,6.30%,28.10%,5.10%,20.50%,4.00%,4.70%,N/A,32.50%,8.70%,22.80%,0.00%
+Granite 4.0 350M,IBM,IBM training dataset,N/A,0.00%,1.10%,7.70%,0.00%,26.10%,5.70%,15.90%,0.00%,2.40%,N/A,12.40%,0.90%,13.20%,0.00%
+Reka Flash 3,Reka AI,Reka AI training dataset,51.00%,33.70%,23.40%,25.90%,33.70%,52.90%,5.10%,30.40%,0.00%,43.50%,89.30%,66.90%,26.70%,0.00%,0.00%
+Hermes 4 - Llama-3.1 70B (Non-reasoning),Nous Research,Nous Research training dataset,N/A,11.30%,18.20%,23.80%,11.30%,49.10%,3.60%,29.00%,2.00%,26.90%,N/A,66.40%,27.70%,21.60%,0.00%
+Hermes 4 - Llama-3.1 405B (Reasoning),Nous Research,Nous Research training dataset,N/A,69.70%,34.80%,41.60%,69.70%,72.70%,10.30%,32.70%,20.70%,68.60%,N/A,82.90%,25.20%,22.20%,10.60%
+Hermes 4 - Llama-3.1 70B (Reasoning),Nous Research,Nous Research training dataset,N/A,68.70%,34.60%,39.20%,68.70%,69.90%,7.90%,31.30%,6.70%,65.30%,N/A,81.10%,34.10%,22.50%,4.30%
+DeepHermes 3 - Mistral 24B Preview (Non-reasoning),Nous Research,Nous Research training dataset,4.70%,N/A,N/A,15.50%,N/A,38.20%,3.90%,N/A,N/A,19.50%,59.50%,58.00%,22.80%,N/A,N/A
+DeepHermes 3 - Llama-3.1 8B Preview (Non-reasoning),Nous Research,Nous Research training dataset,0.00%,N/A,N/A,1.80%,N/A,27.00%,4.30%,N/A,N/A,8.50%,21.80%,36.50%,9.10%,N/A,N/A
+Hermes 4 - Llama-3.1 405B (Non-reasoning),Nous Research,Nous Research training dataset,N/A,15.30%,32.80%,32.60%,15.30%,53.60%,4.20%,34.80%,20.00%,54.60%,N/A,72.90%,34.60%,26.60%,9.20%
+EXAONE 4.0 32B (Non-reasoning),LG AI Research,LG AI Research training dataset,47.00%,39.30%,24.60%,30.30%,39.30%,62.80%,4.90%,33.50%,8.00%,47.20%,93.90%,76.80%,25.20%,4.10%,1.40%
+Exaone 4.0 1.2B (Non-reasoning),LG AI Research,LG AI Research training dataset,N/A,24.00%,12.20%,20.50%,24.00%,42.40%,5.80%,25.30%,0.00%,29.30%,N/A,50.00%,7.40%,20.50%,0.00%
+Exaone 4.0 1.2B (Reasoning),LG AI Research,LG AI Research training dataset,N/A,50.30%,20.30%,26.70%,50.30%,51.50%,5.80%,23.00%,0.00%,51.60%,N/A,58.80%,9.30%,16.40%,0.00%
+EXAONE 4.0 32B (Reasoning),LG AI Research,LG AI Research training dataset,84.30%,80.00%,37.50%,42.60%,80.00%,73.90%,10.50%,36.30%,14.00%,74.70%,97.70%,81.80%,34.40%,17.30%,3.50%
+ERNIE 4.5 300B A47B,Baidu,Baidu training dataset,49.30%,41.30%,27.90%,32.90%,41.30%,81.10%,3.50%,39.10%,2.30%,46.70%,93.10%,77.60%,31.50%,0.00%,5.70%
+Cogito v2.1 (Reasoning),Deep Cogito,Deep Cogito training dataset,N/A,72.70%,41.80%,N/A,72.70%,76.80%,11.00%,46.30%,21.70%,68.80%,N/A,84.90%,41.00%,N/A,15.60%
+GLM-4.5-Air,Z AI,Z AI training dataset,67.30%,80.70%,39.40%,48.80%,80.70%,73.30%,6.80%,37.60%,43.70%,68.40%,96.50%,81.50%,30.60%,46.50%,19.10%
+GLM-4.6 (Non-reasoning),Z AI,Z AI training dataset,N/A,44.30%,38.70%,44.70%,44.30%,63.20%,5.20%,36.70%,26.30%,56.10%,N/A,78.40%,33.10%,76.90%,27.00%
+GLM-4.5V (Reasoning),Z AI,Z AI training dataset,N/A,73.00%,29.20%,37.00%,73.00%,68.40%,5.90%,34.20%,0.00%,60.40%,N/A,78.80%,22.10%,22.50%,5.00%
+GLM-4.6 (Reasoning),Z AI,Z AI training dataset,N/A,86.00%,43.80%,56.00%,86.00%,78.00%,13.30%,43.40%,54.30%,69.50%,N/A,82.90%,38.40%,70.50%,23.40%
+GLM-4.5V (Non-reasoning),Z AI,Z AI training dataset,N/A,15.30%,20.10%,26.00%,15.30%,57.30%,3.60%,28.60%,0.00%,35.20%,N/A,75.10%,18.80%,19.60%,6.40%
+Aya Expanse 32B,Cohere,Cohere training dataset,0.00%,2.30%,9.80%,13.60%,2.30%,23.00%,4.50%,28.80%,10.70%,13.70%,44.90%,37.70%,14.90%,0.00%,0.70%
+Aya Expanse 8B,Cohere,Cohere training dataset,0.00%,0.00%,4.90%,10.00%,0.00%,24.70%,5.10%,24.10%,0.00%,7.00%,32.10%,31.20%,7.80%,0.00%,0.00%
+Command A,Cohere,Cohere training dataset,9.70%,13.00%,19.20%,26.90%,13.00%,52.70%,4.60%,36.50%,18.00%,28.70%,81.90%,71.20%,28.10%,15.20%,0.70%
+Apriel-v1.5-15B-Thinker,ServiceNow,ServiceNow training dataset,N/A,87.50%,39.20%,51.60%,87.50%,71.30%,12.00%,61.70%,20.00%,72.80%,N/A,77.30%,34.80%,68.40%,9.90%
+Jamba Reasoning 3B,AI21 Labs,AI21 Labs training dataset,N/A,10.70%,9.20%,20.90%,10.70%,33.30%,4.60%,52.40%,7.00%,21.00%,N/A,57.70%,5.90%,15.80%,0.70%
+Jamba 1.7 Mini,AI21 Labs,AI21 Labs training dataset,1.30%,0.30%,5.10%,14.80%,30.00%,32.20%,4.50%,31.40%,12.70%,6.10%,25.80%,38.80%,9.30%,12.60%,0.00%
+Jamba 1.7 Large,AI21 Labs,AI21 Labs training dataset,5.70%,2.30%,13.00%,20.80%,2.30%,39.00%,3.80%,35.20%,17.30%,18.10%,60.00%,57.70%,18.80%,13.50%,2.10%
+Qwen3 VL 235B A22B Instruct,Alibaba,Alibaba training dataset,N/A,70.70%,33.90%,44.10%,70.70%,71.20%,6.30%,42.70%,31.70%,59.40%,N/A,82.30%,35.90%,35.10%,6.40%
+Qwen3 Omni 30B A3B Instruct,Alibaba,Alibaba training dataset,N/A,52.30%,20.80%,30.20%,52.30%,62.00%,5.10%,31.20%,0.00%,42.20%,N/A,72.50%,18.60%,16.40%,1.40%
+Qwen3 VL 4B (Reasoning),Alibaba,Alibaba training dataset,N/A,25.70%,16.80%,27.30%,25.70%,49.40%,4.40%,36.60%,21.30%,32.00%,N/A,70.00%,17.10%,15.50%,1.40%
+Qwen3 Coder 480B A35B Instruct,Alibaba,Alibaba training dataset,47.70%,39.30%,37.40%,42.30%,39.30%,61.80%,4.40%,40.50%,42.30%,58.50%,94.20%,78.80%,35.90%,43.60%,17.70%
+Qwen3 Next 80B A3B (Reasoning),Alibaba,Alibaba training dataset,N/A,84.30%,42.10%,54.30%,84.30%,75.90%,11.70%,60.70%,60.30%,78.40%,N/A,82.40%,38.80%,41.50%,9.20%
+Qwen3 VL 32B Instruct,Alibaba,Alibaba training dataset,N/A,68.30%,29.80%,41.00%,68.30%,67.10%,6.30%,39.20%,31.30%,51.40%,N/A,79.10%,30.10%,29.20%,7.80%
+Qwen3 Coder 30B A3B Instruct,Alibaba,Alibaba training dataset,29.70%,29.00%,27.40%,33.40%,29.00%,51.60%,4.00%,32.70%,29.00%,40.30%,89.30%,70.60%,27.80%,34.50%,14.20%
+Qwen3 235B A22B 2507 (Reasoning),Alibaba,Alibaba training dataset,94.00%,91.00%,44.60%,57.50%,91.00%,79.00%,15.00%,51.20%,67.00%,78.80%,98.40%,84.30%,42.40%,53.20%,12.80%
+Qwen3 Next 80B A3B Instruct,Alibaba,Alibaba training dataset,N/A,66.30%,35.40%,44.80%,66.30%,73.80%,7.30%,39.70%,51.30%,68.40%,N/A,81.90%,30.70%,21.60%,7.10%
+Qwen3 VL 30B A3B Instruct,Alibaba,Alibaba training dataset,N/A,72.30%,28.00%,38.50%,72.30%,69.50%,6.40%,33.10%,23.70%,47.60%,N/A,76.40%,30.80%,19.00%,5.70%
+Qwen3 235B A22B 2507 Instruct,Alibaba,Alibaba training dataset,71.70%,71.70%,34.20%,45.30%,71.70%,75.30%,10.60%,46.10%,31.20%,52.40%,98.00%,82.80%,36.00%,33.30%,14.20%
+Qwen3 30B A3B 2507 (Reasoning),Alibaba,Alibaba training dataset,90.70%,56.30%,36.30%,46.40%,56.30%,70.70%,9.80%,50.70%,59.00%,70.70%,97.60%,80.50%,33.30%,28.10%,5.00%
+Qwen3 4B 2507 Instruct,Alibaba,Alibaba training dataset,N/A,52.30%,20.00%,30.40%,52.30%,51.70%,4.70%,33.50%,7.30%,37.70%,N/A,67.20%,18.10%,26.60%,4.30%
+Qwen3 4B 2507 (Reasoning),Alibaba,Alibaba training dataset,N/A,82.70%,30.40%,43.40%,82.70%,66.70%,5.90%,49.80%,37.70%,64.10%,N/A,74.30%,25.60%,25.40%,1.40%
+Qwen3 VL 30B A3B (Reasoning),Alibaba,Alibaba training dataset,N/A,82.30%,34.50%,45.30%,82.30%,72.00%,8.70%,45.10%,40.70%,69.70%,N/A,80.70%,28.80%,19.90%,5.00%
+Qwen3 VL 8B Instruct,Alibaba,Alibaba training dataset,N/A,27.30%,17.60%,27.10%,27.30%,42.70%,2.90%,32.30%,15.30%,33.20%,N/A,68.60%,17.40%,29.20%,2.10%
+Qwen3 30B A3B 2507 Instruct,Alibaba,Alibaba training dataset,72.70%,66.30%,29.20%,37.00%,66.30%,65.90%,6.80%,33.10%,22.70%,51.50%,97.50%,77.70%,30.40%,10.20%,5.70%
+Qwen3 VL 4B Instruct,Alibaba,Alibaba training dataset,N/A,37.00%,14.20%,25.20%,37.00%,37.10%,3.70%,31.80%,13.00%,29.00%,N/A,63.40%,13.70%,23.40%,0.00%
+Qwen3 VL 8B (Reasoning),Alibaba,Alibaba training dataset,N/A,30.70%,20.30%,32.10%,30.70%,57.90%,3.30%,39.90%,31.00%,35.30%,N/A,74.90%,21.90%,22.50%,3.50%
+Qwen3 VL 235B A22B (Reasoning),Alibaba,Alibaba training dataset,N/A,88.30%,38.40%,54.40%,88.30%,77.20%,10.10%,56.50%,58.70%,64.60%,N/A,83.60%,39.90%,54.10%,10.60%
+Qwen3 VL 32B (Reasoning),Alibaba,Alibaba training dataset,N/A,84.70%,36.40%,51.90%,84.70%,73.30%,9.60%,59.40%,55.30%,73.80%,N/A,81.80%,28.50%,45.60%,7.10%
+Qwen3 Max Thinking,Alibaba,Alibaba training dataset,N/A,82.30%,36.20%,55.80%,82.30%,77.60%,12.00%,53.80%,57.70%,53.50%,N/A,82.40%,38.70%,83.60%,16.30%
+Qwen3 Max,Alibaba,Alibaba training dataset,N/A,80.70%,44.70%,55.10%,80.70%,76.40%,11.10%,44.10%,46.70%,76.70%,N/A,84.10%,38.30%,74.30%,19.10%
+Qwen3 Omni 30B A3B (Reasoning),Alibaba,Alibaba training dataset,N/A,74.00%,34.00%,40.00%,74.00%,72.60%,7.30%,43.40%,0.00%,67.90%,N/A,79.20%,30.60%,21.30%,3.50%
+Ring-1T,InclusionAI,InclusionAI training dataset,N/A,89.30%,35.80%,41.80%,89.30%,59.50%,10.20%,44.60%,0.00%,64.30%,N/A,80.60%,36.70%,26.30%,6.40%
+Ling-1T,InclusionAI,InclusionAI training dataset,N/A,71.30%,37.60%,44.80%,71.30%,71.90%,7.20%,34.80%,34.70%,67.70%,N/A,82.20%,35.20%,32.70%,9.90%
+Ring-flash-2.0,InclusionAI,InclusionAI training dataset,N/A,83.70%,28.90%,39.50%,83.70%,72.50%,8.90%,43.30%,21.00%,62.80%,N/A,79.30%,16.80%,0.00%,7.10%
+Ling-flash-2.0,InclusionAI,InclusionAI training dataset,N/A,65.30%,32.60%,38.30%,65.30%,65.70%,6.30%,34.40%,15.00%,58.90%,N/A,77.70%,28.90%,20.80%,9.90%
+Ling-mini-2.0,InclusionAI,InclusionAI training dataset,N/A,49.30%,19.00%,27.80%,49.30%,56.20%,5.00%,23.60%,6.70%,42.90%,N/A,67.10%,13.50%,13.20%,0.70%
+Doubao Seed Code,ByteDance Seed,ByteDance Seed training dataset,N/A,79.30%,47.40%,57.10%,79.30%,76.40%,13.30%,51.40%,65.30%,76.60%,N/A,85.40%,40.70%,58.20%,24.80%
+Seed-OSS-36B-Instruct,ByteDance Seed,ByteDance Seed training dataset,N/A,84.70%,39.80%,51.60%,84.70%,72.60%,9.10%,41.90%,57.70%,76.50%,N/A,81.50%,36.50%,49.40%,6.40%
+Llama 3.1 Instruct 70B,Meta,Meta training dataset,17.30%,4.00%,17.60%,22.60%,4.00%,40.90%,4.60%,34.40%,6.30%,23.20%,64.90%,67.60%,26.70%,15.20%,2.80%
+Llama 3.1 Instruct 8B,Meta,Meta training dataset,7.70%,4.30%,8.50%,16.90%,4.30%,25.90%,5.10%,28.60%,15.70%,11.60%,51.90%,47.60%,13.20%,16.40%,0.70%
+Llama 3.2 Instruct 3B,Meta,Meta training dataset,6.70%,3.30%,N/A,11.20%,3.30%,25.50%,5.20%,26.20%,2.00%,8.30%,48.90%,34.70%,5.20%,21.10%,N/A
+Llama 3 Instruct 70B,Meta,Meta training dataset,0.00%,N/A,N/A,13.00%,N/A,37.90%,4.40%,N/A,N/A,19.80%,48.30%,57.40%,18.90%,N/A,N/A
+Llama 3 Instruct 8B,Meta,Meta training dataset,0.00%,N/A,N/A,7.00%,N/A,29.60%,5.10%,N/A,N/A,9.60%,49.90%,40.50%,11.90%,N/A,N/A
+Llama 3.2 Instruct 1B,Meta,Meta training dataset,0.00%,0.00%,1.20%,8.90%,0.00%,19.60%,5.30%,22.80%,5.00%,1.90%,14.00%,20.00%,1.70%,12.30%,0.00%
+Llama 2 Chat 13B,Meta,Meta training dataset,1.70%,N/A,N/A,5.50%,N/A,32.10%,4.70%,N/A,N/A,9.80%,32.90%,40.60%,11.80%,N/A,N/A
+Llama 2 Chat 70B,Meta,Meta training dataset,0.00%,N/A,N/A,5.60%,N/A,32.70%,5.00%,N/A,N/A,9.80%,32.30%,40.60%,N/A,N/A,N/A
+Llama 2 Chat 7B,Meta,Meta training dataset,0.00%,N/A,N/A,11.30%,N/A,22.70%,5.80%,N/A,N/A,0.20%,5.90%,16.40%,0.00%,N/A,N/A
+Gemma 2 27B,Google,Google training dataset,29.70%,N/A,N/A,17.20%,N/A,35.70%,3.70%,N/A,N/A,27.90%,54.10%,57.50%,12.50%,N/A,N/A
+Gemma 2 9B,Google,Google training dataset,0.00%,N/A,N/A,7.80%,N/A,31.10%,3.90%,N/A,N/A,12.60%,51.70%,49.50%,0.70%,N/A,N/A
+Mistral Large 2 (Nov '24),Mistral,Mistral training dataset,11.00%,14.00%,21.40%,26.80%,14.00%,48.60%,4.00%,31.20%,5.30%,29.30%,73.60%,69.70%,29.20%,30.70%,5.70%
+Mistral Large 2 (Jul '24),Mistral,Mistral training dataset,9.30%,0.00%,N/A,22.30%,0.00%,47.20%,3.20%,31.60%,1.70%,26.70%,71.40%,68.30%,27.10%,33.00%,N/A
+Pixtral Large,Mistral,Mistral training dataset,7.00%,2.30%,N/A,25.00%,2.30%,50.50%,3.60%,34.50%,10.30%,26.10%,71.40%,70.10%,29.20%,36.50%,N/A
+Mistral Small 3,Mistral,Mistral training dataset,8.00%,4.30%,N/A,21.20%,4.30%,46.20%,4.10%,26.40%,0.00%,25.20%,71.50%,65.20%,23.60%,19.60%,N/A
+Mistral Small (Sep '24),Mistral,Mistral training dataset,6.30%,N/A,N/A,13.00%,N/A,38.10%,4.30%,N/A,N/A,14.10%,56.30%,52.90%,15.60%,N/A,N/A
+Mixtral 8x22B Instruct,Mistral,Mistral training dataset,0.00%,N/A,N/A,11.70%,N/A,33.20%,4.10%,N/A,N/A,14.80%,54.50%,53.70%,18.80%,N/A,N/A
+Pixtral 12B (2409),Mistral,Mistral training dataset,0.00%,N/A,N/A,8.90%,N/A,34.30%,5.30%,N/A,N/A,11.50%,45.80%,47.30%,13.50%,N/A,N/A
+Mistral NeMo,Mistral,Mistral training dataset,0.30%,N/A,N/A,5.20%,N/A,31.40%,4.40%,N/A,N/A,5.70%,39.50%,39.90%,10.40%,N/A,N/A
+Mixtral 8x7B Instruct,Mistral,Mistral training dataset,0.00%,N/A,N/A,2.60%,N/A,29.20%,4.50%,N/A,N/A,6.60%,29.90%,38.70%,2.80%,N/A,N/A
+Codestral-Mamba,Mistral,Mistral training dataset,0.00%,N/A,N/A,100.00%,N/A,21.00%,5.40%,N/A,N/A,13.30%,24.00%,20.90%,10.80%,N/A,N/A
+Mistral 7B Instruct,Mistral,Mistral training dataset,0.00%,N/A,N/A,100.00%,N/A,17.70%,4.30%,N/A,N/A,4.60%,12.10%,24.50%,2.40%,N/A,N/A
+Mistral Small 3.1,Mistral,Mistral training dataset,9.30%,3.70%,18.30%,24.90%,3.70%,45.40%,4.80%,29.90%,19.70%,21.20%,70.70%,65.90%,26.50%,25.10%,7.10%
+Devstral Small (May '25),Mistral,Mistral training dataset,6.70%,N/A,N/A,19.60%,N/A,43.40%,4.00%,N/A,N/A,25.80%,68.40%,63.20%,24.50%,N/A,N/A
+Codestral (May '24),Mistral,Mistral training dataset,0.00%,N/A,N/A,6.00%,N/A,25.50%,5.10%,N/A,N/A,21.30%,35.40%,33.10%,21.80%,N/A,N/A
+DeepSeek R1 Distill Qwen 32B,DeepSeek,DeepSeek training dataset,68.70%,63.00%,N/A,32.70%,63.00%,61.50%,5.50%,22.90%,9.70%,27.00%,94.10%,73.90%,37.60%,N/A,N/A
+DeepSeek V3 (Dec '24),DeepSeek,DeepSeek training dataset,25.30%,26.00%,25.90%,32.50%,26.00%,55.70%,3.60%,34.80%,29.00%,35.90%,88.70%,75.20%,35.40%,22.80%,6.40%
+DeepSeek R1 Distill Qwen 14B,DeepSeek,DeepSeek training dataset,66.70%,55.70%,N/A,29.70%,55.70%,48.40%,4.40%,22.10%,7.00%,37.60%,94.90%,74.00%,23.90%,N/A,N/A
+DeepSeek-V2.5 (Dec '24),DeepSeek,DeepSeek training dataset,N/A,N/A,N/A,20.70%,N/A,N/A,N/A,N/A,N/A,N/A,76.30%,N/A,N/A,N/A,N/A
+DeepSeek-Coder-V2,DeepSeek,DeepSeek training dataset,N/A,N/A,N/A,14.50%,N/A,N/A,N/A,N/A,N/A,N/A,74.30%,N/A,N/A,N/A,N/A
+DeepSeek R1 Distill Llama 8B,DeepSeek,DeepSeek training dataset,33.30%,41.30%,N/A,19.50%,41.30%,30.20%,4.20%,17.60%,0.00%,23.30%,85.30%,54.30%,11.90%,N/A,N/A
+DeepSeek LLM 67B Chat (V1),DeepSeek,DeepSeek training dataset,N/A,N/A,N/A,5.60%,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A
+DeepSeek R1 Distill Qwen 1.5B,DeepSeek,DeepSeek training dataset,17.70%,22.00%,N/A,8.60%,22.00%,9.80%,3.30%,13.20%,0.30%,7.00%,68.70%,26.90%,6.60%,N/A,N/A
+DeepSeek V3.1 (Non-reasoning),DeepSeek,DeepSeek training dataset,N/A,49.70%,39.00%,44.80%,49.70%,73.50%,6.30%,37.80%,45.00%,57.70%,N/A,83.30%,36.70%,34.80%,22.70%
+DeepSeek V3.1 (Reasoning),DeepSeek,DeepSeek training dataset,N/A,89.70%,47.20%,54.00%,89.70%,77.90%,13.00%,41.50%,53.30%,78.40%,N/A,85.10%,39.10%,37.40%,24.10%
+DeepSeek R1 (Jan '25),DeepSeek,DeepSeek training dataset,68.30%,68.00%,34.40%,43.80%,68.00%,70.80%,9.30%,39.00%,52.30%,61.70%,96.60%,84.40%,35.70%,11.40%,5.70%
+DeepSeek Coder V2 Lite Instruct,DeepSeek,DeepSeek training dataset,N/A,N/A,N/A,6.10%,N/A,31.90%,5.30%,N/A,N/A,15.80%,N/A,42.90%,13.90%,N/A,N/A
+DeepSeek-V2.5,DeepSeek,DeepSeek training dataset,N/A,N/A,N/A,20.20%,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A
+DeepSeek V3 0324,DeepSeek,DeepSeek training dataset,52.00%,41.00%,30.20%,41.30%,41.00%,65.50%,5.20%,41.00%,41.00%,40.50%,94.20%,81.90%,35.80%,47.10%,14.20%
+DeepSeek-V2-Chat,DeepSeek,DeepSeek training dataset,N/A,N/A,N/A,8.60%,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A
+Grok 2 (Dec '24),xAI,xAI training dataset,13.30%,N/A,N/A,24.70%,N/A,51.00%,3.80%,N/A,N/A,26.70%,77.80%,70.90%,28.50%,N/A,N/A
+OpenChat 3.5 (1210),OpenChat,OpenChat training dataset,0.00%,N/A,N/A,5.40%,N/A,23.00%,4.80%,N/A,N/A,11.50%,30.70%,31.00%,N/A,N/A,N/A
+Phi-3 Mini Instruct 3.8B,Microsoft Azure,Microsoft Azure training dataset,4.00%,0.30%,6.90%,12.70%,30.00%,31.90%,4.40%,23.90%,2.00%,11.60%,45.70%,43.50%,9.00%,0.00%,0.00%
+Phi-3 Medium Instruct 14B,Microsoft Azure,Microsoft Azure training dataset,1.30%,1.30%,8.90%,14.40%,1.30%,32.60%,4.50%,21.50%,3.00%,15.00%,46.30%,54.30%,11.80%,0.00%,0.00%
+LFM 40B,Liquid AI,Liquid AI training dataset,2.30%,N/A,N/A,7.30%,N/A,32.70%,4.90%,N/A,N/A,9.60%,48.00%,42.50%,7.10%,N/A,N/A
+Solar Mini,Upstage,Upstage training dataset,N/A,N/A,N/A,18.90%,N/A,N/A,N/A,N/A,N/A,N/A,33.10%,N/A,N/A,20.20%,N/A
+DBRX Instruct,Databricks,Databricks training dataset,3.00%,N/A,N/A,5.30%,N/A,33.10%,6.60%,N/A,N/A,9.30%,27.90%,39.70%,11.80%,N/A,N/A
+MiniMax M1 80k,MiniMax,MiniMax training dataset,84.70%,61.00%,37.10%,46.20%,61.00%,69.70%,8.20%,41.80%,54.30%,71.10%,98.00%,81.60%,37.40%,34.20%,2.80%
+MiniMax M1 40k,MiniMax,MiniMax training dataset,81.30%,13.70%,35.20%,40.00%,13.70%,68.20%,7.50%,41.20%,51.70%,65.70%,97.20%,80.80%,37.80%,31.60%,2.10%
+Kimi K2,Moonshot AI,Moonshot AI training dataset,69.30%,57.00%,35.00%,48.10%,57.00%,76.60%,7.00%,41.50%,51.00%,55.60%,97.10%,82.40%,34.50%,61.10%,14.90%
+Llama 3.1 Tulu3 405B,Allen Institute for AI,Allen Institute for AI training dataset,13.30%,N/A,N/A,25.40%,N/A,51.60%,3.50%,N/A,N/A,29.10%,77.80%,71.60%,30.20%,N/A,N/A
+Granite 3.3 8B (Non-reasoning),IBM,IBM training dataset,4.70%,6.70%,7.60%,15.20%,6.70%,33.80%,4.20%,22.40%,4.30%,12.70%,66.50%,46.80%,10.10%,10.50%,0.00%
+Hermes 3 - Llama-3.1 70B,Nous Research,Nous Research training dataset,2.30%,N/A,N/A,14.70%,N/A,40.10%,4.10%,N/A,N/A,18.80%,53.80%,57.10%,23.10%,N/A,N/A
+GLM-4.5 (Reasoning),Z AI,Z AI training dataset,87.30%,73.70%,43.30%,51.30%,73.70%,78.20%,12.20%,44.10%,48.30%,73.80%,97.90%,83.50%,34.80%,43.00%,21.30%
+Command-R+ (Aug '24),Cohere,Cohere training dataset,0.00%,N/A,N/A,7.10%,N/A,33.70%,5.00%,N/A,N/A,11.10%,40.20%,42.70%,12.20%,N/A,N/A
+Command-R+ (Apr '24),Cohere,Cohere training dataset,0.70%,N/A,N/A,5.50%,N/A,32.30%,4.50%,N/A,N/A,12.20%,27.90%,43.20%,11.80%,N/A,N/A
+Command-R (Aug '24),Cohere,Cohere training dataset,0.30%,N/A,N/A,100.00%,N/A,28.90%,5.10%,N/A,N/A,4.40%,14.90%,33.70%,8.70%,N/A,N/A
+Command-R (Mar '24),Cohere,Cohere training dataset,0.70%,N/A,N/A,100.00%,N/A,28.40%,4.80%,N/A,N/A,4.80%,16.40%,33.80%,6.20%,N/A,N/A
+Jamba 1.6 Large,AI21 Labs,AI21 Labs training dataset,4.70%,N/A,N/A,14.30%,N/A,38.70%,4.00%,N/A,N/A,17.20%,58.00%,56.50%,18.40%,N/A,N/A
+Jamba 1.6 Mini,AI21 Labs,AI21 Labs training dataset,3.30%,N/A,N/A,3.30%,N/A,30.00%,4.60%,N/A,N/A,7.10%,25.70%,36.70%,10.10%,N/A,N/A
+Arctic Instruct,Snowflake,Snowflake training dataset,N/A,N/A,N/A,7.60%,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A
+Qwen2.5 Max,Alibaba,Alibaba training dataset,23.30%,N/A,N/A,30.70%,N/A,58.70%,4.50%,N/A,N/A,35.90%,83.50%,76.20%,33.70%,N/A,N/A
+Qwen2.5 Instruct 72B,Alibaba,Alibaba training dataset,16.00%,14.00%,19.50%,29.00%,14.00%,49.10%,4.20%,36.90%,20.30%,27.60%,85.80%,72.00%,26.70%,34.50%,4.30%
+Qwen2.5 Coder Instruct 32B,Alibaba,Alibaba training dataset,12.00%,N/A,N/A,21.80%,N/A,41.70%,3.80%,N/A,N/A,29.50%,76.70%,63.50%,27.10%,N/A,N/A
+Qwen2.5 Turbo,Alibaba,Alibaba training dataset,12.00%,N/A,N/A,19.10%,N/A,41.00%,4.20%,N/A,N/A,16.30%,80.50%,63.30%,15.30%,N/A,N/A
+Qwen2.5 Coder Instruct 7B ,Alibaba,Alibaba training dataset,5.30%,N/A,N/A,12.20%,N/A,33.90%,4.80%,N/A,N/A,12.60%,66.00%,47.30%,14.80%,N/A,N/A
+Qwen3 32B (Reasoning),Alibaba,Alibaba training dataset,80.70%,73.00%,30.90%,38.70%,73.00%,66.80%,8.30%,36.30%,0.00%,54.60%,96.10%,79.80%,35.40%,29.80%,2.80%
+Qwen3 8B (Non-reasoning),Alibaba,Alibaba training dataset,24.30%,24.30%,13.00%,22.90%,24.30%,45.20%,2.80%,28.60%,0.00%,20.20%,82.80%,64.30%,16.80%,24.90%,2.10%
+Qwen3 1.7B (Reasoning),Alibaba,Alibaba training dataset,51.00%,38.70%,11.70%,22.40%,38.70%,35.60%,4.80%,26.90%,0.00%,30.80%,89.40%,57.00%,4.30%,26.00%,0.00%
+Qwen3 30B A3B (Reasoning),Alibaba,Alibaba training dataset,75.30%,72.30%,27.10%,36.70%,72.30%,61.60%,6.60%,41.50%,0.00%,50.60%,95.90%,77.70%,28.50%,26.00%,2.10%
+Qwen3 235B A22B (Reasoning),Alibaba,Alibaba training dataset,84.00%,82.00%,35.90%,41.70%,82.00%,70.00%,11.70%,38.70%,0.00%,62.20%,93.00%,82.80%,39.90%,24.00%,5.70%
+Qwen3 235B A22B (Non-reasoning),Alibaba,Alibaba training dataset,32.70%,23.70%,23.30%,29.90%,23.70%,61.30%,4.70%,36.60%,0.00%,34.30%,90.20%,76.20%,29.90%,27.20%,5.70%
+Qwen3 4B (Reasoning),Alibaba,Alibaba training dataset,65.70%,22.30%,N/A,25.60%,22.30%,52.20%,5.10%,32.50%,0.00%,46.50%,93.30%,69.60%,3.50%,19.00%,N/A
+Qwen3 0.6B (Reasoning),Alibaba,Alibaba training dataset,10.00%,18.00%,5.00%,14.20%,18.00%,23.90%,5.70%,23.30%,0.00%,12.10%,75.00%,34.70%,2.80%,21.10%,0.00%
+QwQ 32B,Alibaba,Alibaba training dataset,78.00%,29.00%,N/A,37.90%,29.00%,59.30%,8.20%,38.80%,25.00%,63.10%,95.70%,76.40%,35.80%,N/A,N/A
+Qwen3 32B (Non-reasoning),Alibaba,Alibaba training dataset,30.30%,19.70%,N/A,26.40%,19.70%,53.50%,4.30%,31.50%,0.00%,28.80%,86.90%,72.70%,28.00%,N/A,N/A
+Qwen3 1.7B (Non-reasoning),Alibaba,Alibaba training dataset,9.70%,7.30%,6.50%,14.40%,7.30%,28.30%,5.20%,21.10%,0.00%,12.60%,71.70%,41.10%,6.90%,21.60%,0.00%
+Qwen3 4B (Non-reasoning),Alibaba,Alibaba training dataset,21.30%,N/A,N/A,20.70%,N/A,39.80%,3.70%,N/A,N/A,23.30%,84.30%,58.60%,16.70%,N/A,N/A
+Qwen3 14B (Non-reasoning),Alibaba,Alibaba training dataset,28.00%,58.00%,19.80%,29.20%,58.00%,47.00%,4.20%,23.90%,0.00%,28.00%,87.10%,67.50%,26.50%,32.20%,5.00%
+Qwen3 8B (Reasoning),Alibaba,Alibaba training dataset,74.70%,19.00%,21.80%,28.30%,19.00%,58.90%,4.20%,33.50%,0.00%,40.60%,90.40%,74.30%,22.60%,27.80%,2.10%
+Qwen3 0.6B (Non-reasoning),Alibaba,Alibaba training dataset,1.70%,10.30%,3.80%,11.00%,10.30%,23.10%,5.20%,21.90%,0.00%,7.30%,52.10%,23.10%,4.10%,14.60%,0.00%
+Qwen3 30B A3B (Non-reasoning),Alibaba,Alibaba training dataset,26.00%,21.70%,21.60%,26.50%,21.70%,51.50%,4.60%,31.90%,0.00%,32.20%,86.30%,71.00%,26.40%,N/A,6.40%
+Qwen3 14B (Reasoning),Alibaba,Alibaba training dataset,76.30%,55.70%,29.10%,36.00%,55.70%,60.40%,4.30%,40.50%,0.00%,52.30%,96.10%,77.40%,31.60%,34.50%,3.50%
+Qwen2.5 Instruct 32B,Alibaba,Alibaba training dataset,11.00%,N/A,N/A,22.90%,N/A,46.60%,3.80%,N/A,N/A,24.80%,80.50%,69.70%,22.90%,N/A,N/A

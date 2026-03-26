@@ -1,16 +1,28 @@
 """Solution scoring for multi-criteria recommendation ranking.
 
 Scores deployment configurations on 4 criteria (0-100 scale):
-- Accuracy: Model capability based on parameter count
-- Price: Cost efficiency (inverse of cost, normalized)
-- Latency: SLO compliance and headroom
+- Accuracy/Quality: Model capability (from Artificial Analysis benchmarks or param count fallback)
+- Price: Cost efficiency (inverse of cost, normalized)  
+- Latency: SLO compliance and headroom (from Andre's PostgreSQL benchmarks)
 - Complexity: Deployment simplicity (fewer GPUs = simpler)
+
+INTEGRATION NOTE:
+- Quality scoring: Uses Yuval's weighted_scores CSVs (Artificial Analysis benchmarks)
+- Latency/Price/Complexity: Uses Andre's scoring logic and benchmark data
 """
 
 import logging
 import re
+from typing import Optional
 
 logger = logging.getLogger(__name__)
+
+# Try to import use-case quality scorer
+try:
+    from .usecase_quality_scorer import score_model_quality
+    USE_CASE_QUALITY_AVAILABLE = True
+except ImportError:
+    USE_CASE_QUALITY_AVAILABLE = False
 
 
 class SolutionScorer:
@@ -55,9 +67,36 @@ class SolutionScorer:
         "complexity": 0.10,
     }
 
-    def score_accuracy(self, model_size_str: str) -> int:
+    def score_accuracy(self, model_size_str: str, model_name: Optional[str] = None, 
+                        use_case: Optional[str] = None) -> int:
         """
-        Score model accuracy based on parameter count tier.
+        Score model accuracy/quality.
+        
+        Priority:
+        1. Use-case specific benchmark score (Artificial Analysis data) if available
+        2. Fallback to model size-based heuristic (Andre's original logic)
+
+        Args:
+            model_size_str: Model size string (e.g., "8B", "70B", "8x7B")
+            model_name: Optional model name for use-case-specific scoring
+            use_case: Optional use case for benchmark-based scoring
+
+        Returns:
+            Score 0-100
+        """
+        # Try use-case-specific quality scoring first (Yuval's contribution)
+        if USE_CASE_QUALITY_AVAILABLE and model_name and use_case:
+            quality_score = score_model_quality(model_name, use_case)
+            if quality_score > 0:
+                logger.debug(f"Quality score for {model_name} ({use_case}): {quality_score:.1f}")
+                return int(quality_score)
+        
+        # Fallback to size-based heuristic (Andre's original logic)
+        return self._score_accuracy_by_size(model_size_str)
+    
+    def _score_accuracy_by_size(self, model_size_str: str) -> int:
+        """
+        Score model accuracy based on parameter count tier (fallback).
 
         Args:
             model_size_str: Model size string (e.g., "8B", "70B", "8x7B")
@@ -200,7 +239,7 @@ class SolutionScorer:
         price_score: int,
         latency_score: int,
         complexity_score: int,
-        weights: dict[str, float] | None = None,
+        weights: Optional[dict] = None,
     ) -> float:
         """
         Calculate weighted composite score.

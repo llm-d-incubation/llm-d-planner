@@ -1,0 +1,153 @@
+{
+  "_description": "Use case SLO targets and workload patterns",
+  "_source": "Research-backed SLOs (SCORPIO, vLLM, Nielsen UX) and workload distributions",
+  
+  "use_case_slo_workload": {
+    
+    "chatbot_conversational": {
+      "description": "Real-time conversational chatbots (short prompts, short responses)",
+      "workload": {
+        "distribution": "poisson",
+        "active_fraction": 0.20,
+        "requests_per_active_user_per_min": 0.4,
+        "peak_multiplier": 2.0
+      },
+      "slo_targets": {
+        "ttft_ms": {"min": 100, "max": 500},
+        "itl_ms": {"min": 15, "max": 50},
+        "e2e_ms": {"min": 3000, "max": 12000}
+      }
+    },
+    
+    "code_completion": {
+      "description": "Fast code completion/autocomplete (short prompts, short completions)",
+      "workload": {
+        "distribution": "compound_poisson",
+        "active_fraction": 0.25,
+        "requests_per_active_user_per_min": 2.0,
+        "burst_size": 3,
+        "peak_multiplier": 2.5
+      },
+      "slo_targets": {
+        "ttft_ms": {"min": 50, "max": 200},
+        "itl_ms": {"min": 10, "max": 35},
+        "e2e_ms": {"min": 500, "max": 2500}
+      }
+    },
+    
+    "code_generation_detailed": {
+      "description": "Detailed code generation with explanations (medium prompts, long responses)",
+      "workload": {
+        "distribution": "poisson",
+        "active_fraction": 0.15,
+        "requests_per_active_user_per_min": 0.3,
+        "peak_multiplier": 2.0
+      },
+      "slo_targets": {
+        "ttft_ms": {"min": 150, "max": 600},
+        "itl_ms": {"min": 15, "max": 45},
+        "e2e_ms": {"min": 5000, "max": 20000}
+      }
+    },
+    
+    "translation": {
+      "description": "Document translation (medium prompts, medium responses)",
+      "workload": {
+        "distribution": "poisson",
+        "active_fraction": 0.15,
+        "requests_per_active_user_per_min": 0.2,
+        "peak_multiplier": 1.8
+      },
+      "slo_targets": {
+        "ttft_ms": {"min": 200, "max": 800},
+        "itl_ms": {"min": 20, "max": 50},
+        "e2e_ms": {"min": 5000, "max": 20000}
+      }
+    },
+    
+    "content_generation": {
+      "description": "Content creation, marketing copy (medium prompts, medium responses)",
+      "workload": {
+        "distribution": "poisson_with_bursts",
+        "active_fraction": 0.20,
+        "requests_per_active_user_per_min": 0.5,
+        "burst_size": 2.5,
+        "peak_multiplier": 2.2
+      },
+      "slo_targets": {
+        "ttft_ms": {"min": 200, "max": 800},
+        "itl_ms": {"min": 20, "max": 50},
+        "e2e_ms": {"min": 5000, "max": 25000}
+      }
+    },
+    
+    "summarization_short": {
+      "description": "Short document summarization (medium prompts, short summaries)",
+      "workload": {
+        "distribution": "poisson",
+        "active_fraction": 0.15,
+        "requests_per_active_user_per_min": 0.2,
+        "peak_multiplier": 1.8
+      },
+      "slo_targets": {
+        "ttft_ms": {"min": 200, "max": 800},
+        "itl_ms": {"min": 20, "max": 50},
+        "e2e_ms": {"min": 3000, "max": 15000}
+      }
+    },
+    
+    "document_analysis_rag": {
+      "description": "RAG-based document Q&A (long prompts with context, medium responses)",
+      "workload": {
+        "distribution": "poisson_clustered",
+        "active_fraction": 0.20,
+        "requests_per_active_user_per_min": 1.0,
+        "peak_multiplier": 2.5
+      },
+      "slo_targets": {
+        "ttft_ms": {"min": 400, "max": 1200},
+        "itl_ms": {"min": 25, "max": 60},
+        "e2e_ms": {"min": 10000, "max": 40000}
+      }
+    },
+    
+    "long_document_summarization": {
+      "description": "Long document summarization (very long prompts, medium summaries)",
+      "workload": {
+        "distribution": "poisson",
+        "active_fraction": 0.10,
+        "requests_per_active_user_per_min": 0.1,
+        "peak_multiplier": 1.5
+      },
+      "slo_targets": {
+        "ttft_ms": {"min": 800, "max": 3000},
+        "itl_ms": {"min": 30, "max": 70},
+        "e2e_ms": {"min": 20000, "max": 90000}
+      }
+    },
+    
+    "research_legal_analysis": {
+      "description": "Research/legal document analysis (very long prompts, detailed analysis)",
+      "workload": {
+        "distribution": "uniform_periodic",
+        "active_fraction": 0.10,
+        "requests_per_active_user_per_min": 0.03,
+        "peak_multiplier": 2.5
+      },
+      "slo_targets": {
+        "ttft_ms": {"min": 1500, "max": 5000},
+        "itl_ms": {"min": 30, "max": 80},
+        "e2e_ms": {"min": 60000, "max": 300000}
+      }
+    }
+  },
+  
+  "workload_distributions": [
+    "poisson",
+    "compound_poisson",
+    "poisson_with_bursts",
+    "poisson_clustered",
+    "uniform_periodic"
+  ]
+}
+

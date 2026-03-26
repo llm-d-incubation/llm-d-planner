@@ -1,0 +1,205 @@
+Model Name,Provider,Dataset,Use Case Score
+Kimi K2 Thinking,Moonshot AI,Moonshot AI training dataset,63.79%
+MiniMax-M2,MiniMax,MiniMax training dataset,61.62%
+gpt-oss-120B (high),OpenAI,OpenAI training dataset,61.17%
+DeepSeek V3.1 Terminus (Reasoning),DeepSeek,DeepSeek training dataset,57.18%
+Qwen3 Next 80B A3B (Reasoning),Alibaba,Alibaba training dataset,56.45%
+DeepSeek V3.2 Exp (Reasoning),DeepSeek,DeepSeek training dataset,55.73%
+gpt-oss-20B (high),OpenAI,OpenAI training dataset,55.05%
+Qwen3 VL 235B A22B (Reasoning),Alibaba,Alibaba training dataset,55.04%
+Qwen3 VL 32B (Reasoning),Alibaba,Alibaba training dataset,55.04%
+Apriel-v1.5-15B-Thinker,ServiceNow,ServiceNow training dataset,54.93%
+Doubao Seed Code,ByteDance Seed,ByteDance Seed training dataset,54.84%
+Qwen3 235B A22B 2507 (Reasoning),Alibaba,Alibaba training dataset,54.84%
+Qwen3 Max Thinking,Alibaba,Alibaba training dataset,54.32%
+gpt-oss-120B (low),OpenAI,OpenAI training dataset,51.82%
+Cogito v2.1 (Reasoning),Deep Cogito,Deep Cogito training dataset,51.62%
+Qwen3 Max,Alibaba,Alibaba training dataset,51.15%
+GLM-4.6 (Reasoning),Z AI,Z AI training dataset,51.12%
+Qwen3 30B A3B 2507 (Reasoning),Alibaba,Alibaba training dataset,50.82%
+DeepSeek V3.1 (Reasoning),DeepSeek,DeepSeek training dataset,50.76%
+GLM-4.5 (Reasoning),Z AI,Z AI training dataset,50.62%
+DeepSeek R1 0528 (May '25),DeepSeek,DeepSeek training dataset,50.11%
+Qwen3 235B A22B 2507 Instruct,Alibaba,Alibaba training dataset,49.89%
+gpt-oss-20B (low),OpenAI,OpenAI training dataset,49.44%
+Magistral Medium 1.2,Mistral,Mistral training dataset,49.22%
+DeepSeek V3.2 Exp (Non-reasoning),DeepSeek,DeepSeek training dataset,48.83%
+Seed-OSS-36B-Instruct,ByteDance Seed,ByteDance Seed training dataset,48.67%
+Qwen3 VL 30B A3B (Reasoning),Alibaba,Alibaba training dataset,48.53%
+Ring-1T,InclusionAI,InclusionAI training dataset,48.10%
+DeepSeek V3.1 Terminus (Non-reasoning),DeepSeek,DeepSeek training dataset,48.03%
+Kimi K2 0905,Moonshot AI,Moonshot AI training dataset,47.99%
+Kimi K2,Moonshot AI,Moonshot AI training dataset,47.86%
+MiniMax M1 80k,MiniMax,MiniMax training dataset,47.68%
+Qwen3 VL 235B A22B Instruct,Alibaba,Alibaba training dataset,47.51%
+Qwen3 4B 2507 (Reasoning),Alibaba,Alibaba training dataset,47.41%
+DeepSeek R1 (Jan '25),DeepSeek,DeepSeek training dataset,47.40%
+Qwen3 235B A22B (Reasoning),Alibaba,Alibaba training dataset,46.98%
+Ring-flash-2.0,InclusionAI,InclusionAI training dataset,46.65%
+Qwen3 Next 80B A3B Instruct,Alibaba,Alibaba training dataset,46.65%
+Qwen3 Omni 30B A3B (Reasoning),Alibaba,Alibaba training dataset,46.41%
+GLM-4.5-Air,Z AI,Z AI training dataset,46.29%
+Magistral Small 1.2,Mistral,Mistral training dataset,46.25%
+DeepSeek V3.1 (Non-reasoning),DeepSeek,DeepSeek training dataset,46.20%
+MiniMax M1 40k,MiniMax,MiniMax training dataset,46.16%
+DeepSeek V3 0324,DeepSeek,DeepSeek training dataset,46.16%
+EXAONE 4.0 32B (Reasoning),LG AI Research,LG AI Research training dataset,45.74%
+Llama 4 Maverick,Meta,Meta training dataset,45.65%
+Llama 3.1 Nemotron Ultra 253B v1 (Reasoning),NVIDIA,NVIDIA training dataset,45.52%
+Llama Nemotron Super 49B v1.5 (Reasoning),NVIDIA,NVIDIA training dataset,45.51%
+Qwen3 Coder 480B A35B Instruct,Alibaba,Alibaba training dataset,45.04%
+Ling-1T,InclusionAI,InclusionAI training dataset,45.00%
+Qwen3 VL 32B Instruct,Alibaba,Alibaba training dataset,44.86%
+Qwen3 30B A3B (Reasoning),Alibaba,Alibaba training dataset,44.66%
+Hermes 4 - Llama-3.1 405B (Reasoning),Nous Research,Nous Research training dataset,44.62%
+Solar Pro 2 (Reasoning),Upstage,Upstage training dataset,44.19%
+GLM-4.6 (Non-reasoning),Z AI,Z AI training dataset,44.11%
+Qwen3 32B (Reasoning),Alibaba,Alibaba training dataset,44.11%
+QwQ 32B,Alibaba,Alibaba training dataset,43.83%
+Qwen3 14B (Reasoning),Alibaba,Alibaba training dataset,43.66%
+Qwen2.5 Max,Alibaba,Alibaba training dataset,43.64%
+Llama 3.3 Nemotron Super 49B v1 (Reasoning),NVIDIA,NVIDIA training dataset,43.51%
+Llama 3.3 Instruct 70B,Meta,Meta training dataset,42.86%
+Hermes 4 - Llama-3.1 70B (Reasoning),Nous Research,Nous Research training dataset,42.74%
+ERNIE 4.5 300B A47B,Baidu,Baidu training dataset,42.60%
+Ling-flash-2.0,InclusionAI,InclusionAI training dataset,42.36%
+GLM-4.5V (Reasoning),Z AI,Z AI training dataset,42.34%
+Qwen3 VL 8B (Reasoning),Alibaba,Alibaba training dataset,41.91%
+Qwen3 30B A3B 2507 Instruct,Alibaba,Alibaba training dataset,41.81%
+Qwen3 VL 30B A3B Instruct,Alibaba,Alibaba training dataset,41.56%
+Llama 4 Scout,Meta,Meta training dataset,41.46%
+Qwen3 235B A22B (Non-reasoning),Alibaba,Alibaba training dataset,41.10%
+Llama 3.1 Instruct 405B,Meta,Meta training dataset,40.67%
+Mistral Medium 3.1,Mistral,Mistral training dataset,40.61%
+DeepSeek V3 (Dec '24),DeepSeek,DeepSeek training dataset,40.34%
+EXAONE 4.0 32B (Non-reasoning),LG AI Research,LG AI Research training dataset,40.29%
+Command-R (Aug '24),Cohere,Cohere training dataset,40.20%
+Command-R (Mar '24),Cohere,Cohere training dataset,40.15%
+Llama 3.1 Tulu3 405B,Allen Institute for AI,Allen Institute for AI training dataset,39.98%
+Hermes 4 - Llama-3.1 405B (Non-reasoning),Nous Research,Nous Research training dataset,39.78%
+Jamba Reasoning 3B,AI21 Labs,AI21 Labs training dataset,39.71%
+Qwen2.5 Instruct 72B,Alibaba,Alibaba training dataset,39.70%
+Grok 2 (Dec '24),xAI,xAI training dataset,39.59%
+Solar Pro 2 (Non-reasoning),Upstage,Upstage training dataset,39.59%
+Llama 3.3 Nemotron Super 49B v1 (Non-reasoning),NVIDIA,NVIDIA training dataset,39.35%
+MiniMax-Text-01,MiniMax,MiniMax training dataset,39.30%
+DeepSeek R1 Distill Llama 70B,DeepSeek,DeepSeek training dataset,39.22%
+Qwen3 8B (Reasoning),Alibaba,Alibaba training dataset,39.10%
+Command A,Cohere,Cohere training dataset,39.09%
+Qwen3 VL 4B (Reasoning),Alibaba,Alibaba training dataset,38.78%
+Qwen2.5 Instruct 32B,Alibaba,Alibaba training dataset,38.62%
+Qwen3 Coder 30B A3B Instruct,Alibaba,Alibaba training dataset,38.44%
+NVIDIA Nemotron Nano 9B V2 (Reasoning),NVIDIA,NVIDIA training dataset,38.42%
+Qwen3 Omni 30B A3B Instruct,Alibaba,Alibaba training dataset,38.22%
+NVIDIA Nemotron Nano 9B V2 (Non-reasoning),NVIDIA,NVIDIA training dataset,37.87%
+Qwen3 32B (Non-reasoning),Alibaba,Alibaba training dataset,37.66%
+Pixtral Large,Mistral,Mistral training dataset,37.57%
+Qwen3 4B 2507 Instruct,Alibaba,Alibaba training dataset,37.39%
+Mistral Small 3.2,Mistral,Mistral training dataset,37.38%
+Qwen3 30B A3B (Non-reasoning),Alibaba,Alibaba training dataset,37.36%
+GLM-4.5V (Non-reasoning),Z AI,Z AI training dataset,37.16%
+Llama Nemotron Super 49B v1.5 (Non-reasoning),NVIDIA,NVIDIA training dataset,37.12%
+Qwen3 4B (Reasoning),Alibaba,Alibaba training dataset,37.12%
+Llama 3.2 Instruct 90B (Vision),Meta,Meta training dataset,36.84%
+Mistral Large 2 (Nov '24),Mistral,Mistral training dataset,36.65%
+Llama 3.1 Instruct 70B,Meta,Meta training dataset,36.63%
+Qwen3 VL 8B Instruct,Alibaba,Alibaba training dataset,36.53%
+DeepSeek R1 Distill Qwen 32B,DeepSeek,DeepSeek training dataset,36.19%
+Llama 3.1 Nemotron Instruct 70B,NVIDIA,NVIDIA training dataset,35.91%
+Mistral 7B Instruct,Mistral,Mistral training dataset,35.71%
+Reka Flash 3,Reka AI,Reka AI training dataset,35.62%
+Devstral Small (Jul '25),Mistral,Mistral training dataset,35.59%
+Mistral Large 2 (Jul '24),Mistral,Mistral training dataset,35.53%
+Qwen2.5 Coder Instruct 32B,Alibaba,Alibaba training dataset,35.51%
+Gemma 3 27B Instruct,Google,Google training dataset,35.46%
+DeepSeek R1 Distill Qwen 14B,DeepSeek,DeepSeek training dataset,35.27%
+Mistral Small 3.1,Mistral,Mistral training dataset,34.93%
+Devstral Small (May '25),Mistral,Mistral training dataset,34.92%
+Qwen2.5 Turbo,Alibaba,Alibaba training dataset,34.92%
+DeepSeek R1 0528 Qwen3 8B,DeepSeek,DeepSeek training dataset,34.91%
+Gemma 3 12B Instruct,Google,Google training dataset,34.72%
+Qwen3 VL 4B Instruct,Alibaba,Alibaba training dataset,34.67%
+Codestral-Mamba,Mistral,Mistral training dataset,34.38%
+Hermes 4 - Llama-3.1 70B (Non-reasoning),Nous Research,Nous Research training dataset,34.36%
+Granite 4.0 H Small,IBM,IBM training dataset,33.89%
+Phi-4,Microsoft Azure,Microsoft Azure training dataset,33.87%
+Qwen3 14B (Non-reasoning),Alibaba,Alibaba training dataset,33.84%
+Ling-mini-2.0,InclusionAI,InclusionAI training dataset,33.56%
+Jamba 1.7 Large,AI21 Labs,AI21 Labs training dataset,33.51%
+Qwen3 8B (Non-reasoning),Alibaba,Alibaba training dataset,33.30%
+Qwen3 4B (Non-reasoning),Alibaba,Alibaba training dataset,32.96%
+Kimi Linear 48B A3B Instruct,Moonshot AI,Moonshot AI training dataset,32.85%
+Mistral Small 3,Mistral,Mistral training dataset,32.80%
+Gemma 2 27B,Google,Google training dataset,31.65%
+OLMo 2 32B,Allen Institute for AI,Allen Institute for AI training dataset,31.57%
+DeepHermes 3 - Mistral 24B Preview (Non-reasoning),Nous Research,Nous Research training dataset,31.55%
+Hermes 3 - Llama-3.1 70B,Nous Research,Nous Research training dataset,31.01%
+Exaone 4.0 1.2B (Reasoning),LG AI Research,LG AI Research training dataset,30.86%
+Llama 3 Instruct 70B,Meta,Meta training dataset,30.85%
+Qwen3 1.7B (Reasoning),Alibaba,Alibaba training dataset,30.84%
+Jamba 1.6 Large,AI21 Labs,AI21 Labs training dataset,30.61%
+Llama 3.1 Nemotron Nano 4B v1.1 (Reasoning),NVIDIA,NVIDIA training dataset,30.54%
+Mixtral 8x22B Instruct,Mistral,Mistral training dataset,28.75%
+Mistral Small (Sep '24),Mistral,Mistral training dataset,28.74%
+Exaone 4.0 1.2B (Non-reasoning),LG AI Research,LG AI Research training dataset,28.09%
+LFM2 8B A1B,Liquid AI,Liquid AI training dataset,27.95%
+Llama 3.2 Instruct 11B (Vision),Meta,Meta training dataset,27.93%
+Llama 3.1 Instruct 8B,Meta,Meta training dataset,27.85%
+Gemma 3n E4B Instruct,Google,Google training dataset,27.61%
+Phi-3 Medium Instruct 14B,Microsoft Azure,Microsoft Azure training dataset,26.88%
+Phi-4 Multimodal Instruct,Microsoft Azure,Microsoft Azure training dataset,26.60%
+DeepSeek R1 Distill Llama 8B,DeepSeek,DeepSeek training dataset,26.22%
+Qwen2.5 Coder Instruct 7B ,Alibaba,Alibaba training dataset,26.12%
+Gemma 2 9B,Google,Google training dataset,25.85%
+Jamba 1.7 Mini,AI21 Labs,AI21 Labs training dataset,25.75%
+Gemma 3 4B Instruct,Google,Google training dataset,25.66%
+Granite 4.0 Micro,IBM,IBM training dataset,25.54%
+Pixtral 12B (2409),Mistral,Mistral training dataset,25.52%
+Granite 3.3 8B (Non-reasoning),IBM,IBM training dataset,25.00%
+Phi-4 Mini Instruct,Microsoft Azure,Microsoft Azure training dataset,24.53%
+Aya Expanse 32B,Cohere,Cohere training dataset,24.33%
+Phi-3 Mini Instruct 3.8B,Microsoft Azure,Microsoft Azure training dataset,24.20%
+Qwen3 1.7B (Non-reasoning),Alibaba,Alibaba training dataset,22.92%
+Command-R+ (Aug '24),Cohere,Cohere training dataset,22.88%
+DeepSeek Coder V2 Lite Instruct,DeepSeek,DeepSeek training dataset,22.84%
+LFM 40B,Liquid AI,Liquid AI training dataset,22.81%
+Command-R+ (Apr '24),Cohere,Cohere training dataset,22.59%
+Llama 3.2 Instruct 3B,Meta,Meta training dataset,22.30%
+Llama 3 Instruct 8B,Meta,Meta training dataset,21.88%
+Qwen3 0.6B (Reasoning),Alibaba,Alibaba training dataset,21.84%
+DBRX Instruct,Databricks,Databricks training dataset,21.58%
+Llama 2 Chat 70B,Meta,Meta training dataset,21.57%
+Gemma 3n E2B Instruct,Google,Google training dataset,21.54%
+Llama 2 Chat 13B,Meta,Meta training dataset,21.45%
+Ministral 8B,Mistral,Mistral training dataset,21.27%
+Mistral NeMo,Mistral,Mistral training dataset,20.97%
+DeepSeek-V2.5 (Dec '24),DeepSeek,DeepSeek training dataset,20.70%
+Granite 4.0 H 1B,IBM,IBM training dataset,20.54%
+Molmo 7B-D,Allen Institute for AI,Allen Institute for AI training dataset,20.44%
+Aya Expanse 8B,Cohere,Cohere training dataset,20.32%
+DeepSeek-V2.5,DeepSeek,DeepSeek training dataset,20.20%
+Granite 4.0 1B,IBM,IBM training dataset,19.94%
+Mixtral 8x7B Instruct,Mistral,Mistral training dataset,19.85%
+OLMo 2 7B,Allen Institute for AI,Allen Institute for AI training dataset,19.53%
+Jamba 1.6 Mini,AI21 Labs,AI21 Labs training dataset,19.12%
+R1 1776,Perplexity,Perplexity training dataset,19.10%
+Solar Mini,Upstage,Upstage training dataset,18.90%
+DeepHermes 3 - Llama-3.1 8B Preview (Non-reasoning),Nous Research,Nous Research training dataset,18.58%
+LFM2 2.6B,Liquid AI,Liquid AI training dataset,18.57%
+Codestral (May '24),Mistral,Mistral training dataset,18.23%
+Grok-1,xAI,xAI training dataset,18.20%
+LFM2 1.2B,Liquid AI,Liquid AI training dataset,18.01%
+Qwen3 0.6B (Non-reasoning),Alibaba,Alibaba training dataset,17.28%
+OpenChat 3.5 (1210),OpenChat,OpenChat training dataset,17.03%
+Llama 3.2 Instruct 1B,Meta,Meta training dataset,16.38%
+DeepSeek R1 Distill Qwen 1.5B,DeepSeek,DeepSeek training dataset,14.64%
+DeepSeek-Coder-V2,DeepSeek,DeepSeek training dataset,14.50%
+Gemma 3 1B Instruct,Google,Google training dataset,13.08%
+Granite 4.0 H 350M,IBM,IBM training dataset,12.48%
+Llama 2 Chat 7B,Meta,Meta training dataset,11.96%
+Granite 4.0 350M,IBM,IBM training dataset,11.58%
+DeepSeek-V2-Chat,DeepSeek,DeepSeek training dataset,8.60%
+Arctic Instruct,Snowflake,Snowflake training dataset,7.60%
+Gemma 3 270M,Google,Google training dataset,7.57%
+DeepSeek LLM 67B Chat (V1),DeepSeek,DeepSeek training dataset,5.60%
+DeepSeek-OCR,DeepSeek,DeepSeek training dataset,N/A

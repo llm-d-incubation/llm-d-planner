@@ -1,0 +1,199 @@
+{
+  "_description": "Research-backed workload distribution patterns for LLM use cases - Updated with BLIS benchmark data",
+  "_sources": [
+    "BLIS Simulator Benchmarks (benchmarks_BLIS.json) - 591 samples",
+    "Meta LLM Serving Research",
+    "Google Cloud AI Platform Studies",
+    "AWS SageMaker Workload Analysis",
+    "Azure OpenAI Usage Patterns",
+    "Queueing Theory for ML Systems",
+    "RAGPulse: Real-world RAG Workload Analysis"
+  ],
+  "_blis_token_configs": {
+    "chatbot_code": {"prompt": 512, "output": 256, "samples": 345},
+    "code_generation": {"prompt": 1024, "output": 1024, "samples": 34},
+    "summarization_rag": {"prompt": 4096, "output": 512, "samples": 210},
+    "long_document": {"prompt": 10240, "output": 1536, "samples": 2}
+  },
+  
+  "workload_distributions": {
+    "chatbot_conversational": {
+      "distribution": "poisson",
+      "active_fraction": {"mean": 0.20, "std": 0.05},
+      "requests_per_active_user_per_min": {"mean": 0.4, "std": 0.1},
+      "peak_multiplier": 2.0,
+      "peak_hours": "9-11am, 2-4pm",
+      "description": "Poisson arrivals with 20% concurrent users, λ=0.4 req/min when active",
+      "blis_benchmark": {
+        "optimal_rps": 1.5,
+        "max_rps_tested": 10,
+        "e2e_p95_at_optimal": 4548
+      }
+    },
+    
+    "code_completion": {
+      "distribution": "compound_poisson",
+      "active_fraction": {"mean": 0.25, "std": 0.08},
+      "requests_per_active_user_per_min": {"mean": 2.0, "std": 0.5},
+      "burst_size": 3,
+      "peak_multiplier": 2.5,
+      "description": "Bursty pattern - typing triggers bursts of 2-5 requests",
+      "blis_benchmark": {
+        "optimal_rps": 5,
+        "max_rps_tested": 10,
+        "e2e_p95_at_optimal": 4548
+      }
+    },
+    
+    "code_generation_detailed": {
+      "distribution": "poisson",
+      "active_fraction": {"mean": 0.15, "std": 0.05},
+      "requests_per_active_user_per_min": {"mean": 0.3, "std": 0.1},
+      "peak_multiplier": 2.0,
+      "description": "Session-based - developers make occasional detailed requests",
+      "blis_benchmark": {
+        "optimal_rps": 1.0,
+        "max_rps_tested": 5,
+        "e2e_p95_at_optimal": 7812
+      }
+    },
+    
+    "translation": {
+      "distribution": "poisson",
+      "active_fraction": {"mean": 0.15, "std": 0.05},
+      "requests_per_active_user_per_min": {"mean": 0.2, "std": 0.05},
+      "peak_multiplier": 1.8,
+      "description": "Moderate arrival rate with periodic batch translations",
+      "blis_benchmark": {
+        "optimal_rps": 1.5,
+        "max_rps_tested": 10,
+        "e2e_p95_at_optimal": 4548
+      }
+    },
+    
+    "content_generation": {
+      "distribution": "poisson_with_bursts",
+      "active_fraction": {"mean": 0.20, "std": 0.05},
+      "requests_per_active_user_per_min": {"mean": 0.5, "std": 0.15},
+      "burst_size": 2.5,
+      "peak_multiplier": 2.2,
+      "description": "Creative sessions with occasional revision bursts",
+      "blis_benchmark": {
+        "optimal_rps": 1.5,
+        "max_rps_tested": 10,
+        "e2e_p95_at_optimal": 4548
+      }
+    },
+    
+    "summarization_short": {
+      "distribution": "poisson",
+      "active_fraction": {"mean": 0.15, "std": 0.05},
+      "requests_per_active_user_per_min": {"mean": 0.2, "std": 0.05},
+      "peak_multiplier": 1.8,
+      "description": "Steady arrival rate for document processing",
+      "blis_benchmark": {
+        "optimal_rps": 1.0,
+        "max_rps_tested": 5,
+        "e2e_p95_at_optimal": 6554,
+        "context_tokens": 4096
+      }
+    },
+    
+    "document_analysis_rag": {
+      "distribution": "poisson_clustered",
+      "active_fraction": {"mean": 0.20, "std": 0.05},
+      "requests_per_active_user_per_min": {"mean": 1.0, "std": 0.3},
+      "peak_multiplier": 2.5,
+      "description": "Clustered arrivals - users ask follow-up questions",
+      "blis_benchmark": {
+        "optimal_rps": 1.0,
+        "max_rps_tested": 5,
+        "e2e_p95_at_optimal": 6554,
+        "context_tokens": 4096
+      }
+    },
+    
+    "long_document_summarization": {
+      "distribution": "poisson",
+      "active_fraction": {"mean": 0.10, "std": 0.03},
+      "requests_per_active_user_per_min": {"mean": 0.1, "std": 0.03},
+      "peak_multiplier": 1.5,
+      "description": "Low frequency, high compute per request",
+      "blis_benchmark": {
+        "optimal_rps": 0.5,
+        "max_rps_tested": 2,
+        "e2e_p95_at_optimal": 12793,
+        "context_tokens": 10240
+      }
+    },
+    
+    "research_legal_analysis": {
+      "distribution": "uniform_periodic",
+      "active_fraction": {"mean": 0.10, "std": 0.03},
+      "requests_per_active_user_per_min": {"mean": 0.03, "std": 0.01},
+      "peak_multiplier": 2.5,
+      "peak_hours": "Business hours only",
+      "description": "Batch processing with periodic submission windows",
+      "blis_benchmark": {
+        "optimal_rps": 0.3,
+        "max_rps_tested": 1,
+        "e2e_p95_at_optimal": 12793,
+        "context_tokens": 10240
+      }
+    }
+  },
+  
+  "traffic_profiles": {
+    "chatbot_conversational": {"prompt_tokens": 512, "output_tokens": 256, "blis_samples": 345},
+    "code_completion": {"prompt_tokens": 512, "output_tokens": 256, "blis_samples": 345},
+    "code_generation_detailed": {"prompt_tokens": 1024, "output_tokens": 1024, "blis_samples": 34},
+    "translation": {"prompt_tokens": 512, "output_tokens": 256, "blis_samples": 345},
+    "content_generation": {"prompt_tokens": 512, "output_tokens": 256, "blis_samples": 345},
+    "summarization_short": {"prompt_tokens": 4096, "output_tokens": 512, "blis_samples": 210},
+    "document_analysis_rag": {"prompt_tokens": 4096, "output_tokens": 512, "blis_samples": 210},
+    "long_document_summarization": {"prompt_tokens": 10240, "output_tokens": 1536, "blis_samples": 2},
+    "research_legal_analysis": {"prompt_tokens": 10240, "output_tokens": 1536, "blis_samples": 2}
+  },
+  
+  "hardware_throughput": {
+    "_description": "Throughput benchmarks from BLIS data (tokens/sec)",
+    "H100": {
+      "x1": {"samples": 105, "mean_tokens_per_sec": 808, "ttft_mean_ms": 87.6},
+      "x2": {"samples": 165, "mean_tokens_per_sec": 964, "ttft_mean_ms": 74.9},
+      "x4": {"samples": 153, "mean_tokens_per_sec": 2020, "ttft_mean_ms": 62.0},
+      "x8": {"samples": 74, "mean_tokens_per_sec": 870, "ttft_mean_ms": 49.1}
+    },
+    "A100-80": {
+      "x1": {"samples": 22, "mean_tokens_per_sec": 412, "ttft_mean_ms": 88.8},
+      "x2": {"samples": 60, "mean_tokens_per_sec": 964, "ttft_mean_ms": 122.9},
+      "x4": {"samples": 12, "mean_tokens_per_sec": 492, "ttft_mean_ms": 71.9}
+    }
+  },
+  
+  "capacity_planning": {
+    "description": "Formulas for capacity planning based on workload patterns and BLIS benchmarks",
+    "concurrent_users": "user_count * active_fraction",
+    "rps_mean": "(concurrent_users * requests_per_minute) / 60",
+    "rps_p95": "rps_mean * peak_multiplier",
+    "headroom_recommended": 1.5,
+    "note": "Plan for 1.5x p95 RPS to handle unexpected spikes",
+    "blis_guidance": {
+      "H100_x1_max_rps": 10,
+      "H100_x2_max_rps": 15,
+      "H100_x4_max_rps": 25,
+      "A100_x1_max_rps": 5,
+      "A100_x2_max_rps": 10
+    }
+  },
+  
+  "model_benchmarks": {
+    "_description": "Per-model performance from BLIS data",
+    "granite-3.1-8b": {"category": "efficient", "best_use": ["chatbot", "code_completion"]},
+    "llama-3.1-8b": {"category": "efficient", "best_use": ["chatbot", "translation"]},
+    "llama-3.3-70b": {"category": "large", "best_use": ["code_generation", "research"]},
+    "phi-4": {"category": "efficient", "best_use": ["code_completion", "chatbot"]},
+    "mistral-small-24b": {"category": "medium", "best_use": ["content_generation", "summarization"]},
+    "mixtral-8x7b": {"category": "moe", "best_use": ["document_analysis", "translation"]},
+    "qwen2.5-7b": {"category": "efficient", "best_use": ["chatbot", "code_completion"]}
+  }
+}
