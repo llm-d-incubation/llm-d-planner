@@ -12,10 +12,6 @@ Features include:
   - Recommend GPU configurations using BentoML's llm-optimizer roofline algorithm.
   - Analyze throughput, latency (TTFT, ITL, E2E), and concurrency trade-offs across different GPU types.
   - Export recommendations in JSON format for integration with other tools.
-- **Configuration exploration and recommendation**:
-  - Visualize performance metrics for different `llm-d` configurations, filter on SLOs, compare configuration tradeoffs.
-  - (soon) Predict latency and throughput for configurations lacking benchmark data.
-
 Core functionality is currently a Python module within `llm-d-benchmark`. In the future we may consider shipping as a separate package depending on community interest.
 
 ## Installation
@@ -62,7 +58,7 @@ config-explorer estimate --model Qwen/Qwen2.5-3B \
   --pretty
 
 # Start the Streamlit web app
-pip install -r config_explorer/requirements-streamlit.txt # one-time installation
+pip install -r requirements-streamlit.txt # one-time installation (run from config_explorer/ dir)
 config-explorer start
 
 # Get help
@@ -73,8 +69,9 @@ config-explorer --help
 
 A Streamlit frontend is provided to showcase the capabilities of the Configuration Explorer in a more intuitive way. Before using this frontend additional requirements must be installed.
 
-After installing Streamlit requirements (`pip install -r config_explorer/requirements-streamlit.txt`) the web app may then be started with
+After installing Streamlit requirements (`pip install -r requirements-streamlit.txt`) the web app may then be started with
 ```bash
+cd config_explorer  # must run from within the config_explorer directory
 config-explorer start
 ```
 
@@ -84,16 +81,6 @@ The Streamlit frontend includes the following pages:
 
 1. **Capacity Planner** - Analyze GPU memory requirements and capacity planning for LLM models
 2. **GPU Recommender** - Get optimal GPU recommendations based on model and workload requirements
-3. **Sweep Visualizer** - Visualize benchmark results and configuration sweeps
-
-### Using the Sweep Visualizer
-
-The Sweep Visualizer page supports visualizing a collection of `llm-d-benchmark` report files. To get started easily, you may download the data from the [public llm-d-benchmark community Google Drive](https://drive.google.com/drive/u/0/folders/1r2Z2Xp1L0KonUlvQHvEzed8AO9Xj8IPm). Preset options have been selected for each scenario. For example, we recommend viewing
-
-- `qwen-qwen-3-0-6b` using the Chatbot application highlight Inference Scheduling
-- `meta-llama/Llama-3.1-70B-Instruct` using the Document Summarization application highlight PD Disaggregation
-
-Default values will be populated once those options are selected. Advanced users may further conduct their own configuration.
 
 ### Using the GPU Recommender
 
@@ -130,7 +117,5 @@ The GPU Recommender displays cost information to help you find cost-effective GP
 **⚠️ IMPORTANT**: Default costs are **reference values for relative comparison only**. They do **NOT** represent actual pricing from any provider. Lower values indicate better value. Use custom costs that reflect your actual infrastructure pricing.
 
 ## Library
-
-Configuration exploration and benchmark sweep performance comparison is best demonstrated in the Jupyter notebook [analysis.ipynb](../analysis/analysis.ipynb). This notebook can be used for interactive analysis of benchmarking data results, and it utilizes the same core functions as the "Sweep Visualizer" page of the web app. For instructions on using the notebook see [../analysis/README.md](../analysis/README.md).
 
 For GPU recommender API usage see [./examples/gpu_recommender_example.py](./examples/gpu_recommender_example.py).
