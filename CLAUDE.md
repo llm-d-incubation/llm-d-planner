@@ -179,16 +179,101 @@ The recommendation engine uses **multi-criteria scoring** to rank configurations
 
 ## Development Environment
 
+**Requirements**: Python 3.11+ (3.13 recommended on macOS), uv, Docker or Podman, kubectl, kind, ollama.
+
 This project uses **uv** (by Astral) for Python package management. **Do not use `pip` or `pip install`.**
 
-- **Install dependencies**: `uv sync` (reads from `pyproject.toml` + `uv.lock`)
+- **Install dependencies**: `uv sync --extra ui --extra dev` (reads from `pyproject.toml` + `uv.lock`)
 - **Run Python commands**: `uv run python ...` (not bare `python`)
 - **Run tools**: `uv run pytest`, `uv run ruff`, `uv run uvicorn`, etc.
 - **Add a dependency**: `uv add <package>` (updates `pyproject.toml` and `uv.lock`)
 - **Source of truth**: `pyproject.toml` defines all dependencies; there is no top-level `requirements.txt`
-- **Makefile targets** already use `uv` — see `make setup-backend`, `make start-backend`, etc.
 
 Note: `ui/requirements.txt` and `simulator/requirements.txt` exist separately for their Docker builds.
+
+## Common Development Commands
+
+### Setup
+
+```bash
+make setup              # Full setup (prereqs + backend + UI + Ollama)
+make setup-backend      # Python env only (uv sync --extra ui --extra dev)
+```
+
+### Running Services
+
+```bash
+make start              # Start all (DB + Ollama + Backend + UI)
+make stop               # Stop Backend + UI (leaves DB and Ollama running)
+make stop-all           # Stop everything
+make health             # Check all service health
+```
+
+Service URLs: UI `http://localhost:8501`, Backend `http://localhost:8000` (Swagger at `/docs`), Ollama `http://localhost:11434`, DB `postgresql://postgres:neuralnav@localhost:5432/neuralnav`
+
+### Testing
+
+```bash
+make test-unit                    # Unit tests only (no DB or Ollama needed)
+make test-db                      # Database tests (requires PostgreSQL with data)
+make test-integration             # Integration tests (requires Ollama + DB)
+make test                         # All tests
+
+# Run a single test file or test function:
+cd src && uv run pytest ../tests/path/to/test_file.py -v
+cd src && uv run pytest ../tests/path/to/test_file.py::test_function_name -v
+```
+
+Test markers: `@pytest.mark.unit`, `@pytest.mark.database`, `@pytest.mark.integration`. Tests run from the `src/` directory (`cd src && uv run pytest ../tests/`).
+
+### Code Quality (also run in CI)
+
+```bash
+make lint               # Ruff linter (src/ and ui/)
+make format             # Ruff auto-format
+make typecheck          # Mypy type checking (src/ and ui/)
+```
+
+### CI Pipeline
+
+CI runs on PRs to `main`: ruff check + format check on `src/` and `tests/`, mypy on `src/`, unit tests on Python 3.11 and 3.12 with coverage. All must pass.
+
+### Database Management
+
+```bash
+make db-start           # Start PostgreSQL container (auto-creates schema)
+make db-stop            # Stop PostgreSQL
+make db-reset           # Remove and reinitialize
+make db-load-blis       # Load BLIS benchmark data
+make db-load-estimated  # Load estimated performance data
+make db-shell           # Open psql shell
+```
+
+### Docker Compose (alternative to native services)
+
+```bash
+make docker-up          # Start all services via Docker Compose
+make docker-down        # Stop all
+make docker-up-dev      # Development mode with live reload
+```
+
+### Kubernetes / KIND Cluster
+
+```bash
+make cluster-start      # Create KIND cluster + load simulator image
+make cluster-stop       # Delete cluster
+make cluster-status     # Show status
+make clean-deployments  # Delete all InferenceServices
+```
+
+### Container Builds
+
+```bash
+make build-backend      # Build backend Docker image
+make build-simulator    # Build vLLM simulator image
+```
+
+Container runtime auto-detects Docker or Podman. Override with `CONTAINER_TOOL=podman make ...`.
 
 ## Working with This Repository
 
