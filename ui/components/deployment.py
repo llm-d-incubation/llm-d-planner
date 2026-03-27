@@ -185,14 +185,18 @@ def _render_deploy_to_cluster_button(selected_config: dict):
         use_container_width=True,
         type="primary",
         disabled=already_deployed,
-        help="Already deployed to cluster" if already_deployed else "Deploy to Kubernetes cluster (YAML auto-generated)",
+        help="Already deployed to cluster"
+        if already_deployed
+        else "Deploy to Kubernetes cluster (YAML auto-generated)",
         key="deploy_to_cluster_btn",
     ):
         # Check cluster accessibility when the user clicks
         with st.spinner("Checking cluster connectivity..."):
             status = check_cluster_status()
         if not status.get("accessible", False):
-            st.error("Kubernetes cluster is not accessible. Please ensure the cluster is running and try again.")
+            st.error(
+                "Kubernetes cluster is not accessible. Please ensure the cluster is running and try again."
+            )
             return
 
         with st.spinner("Deploying to Kubernetes cluster..."):
@@ -208,7 +212,9 @@ def _render_deploy_to_cluster_button(selected_config: dict):
                 st.session_state.deployment_yaml_files = files
                 st.session_state.deployment_yaml_generated = True
 
-            st.success(f"Successfully deployed to cluster! Deployment ID: `{result.get('deployment_id')}`")
+            st.success(
+                f"Successfully deployed to cluster! Deployment ID: `{result.get('deployment_id')}`"
+            )
 
             deployment_result = result.get("deployment_result", {})
             for applied_file in deployment_result.get("applied_files", []):

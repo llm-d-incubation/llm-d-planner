@@ -513,7 +513,14 @@ def main():
 
     # Tab-based navigation (6 tabs)
     tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs(
-        ["Define Use Case", "Technical Specification", "Recommendations", "Deployment", "Deployment Management", "Configuration"]
+        [
+            "Define Use Case",
+            "Technical Specification",
+            "Recommendations",
+            "Deployment",
+            "Deployment Management",
+            "Configuration",
+        ]
     )
 
     with tab1:
