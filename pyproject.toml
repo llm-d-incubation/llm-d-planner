@@ -64,6 +64,7 @@ exclude = [
     "dist",
     "generated_configs",
     "logs",
+    "src/config_explorer",
 ]
 
 [tool.ruff.lint]
