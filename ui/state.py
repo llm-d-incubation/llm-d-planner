@@ -1,8 +1,10 @@
 """Session state defaults and initialization for the NeuralNav UI."""
 
+from typing import Any
+
 import streamlit as st
 
-SESSION_DEFAULTS = {
+SESSION_DEFAULTS: dict[str, Any] = {
     # Core workflow state
     "extraction_result": None,
     "recommendation_result": None,

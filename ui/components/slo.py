@@ -70,7 +70,7 @@ def get_workload_insights(use_case: str, qps: int, user_count: int) -> list:
 
     Returns list of tuples: (icon, color, message, severity)
     """
-    messages = []
+    messages: list[tuple[str, str, str, str]] = []
 
     workload_profile = fetch_workload_profile(use_case)
     if not workload_profile:
@@ -266,7 +266,7 @@ def _render_priorities():
         logger.info(
             f"get_weight_for_priority({dimension}, {priority_level}): pw={pw}, weight={weight}"
         )
-        return weight
+        return int(weight)
 
     extraction = st.session_state.get("extraction_result", {})
 

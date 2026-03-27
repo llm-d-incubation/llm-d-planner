@@ -3,6 +3,8 @@
 Category cards, top-5 table, options list, and recommendation results.
 """
 
+from typing import Any
+
 import streamlit as st
 import streamlit.components.v1 as components
 from api_client import deploy_and_generate_yaml
@@ -436,7 +438,7 @@ def render_recommendation_result(result: dict, priority: str, extraction: dict):
     st.markdown("---")
 
     # Get all recommendations for the cards
-    all_recs = []
+    all_recs: list[dict[str, Any]] = []
     for cat in ["balanced", "best_accuracy", "lowest_cost", "lowest_latency", "simplest"]:
         cat_recs = (
             st.session_state.ranked_response.get(cat, [])

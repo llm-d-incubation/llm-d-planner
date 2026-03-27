@@ -6,6 +6,7 @@ All HTTP communication with the backend lives here.
 import contextlib
 import logging
 import os
+from typing import Any, cast
 
 import pandas as pd
 import requests
@@ -62,7 +63,7 @@ def fetch_slo_defaults(use_case: str) -> dict | None:
         response.raise_for_status()
         data = response.json()
         if data.get("success"):
-            return data.get("slo_defaults")
+            return cast(dict[Any, Any] | None, data.get("slo_defaults"))
         return None
     except Exception as e:
         logger.warning(f"Failed to fetch SLO defaults for {use_case}: {e}")
@@ -89,7 +90,7 @@ def fetch_expected_rps(use_case: str, user_count: int) -> dict | None:
         response.raise_for_status()
         data = response.json()
         if data.get("success"):
-            return data
+            return cast(dict[Any, Any], data)
         return None
     except Exception as e:
         logger.warning(f"Failed to fetch expected RPS for {use_case}: {e}")
@@ -116,7 +117,7 @@ def fetch_workload_profile(use_case: str) -> dict | None:
         response.raise_for_status()
         data = response.json()
         if data.get("success"):
-            return data.get("workload_profile")
+            return cast(dict[Any, Any] | None, data.get("workload_profile"))
         return None
     except Exception as e:
         logger.warning(f"Failed to fetch workload profile for {use_case}: {e}")
@@ -138,7 +139,7 @@ def fetch_priority_weights() -> dict | None:
         response.raise_for_status()
         data = response.json()
         if data.get("success"):
-            return data.get("priority_weights")
+            return cast(dict[Any, Any] | None, data.get("priority_weights"))
         return None
     except Exception as e:
         logger.warning(f"Failed to fetch priority weights: {e}")
@@ -154,10 +155,10 @@ def fetch_ranked_recommendations(
     ttft_target_ms: int,
     itl_target_ms: int,
     e2e_target_ms: int,
-    weights: dict = None,
+    weights: dict[Any, Any] | None = None,
     include_near_miss: bool = False,
     percentile: str = "p95",
-    preferred_gpu_types: list[str] = None,
+    preferred_gpu_types: list[str] | None = None,
 ) -> dict | None:
     """Fetch ranked recommendations from the backend API.
 
@@ -205,7 +206,7 @@ def fetch_ranked_recommendations(
             timeout=30,
         )
         response.raise_for_status()
-        return response.json()
+        return cast(dict[Any, Any], response.json())
     except requests.exceptions.RequestException as e:
         st.error(f"Failed to fetch ranked recommendations: {e}")
         return None
@@ -230,7 +231,7 @@ def extract_business_context(user_input: str) -> dict | None:
                 gpu_list = result["preferred_gpu_types"]
                 result["hardware"] = ", ".join(gpu_list) if gpu_list else None
             logger.info(f"LLM extraction successful: {result.get('use_case')}")
-            return result
+            return cast(dict[Any, Any], result)
         else:
             logger.warning(
                 f"LLM extraction API returned status {response.status_code}: {response.text[:200]}"
@@ -293,7 +294,7 @@ def check_cluster_status() -> dict:
             timeout=5,
         )
         if response.status_code == 200:
-            return response.json()
+            return cast(dict[Any, Any], response.json())
         return {"accessible": False}
     except Exception:
         return {"accessible": False}
@@ -311,7 +312,7 @@ def load_all_deployments() -> list | None:
         )
         if response.status_code == 200:
             data = response.json()
-            return data.get("deployments", [])
+            return cast(list[Any], data.get("deployments", []))
         elif response.status_code == 503:
             return None
         else:
@@ -336,7 +337,7 @@ def deploy_to_cluster(recommendation: dict, namespace: str = "default") -> dict:
             timeout=60,
         )
         if response.status_code == 200:
-            return response.json()
+            return cast(dict[Any, Any], response.json())
         elif response.status_code == 503:
             return {"success": False, "message": "Kubernetes cluster not accessible"}
         else:
@@ -358,7 +359,7 @@ def delete_deployment(deployment_id: str) -> dict:
             timeout=30,
         )
         if response.status_code == 200:
-            return response.json()
+            return cast(dict[Any, Any], response.json())
         else:
             return {"success": False, "message": response.text}
     except Exception as e:
@@ -376,7 +377,7 @@ def get_k8s_status(deployment_id: str) -> dict | None:
             timeout=DEFAULT_TIMEOUT,
         )
         if response.status_code == 200:
-            return response.json()
+            return cast(dict[Any, Any], response.json())
         return None
     except Exception as e:
         logger.error(f"Failed to get K8s status for {deployment_id}: {e}")
@@ -396,7 +397,7 @@ def fetch_deployment_mode() -> str | None:
     try:
         response = requests.get(f"{API_BASE_URL}/api/v1/deployment-mode", timeout=DEFAULT_TIMEOUT)
         response.raise_for_status()
-        return response.json().get("mode")
+        return cast(str | None, response.json().get("mode"))
     except Exception as e:
         logger.error(f"Failed to fetch deployment mode: {e}")
         return None
@@ -414,7 +415,7 @@ def update_deployment_mode(mode: str) -> dict | None:
             timeout=DEFAULT_TIMEOUT,
         )
         response.raise_for_status()
-        return response.json()
+        return cast(dict[Any, Any], response.json())
     except Exception as e:
         logger.error(f"Failed to set deployment mode: {e}")
         return None
@@ -436,7 +437,7 @@ def fetch_db_status() -> dict | None:
             timeout=DEFAULT_TIMEOUT,
         )
         response.raise_for_status()
-        return response.json()
+        return cast(dict[Any, Any], response.json())
     except Exception as e:
         logger.error(f"Failed to fetch DB status: {e}")
         return None
@@ -459,7 +460,7 @@ def upload_benchmarks(file_bytes: bytes, filename: str) -> dict | None:
             timeout=60,
         )
         response.raise_for_status()
-        return response.json()
+        return cast(dict[Any, Any], response.json())
     except requests.exceptions.HTTPError as e:
         detail = ""
         with contextlib.suppress(Exception):
@@ -483,7 +484,7 @@ def reset_database() -> dict | None:
             timeout=30,
         )
         response.raise_for_status()
-        return response.json()
+        return cast(dict[Any, Any], response.json())
     except Exception as e:
         logger.error(f"Database reset failed: {e}")
         return {"success": False, "message": str(e)}
