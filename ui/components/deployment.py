@@ -83,17 +83,8 @@ def render_deployment_tab():
                     result = response.json()
 
                     if result.get("success"):
-                        deployment_id = result.get("deployment_id")
-                        st.session_state.deployment_id = deployment_id
-
-                        yaml_response = requests.get(
-                            f"{API_BASE_URL}/api/v1/deployments/{deployment_id}/yaml",
-                            timeout=10,
-                        )
-                        yaml_response.raise_for_status()
-                        yaml_data = yaml_response.json()
-
-                        st.session_state.deployment_yaml_files = yaml_data.get("files", {})
+                        st.session_state.deployment_id = result.get("deployment_id")
+                        st.session_state.deployment_yaml_files = result.get("files", {})
                         st.session_state.deployment_yaml_generated = True
                         st.rerun()
                     else:
@@ -117,7 +108,8 @@ def render_deployment_tab():
         if yaml_files:
             zip_buffer = io.BytesIO()
             with zipfile.ZipFile(zip_buffer, "w", zipfile.ZIP_DEFLATED) as zf:
-                for filename, content in yaml_files.items():
+                for config_type, content in yaml_files.items():
+                    filename = f"{deployment_id}-{config_type}.yaml"
                     zf.writestr(filename, content)
             zip_buffer.seek(0)
 
