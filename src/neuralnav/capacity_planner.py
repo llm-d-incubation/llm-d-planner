@@ -11,30 +11,32 @@ Calculates minimum GPU requirements based on model architecture, parallelism
 configuration, and workload characteristics.
 """
 
+import contextlib
+import io
+import math
+import re
 from dataclasses import dataclass
 from enum import StrEnum
-import math
-from functools import reduce, lru_cache
-import re
-from typing import List
+from functools import lru_cache, reduce
+
 from huggingface_hub import HfApi
 from huggingface_hub.hf_api import ModelInfo, SafetensorsRepoMetadata
 
-import contextlib
-import io
 with contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(io.StringIO()):
-    from transformers import AutoConfig, AutoModel
+    from transformers import AutoConfig
 
 # Memory Overhead Constants (in GiB)
 # Empirically validated against vLLM on H100 GPUs with seq_len=16000, batch_size=1
 # Source: empirical-test/analysis-results.md
 # Test environment: H100 (79.18 GiB), vLLM with FlashAttention, max_model_len=16000
-ACTIVATION_MEMORY_BASE_DENSE_GIB = 5.5  # Dense models: Qwen3-0.6B (5.56), Llama-8B (4.76), Llama-70B/TP2 (4.84)
-ACTIVATION_MEMORY_BASE_MOE_GIB = 8.0    # MoE models: gpt-oss-20b (7.38)
+ACTIVATION_MEMORY_BASE_DENSE_GIB = (
+    5.5  # Dense models: Qwen3-0.6B (5.56), Llama-8B (4.76), Llama-70B/TP2 (4.84)
+)
+ACTIVATION_MEMORY_BASE_MOE_GIB = 8.0  # MoE models: gpt-oss-20b (7.38)
 ACTIVATION_MEMORY_BASE_MULTIMODAL_GIB = 2.5  # Multimodal models: Mistral-Small-3.2-24B (2.12)
-ACTIVATION_REFERENCE_SEQ_LEN = 16000    # Reference sequence length for empirical measurements
-VLLM_NON_TORCH_MEMORY_TP1_GIB = 0.15    # TP=1: empirical range 0.13-0.14 GiB
-VLLM_NON_TORCH_MEMORY_TPN_GIB = 0.6     # TP≥2: empirical 0.55 GiB (TP=2)
+ACTIVATION_REFERENCE_SEQ_LEN = 16000  # Reference sequence length for empirical measurements
+VLLM_NON_TORCH_MEMORY_TP1_GIB = 0.15  # TP=1: empirical range 0.13-0.14 GiB
+VLLM_NON_TORCH_MEMORY_TPN_GIB = 0.6  # TP≥2: empirical 0.55 GiB (TP=2)
 # Note: CUDA graph memory is included in activation memory profiling, not a separate constant
 
 # Tier 1: Validated activation profiles from empirical vLLM measurements on H100.
@@ -42,11 +44,11 @@ VLLM_NON_TORCH_MEMORY_TPN_GIB = 0.6     # TP≥2: empirical 0.55 GiB (TP=2)
 # Value = activation memory in GiB (torch peak memory increase from vLLM profiling)
 # Source: config_explorer/empirical-vllm-memory-results.md
 VALIDATED_ACTIVATION_PROFILES = {
-    "LlamaForCausalLM": 4.8,                   # Empirical: Llama-8B (4.76), Llama-70B/TP2 (4.84)
-    "Qwen2ForCausalLM": 5.6,                   # Empirical: same family as Qwen3
-    "Qwen3ForCausalLM": 5.6,                   # Empirical: Qwen3-0.6B (5.56), Qwen3-32B (5.64)
-    "PixtralForConditionalGeneration": 2.5,     # Empirical: Mistral-Small-3.2-24B (2.12)
-    "Mistral3ForConditionalGeneration": 2.5,    # Same architecture family as Pixtral
+    "LlamaForCausalLM": 4.8,  # Empirical: Llama-8B (4.76), Llama-70B/TP2 (4.84)
+    "Qwen2ForCausalLM": 5.6,  # Empirical: same family as Qwen3
+    "Qwen3ForCausalLM": 5.6,  # Empirical: Qwen3-0.6B (5.56), Qwen3-32B (5.64)
+    "PixtralForConditionalGeneration": 2.5,  # Empirical: Mistral-Small-3.2-24B (2.12)
+    "Mistral3ForConditionalGeneration": 2.5,  # Same architecture family as Pixtral
 }
 
 # Tier 2: Multimodal architectures typically have lower activation memory
@@ -59,17 +61,20 @@ MULTIMODAL_ARCHITECTURES = [
 ]
 
 # Computational Constants
-BYTES_PER_GIB = 1024 ** 3
+BYTES_PER_GIB = 1024**3
 FP16_BF16_BYTES = 2  # Computational dtype for most inference workloads
 HIGH_PRECISION_THRESHOLD_BYTES = 2  # Distinguish quantized vs full-precision
 DEFAULT_KV_CACHE_DTYPE_BYTES = 1  # FP8 KV cache default
 
+
 class AttentionType(StrEnum):
     """Attention mechanism types supported by the capacity planner."""
+
     MLA = "Multi-head latent attention"
     MHA = "Multi-head attention"
     GQA = "Grouped-query attention"
     MQA = "Multi-query attention"
+
 
 @dataclass
 class KVCacheDetail:
@@ -89,8 +94,8 @@ class KVCacheDetail:
     num_attention_group: int
     per_token_memory_bytes: int
     per_request_kv_cache_bytes: int
-    per_request_kv_cache_gb: float          # Single request kv cache
-    kv_cache_size_gb: float                 # Batch size kv cache
+    per_request_kv_cache_gb: float  # Single request kv cache
+    kv_cache_size_gb: float  # Batch size kv cache
 
     # Workload inputs
     context_len: int = 1
@@ -100,7 +105,9 @@ class KVCacheDetail:
     kv_lora_rank: int | None = None
     qk_rope_head_dim: int | None = None
 
-    def __init__(self, model_name: str, model_config: AutoConfig, context_len: int=1, batch_size: int=1):
+    def __init__(
+        self, model_name: str, model_config: AutoConfig, context_len: int = 1, batch_size: int = 1
+    ):
         """
         KVCacheDetail stores information that are relevant to calculating KV cache memory requirement
 
@@ -122,7 +129,7 @@ class KVCacheDetail:
         self.hidden_size = model_config.hidden_size
         self.num_attention_heads = model_config.num_attention_heads
         self.num_key_value_heads = model_config.num_key_value_heads
-        self.head_dimension = getattr(model_config,"head_dim", None)
+        self.head_dimension = getattr(model_config, "head_dim", None)
         if self.head_dimension is None:
             self.head_dimension = int(self.hidden_size / self.num_attention_heads)
         # Determine attention type
@@ -161,7 +168,7 @@ class KVCacheDetail:
         self.__recalculate()
 
     def __recalculate(self):
-        """"
+        """ "
         Recalculates per token memory, kv cache size in bytes, and in GB
 
         KV Cache Memory Formulas:
@@ -180,14 +187,25 @@ class KVCacheDetail:
         - MLA: Compressed KV with low-rank projection
         """
         if self.attention_type == AttentionType.MLA:
-            self.per_token_memory_bytes = self.num_hidden_layers * (self.kv_lora_rank + self.qk_rope_head_dim) * self.precision_in_bytes
+            self.per_token_memory_bytes = (
+                self.num_hidden_layers
+                * (self.kv_lora_rank + self.qk_rope_head_dim)
+                * self.precision_in_bytes
+            )
         else:
             self.num_attention_group = int(self.num_attention_heads / self.num_key_value_heads)
-            self.per_token_memory_bytes = int(self.num_hidden_layers * 2 * self.head_dimension * self.num_key_value_heads * self.precision_in_bytes)
+            self.per_token_memory_bytes = int(
+                self.num_hidden_layers
+                * 2
+                * self.head_dimension
+                * self.num_key_value_heads
+                * self.precision_in_bytes
+            )
 
         self.per_request_kv_cache_bytes = self.per_token_memory_bytes * self.context_len
         self.per_request_kv_cache_gb = bytes_to_gib(self.per_request_kv_cache_bytes)
         self.kv_cache_size_gb = self.per_request_kv_cache_gb * self.batch_size
+
 
 # Model
 def get_model_info_from_hf(model_name: str, hf_token: str | None = None) -> ModelInfo:
@@ -198,7 +216,8 @@ def get_model_info_from_hf(model_name: str, hf_token: str | None = None) -> Mode
     model_info = api.model_info(model_name)
     return model_info
 
-def get_model_config_from_hf(model_name: str, hf_token: str=None) -> AutoConfig:
+
+def get_model_config_from_hf(model_name: str, hf_token: str = None) -> AutoConfig:
     """
     Returns LLM model config
     """
@@ -211,14 +230,19 @@ def get_model_config_from_hf(model_name: str, hf_token: str=None) -> AutoConfig:
 
     return model_config
 
+
 @lru_cache(maxsize=128)
-def _get_safetensors_metadata_cached(model_name: str, hf_token: str | None = None) -> SafetensorsRepoMetadata:
+def _get_safetensors_metadata_cached(
+    model_name: str, hf_token: str | None = None
+) -> SafetensorsRepoMetadata:
     """Cached internal function for fetching safetensors metadata."""
     api = HfApi(token=hf_token)
     return api.get_safetensors_metadata(model_name)
 
 
-def get_safetensors_metadata_from_hf(model_name: str, hf_token: str | None = None) -> SafetensorsRepoMetadata:
+def get_safetensors_metadata_from_hf(
+    model_name: str, hf_token: str | None = None
+) -> SafetensorsRepoMetadata:
     """
     Fetches safetensors metadata directly from HuggingFace Hub.
 
@@ -238,6 +262,7 @@ def get_safetensors_metadata_from_hf(model_name: str, hf_token: str | None = Non
     """
     return _get_safetensors_metadata_cached(model_name, hf_token)
 
+
 def model_params_by_dtype(model_name: str, hf_token: str | None = None) -> dict[str, int]:
     """
     Returns parameter counts broken down by dtype.
@@ -254,6 +279,7 @@ def model_params_by_dtype(model_name: str, hf_token: str | None = None) -> dict[
     metadata = get_safetensors_metadata_from_hf(model_name, hf_token)
     return dict(metadata.parameter_count)
 
+
 def get_text_config(model_config: AutoConfig) -> dict:
     """
     Returns text config (for LLMs)
@@ -267,6 +293,7 @@ def get_text_config(model_config: AutoConfig) -> dict:
 
     return model_config
 
+
 def get_quantization_config(model_config: AutoConfig) -> dict:
     """
     Returns the quantization config
@@ -274,12 +301,14 @@ def get_quantization_config(model_config: AutoConfig) -> dict:
 
     return model_config.quantization_config
 
+
 def is_quantized(model_config: AutoConfig) -> bool:
     """
     Returns True if model is quantized
     """
 
-    return hasattr(model_config, 'quantization_config')
+    return hasattr(model_config, "quantization_config")
+
 
 def model_total_params(model_name: str, hf_token: str | None = None) -> int:
     """
@@ -297,12 +326,14 @@ def model_total_params(model_name: str, hf_token: str | None = None) -> int:
     metadata = get_safetensors_metadata_from_hf(model_name, hf_token)
     return sum(metadata.parameter_count.values())
 
+
 def max_context_len(model_config: AutoConfig) -> int:
     """
     Returns the max context length accepted by model
     """
     model_config = get_text_config(model_config)
     return model_config.max_position_embeddings
+
 
 def estimate_vllm_non_torch_memory(tp: int = 1) -> float:
     """
@@ -318,6 +349,7 @@ def estimate_vllm_non_torch_memory(tp: int = 1) -> float:
     """
     return VLLM_NON_TORCH_MEMORY_TP1_GIB if tp == 1 else VLLM_NON_TORCH_MEMORY_TPN_GIB
 
+
 def estimate_vllm_cuda_graph_memory() -> float:
     """
     CUDA graph memory overhead per GPU in GiB.
@@ -331,8 +363,8 @@ def estimate_vllm_cuda_graph_memory() -> float:
     """
     return 0.0
 
-def estimate_vllm_activation_memory(config: AutoConfig,
-                                   tp: int = 1) -> float:
+
+def estimate_vllm_activation_memory(config: AutoConfig, tp: int = 1) -> float:
     """
     Estimate peak activation memory for vLLM inference in GiB.
 
@@ -377,7 +409,7 @@ def estimate_vllm_activation_memory(config: AutoConfig,
         raise ValueError(f"Tensor parallelism must be positive, got tp={tp}")
 
     # Tier 1: Check validated profiles by architecture
-    if hasattr(config, 'architectures') and config.architectures:
+    if hasattr(config, "architectures") and config.architectures:
         arch = config.architectures[0]
         if arch in VALIDATED_ACTIVATION_PROFILES:
             return VALIDATED_ACTIVATION_PROFILES[arch]
@@ -389,6 +421,7 @@ def estimate_vllm_activation_memory(config: AutoConfig,
     if is_multimodal(config):
         return ACTIVATION_MEMORY_BASE_MULTIMODAL_GIB
     return ACTIVATION_MEMORY_BASE_DENSE_GIB
+
 
 def precision_to_byte(precision: str) -> float:
     """
@@ -406,7 +439,6 @@ def precision_to_byte(precision: str) -> float:
         "f8_e5m2": 1,
         "f8_e4m3": 1,
         "fp4": 0.5,
-
         # Integers
         "i64": 8,
         "int64": 8,
@@ -420,10 +452,8 @@ def precision_to_byte(precision: str) -> float:
         "u4": 0.5,
         "i4": 0.5,
         "int4": 0.5,
-
         # Boolean
         "bool": 1,  # stored as byte per element
-
         # Special data types
         # gpt-oss: https://cdn.openai.com/pdf/419b6906-9da6-406c-a19d-1bb078ac7637/oai_gpt-oss_model_card.pdf
         # 4.25 bits per param
@@ -442,6 +472,7 @@ def precision_to_byte(precision: str) -> float:
 
     raise ValueError("Unsupported precision type.")
 
+
 def parameter_memory_req(parameter: int, precision: str) -> float:
     """
     Calculates the memory requirement (in GiB) for the number of parameters for the specified precision
@@ -450,12 +481,14 @@ def parameter_memory_req(parameter: int, precision: str) -> float:
     precision_byte = precision_to_byte(precision)
     return bytes_to_gib(parameter * precision_byte)
 
+
 def parameter_precision_memory_req(parameter: int, precision_in_byte: int) -> float:
     """
     Calculates the memory requirement (in GiB) for the number of parameters for the specified precision in bytes.
     """
 
     return bytes_to_gib(parameter * precision_in_byte)
+
 
 def get_quant_method(model_config: AutoConfig) -> str:
     """
@@ -466,9 +499,10 @@ def get_quant_method(model_config: AutoConfig) -> str:
         quantization_config = get_quantization_config(model_config)
 
         if "quant_method" in quantization_config:
-            return quantization_config['quant_method']
+            return quantization_config["quant_method"]
 
     return ""
+
 
 def get_quant_bytes(model_config: AutoConfig) -> float:
     """
@@ -484,23 +518,26 @@ def get_quant_bytes(model_config: AutoConfig) -> float:
         # Quant method not convertible like "compressed-tensors"
         # Example: https://huggingface.co/RedHatAI/Qwen3-8B-FP8-dynamic/blob/main/config.json
         except ValueError:
-
             # Sometimes bits are given
             if "bits" in quant_config:
-                return float(bits_to_bytes(quant_config['bits']))
+                return float(bits_to_bytes(quant_config["bits"]))
 
             # Sometimes bits are nested in config groups
-            if 'config_groups' in quant_config:
-                if 'group_0' in quant_config['config_groups']:
-                    if 'weights' in quant_config['config_groups']['group_0']:
-                        num_bits = quant_config['config_groups']['group_0']['weights']['num_bits']
-                        return float(bits_to_bytes(num_bits))
+            if (
+                "config_groups" in quant_config
+                and "group_0" in quant_config["config_groups"]
+                and "weights" in quant_config["config_groups"]["group_0"]
+            ):
+                num_bits = quant_config["config_groups"]["group_0"]["weights"]["num_bits"]
+                return float(bits_to_bytes(num_bits))
     # Not quantized
     else:
         return 0.0
 
 
-def model_memory_req(model_name: str, model_config: AutoConfig, hf_token: str | None = None) -> float:
+def model_memory_req(
+    model_name: str, model_config: AutoConfig, hf_token: str | None = None
+) -> float:
     """
     Calculates the GPU memory (in GiB) required for loading the model.
 
@@ -544,6 +581,7 @@ def model_memory_req(model_name: str, model_config: AutoConfig, hf_token: str | 
 
     return memory
 
+
 def _extract_dtype_from_config(model_config: AutoConfig) -> str | None:
     """
     Extract dtype from model config, checking common attribute names.
@@ -557,6 +595,7 @@ def _extract_dtype_from_config(model_config: AutoConfig) -> str | None:
             if dtype is not None:
                 return str(dtype)
     return None
+
 
 def inference_dtype(model_config: AutoConfig) -> str:
     """
@@ -573,6 +612,7 @@ def inference_dtype(model_config: AutoConfig) -> str:
         return get_quant_method(model_config)
 
     return ""
+
 
 def inference_dtype_byte(model_config: AutoConfig) -> float:
     """
@@ -593,6 +633,7 @@ def inference_dtype_byte(model_config: AutoConfig) -> float:
 
         return DEFAULT_KV_CACHE_DTYPE_BYTES
 
+
 def use_mla(model_architecture: str) -> bool:
     """
     Returns true for models that use MLA attention
@@ -605,11 +646,13 @@ def use_mla(model_architecture: str) -> bool:
 
     return any(deepseek in model_architecture for deepseek in deepseek_mla_models)
 
-def kv_cache_req(model_name: str,
-                    model_config: AutoConfig,
-                    context_len: int,
-                    batch_size: int = 1,
-                    ) -> float:
+
+def kv_cache_req(
+    model_name: str,
+    model_config: AutoConfig,
+    context_len: int,
+    batch_size: int = 1,
+) -> float:
     """
     Calculates the KV cache requirement in GiB.
 
@@ -624,18 +667,20 @@ def kv_cache_req(model_name: str,
     """
     return KVCacheDetail(model_name, model_config, context_len, batch_size).kv_cache_size_gb
 
-def total_kv_cache_blocks(model_name: str,
-                    model_config: AutoConfig,
-                    context_len: int,
-                    gpu_memory: int,
-                    gpu_mem_util: float=0.9,
-                    batch_size: int = 1,
-                    block_size: int = 16,
-                    tp: int=1,
-                    pp: int=1,
-                    dp: int=1,
-                    hf_token: str | None = None,
-                    ) -> int:
+
+def total_kv_cache_blocks(
+    model_name: str,
+    model_config: AutoConfig,
+    context_len: int,
+    gpu_memory: int,
+    gpu_mem_util: float = 0.9,
+    batch_size: int = 1,
+    block_size: int = 16,
+    tp: int = 1,
+    pp: int = 1,
+    dp: int = 1,
+    hf_token: str | None = None,
+) -> int:
     """
     Calculate total number of KV cache blocks that can fit in GPU memory.
 
@@ -664,28 +709,34 @@ def total_kv_cache_blocks(model_name: str,
     per_block_memory = per_token_memory * block_size
 
     kv_cache_allocatable = allocatable_kv_cache_memory(
-        model_name, model_config,
-        gpu_memory, gpu_mem_util,
-        tp, pp, dp,
+        model_name,
+        model_config,
+        gpu_memory,
+        gpu_mem_util,
+        tp,
+        pp,
+        dp,
         max_model_len=context_len,
         batch_size=batch_size,
-        hf_token=hf_token
+        hf_token=hf_token,
     )
 
     total_kv_blocks = gib_to_bytes(kv_cache_allocatable) // per_block_memory
     return total_kv_blocks
 
-def max_concurrent_requests(model_name: str,
-                        model_config: AutoConfig,
-                        max_model_len: int,
-                        gpu_memory: int,
-                        gpu_mem_util: float=0.9,
-                        batch_size: int=1,
-                        tp: int=1,
-                        pp: int=1,
-                        dp: int=1,
-                        hf_token: str | None = None,
-                    ) -> int:
+
+def max_concurrent_requests(
+    model_name: str,
+    model_config: AutoConfig,
+    max_model_len: int,
+    gpu_memory: int,
+    gpu_mem_util: float = 0.9,
+    batch_size: int = 1,
+    tp: int = 1,
+    pp: int = 1,
+    dp: int = 1,
+    hf_token: str | None = None,
+) -> int:
     """
     Calculate maximum number of concurrent requests that can be served.
 
@@ -706,12 +757,16 @@ def max_concurrent_requests(model_name: str,
     """
     # Find allocatable memory for KV cache
     kv_cache_allocatable = allocatable_kv_cache_memory(
-        model_name, model_config,
-        gpu_memory, gpu_mem_util,
-        tp, pp, dp,
+        model_name,
+        model_config,
+        gpu_memory,
+        gpu_mem_util,
+        tp,
+        pp,
+        dp,
         max_model_len=max_model_len,
         batch_size=batch_size,
-        hf_token=hf_token
+        hf_token=hf_token,
     )
 
     # Find kv cache requirement for one request of max-model-len
@@ -721,7 +776,8 @@ def max_concurrent_requests(model_name: str,
         return 0
     return max(0, math.floor(kv_cache_allocatable / per_request_kv_cache_req))
 
-def find_possible_tp(model_config: AutoConfig) -> List[int]:
+
+def find_possible_tp(model_config: AutoConfig) -> list[int]:
     """
     Find possible tensor parallelism values for the model.
 
@@ -731,33 +787,41 @@ def find_possible_tp(model_config: AutoConfig) -> List[int]:
     model_config = get_text_config(model_config)
     num_attention_heads = model_config.num_attention_heads
 
-    factors = set(reduce(
-        list.__add__,
-        ([i, num_attention_heads // i] for i in range(1, int(num_attention_heads**0.5) + 1) if num_attention_heads % i == 0)))
+    factors = set(
+        reduce(
+            list.__add__,
+            (
+                [i, num_attention_heads // i]
+                for i in range(1, int(num_attention_heads**0.5) + 1)
+                if num_attention_heads % i == 0
+            ),
+        )
+    )
 
     factors = list(factors)
     factors.sort()
     return factors
 
-def available_gpu_memory(memory: int, gpu_utilization: float=0.9) -> float:
+
+def available_gpu_memory(memory: int, gpu_utilization: float = 0.9) -> float:
     """
     Returns the available GPU memory
     """
 
     return memory * gpu_utilization
 
-def gpus_required(tp: int=1, pp: int=1, dp: int=1) -> int:
+
+def gpus_required(tp: int = 1, pp: int = 1, dp: int = 1) -> int:
     """
     Determines the number of GPUs required based on parallelism strategies
     """
 
     return tp * pp * dp
 
-def per_gpu_model_memory_required(model_name: str,
-                                  model_config: AutoConfig,
-                                  tp: int = 1,
-                                  pp: int = 1,
-                                  hf_token: str | None = None) -> float:
+
+def per_gpu_model_memory_required(
+    model_name: str, model_config: AutoConfig, tp: int = 1, pp: int = 1, hf_token: str | None = None
+) -> float:
     """
     Calculate model memory requirement per GPU.
 
@@ -777,17 +841,19 @@ def per_gpu_model_memory_required(model_name: str,
     model_memory = model_memory_req(model_name, model_config, hf_token)
     return model_memory / (tp * pp)
 
-def allocatable_kv_cache_memory(model_name: str,
-                            model_config: AutoConfig,
-                            gpu_memory: int,
-                            gpu_util: float = 0.9,
-                            tp: int = 1,
-                            pp: int = 1,
-                            dp: int = 1,
-                            max_model_len: int | None = None,
-                            batch_size: int = 1,
-                            hf_token: str | None = None,
-                            ) -> float:
+
+def allocatable_kv_cache_memory(
+    model_name: str,
+    model_config: AutoConfig,
+    gpu_memory: int,
+    gpu_util: float = 0.9,
+    tp: int = 1,
+    pp: int = 1,
+    dp: int = 1,
+    max_model_len: int | None = None,
+    batch_size: int = 1,
+    hf_token: str | None = None,
+) -> float:
     """
     Calculate allocatable memory for KV cache after accounting for model weights,
     activation memory, CUDA graphs, and system overhead.
@@ -826,10 +892,7 @@ def allocatable_kv_cache_memory(model_name: str,
 
     # Each data parallel replica needs its own activation memory
     # Note: activation memory is constant per model type, not dependent on max_model_len
-    activation_memory = estimate_vllm_activation_memory(
-        model_config,
-        tp=tp
-    ) * dp
+    activation_memory = estimate_vllm_activation_memory(model_config, tp=tp) * dp
 
     # CUDA graph memory is included in activation memory profiling
     cuda_graph_memory = estimate_vllm_cuda_graph_memory() * gpu_count  # Returns 0.0
@@ -840,6 +903,7 @@ def allocatable_kv_cache_memory(model_name: str,
     total_consumed = model_size + activation_memory + cuda_graph_memory + non_torch_memory
 
     return max(0, available_memory - total_consumed)
+
 
 def auto_max_model_len(
     model_name: str,
@@ -873,9 +937,13 @@ def auto_max_model_len(
         int: Largest max_model_len that fits, or 0 if model doesn't fit at all
     """
     allocatable_kv = allocatable_kv_cache_memory(
-        model_name, model_config,
-        gpu_memory, gpu_mem_util,
-        tp, pp, dp,
+        model_name,
+        model_config,
+        gpu_memory,
+        gpu_mem_util,
+        tp,
+        pp,
+        dp,
         max_model_len=1,
         batch_size=1,
         hf_token=hf_token,
@@ -902,6 +970,7 @@ def auto_max_model_len(
 
     return min(max_tokens, model_max)
 
+
 def is_moe(model_config: AutoConfig) -> bool:
     """
     Returns true if model is MoE
@@ -912,10 +981,8 @@ def is_moe(model_config: AutoConfig) -> bool:
         "num_experts",
         "num_experts_per_tok",
     ]
-    for indicator in indicators:
-        if hasattr(model_config, indicator):
-            return True
-    return False
+    return any(hasattr(model_config, indicator) for indicator in indicators)
+
 
 def is_multimodal(model_config: AutoConfig) -> bool:
     """
@@ -924,9 +991,10 @@ def is_multimodal(model_config: AutoConfig) -> bool:
     Multimodal models typically have lower activation memory because the
     vision encoder does not participate in CUDA graph capture.
     """
-    if hasattr(model_config, 'architectures') and model_config.architectures:
+    if hasattr(model_config, "architectures") and model_config.architectures:
         return any(arch in MULTIMODAL_ARCHITECTURES for arch in model_config.architectures)
     return False
+
 
 def get_num_experts(model_config: AutoConfig) -> int | None:
     """
@@ -939,16 +1007,19 @@ def get_num_experts(model_config: AutoConfig) -> int | None:
         return model_config.num_experts
     return None
 
+
 def get_ep_size(tp_size: int, dp_size: int) -> int:
     """
     Returns EP size
     """
     return tp_size * dp_size
 
-def experts_per_ep_group(model_config: AutoConfig,
-                   tp: int=1,
-                   dp: int=1,
-                   ) -> float:
+
+def experts_per_ep_group(
+    model_config: AutoConfig,
+    tp: int = 1,
+    dp: int = 1,
+) -> float:
     """
     Calculate number of experts per GPU for MoE models.
 
@@ -962,6 +1033,7 @@ def experts_per_ep_group(model_config: AutoConfig,
         return 0
     return num_experts / ep_size
 
+
 # ---------------------- Utility helpers ----------------------
 def bits_to_bytes(bits: int) -> int:
     """
@@ -970,11 +1042,13 @@ def bits_to_bytes(bits: int) -> int:
 
     return int(bits / 8)
 
+
 def bytes_to_gib(num_bytes: int) -> float:
     """
     Convert bytes to gibibytes (GiB)
     """
     return num_bytes / BYTES_PER_GIB
+
 
 def gib_to_bytes(gib: float) -> float:
     """

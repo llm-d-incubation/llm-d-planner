@@ -1,54 +1,30 @@
 """
-CLI interface for config_explorer package
+CLI interface for NeuralNav planner
 """
 
 import argparse
 import json
 import os
-import subprocess
 import sys
 import traceback
 from pathlib import Path
 
-from config_explorer.capacity_planner import (
-    get_model_config_from_hf,
-    model_total_params,
-    model_memory_req,
-    max_concurrent_requests,
-    allocatable_kv_cache_memory,
-    total_kv_cache_blocks,
-    KVCacheDetail,
-    find_possible_tp,
-    gpus_required,
-    per_gpu_model_memory_required,
-    auto_max_model_len,
-)
-from config_explorer.recommender.recommender import GPURecommender
 from llm_optimizer.predefined.gpus import GPU_SPECS
 
-
-def start_ui():
-    """Start the Streamlit UI"""
-
-    # Get the path to Capacity_Planner.py
-    config_explorer_dir = Path(__file__).parent.parent.parent
-    ui_file = config_explorer_dir / "Capacity_Planner.py"
-
-    if not ui_file.exists():
-        sys.exit(f"Error: Capacity_Planner.py not found at expected location: {ui_file}")
-
-    print("Starting Config Explorer UI...")
-    try:
-        result = subprocess.run(["streamlit", "run", str(ui_file)])
-        if result.returncode != 0:
-            sys.exit(f"Error: Failed to start Streamlit UI (exit code {result.returncode}).")
-    except FileNotFoundError:
-        sys.exit(
-            "Error: 'streamlit' command not found. Please install Streamlit and "
-            "ensure it is available on your PATH."
-        )
-    except Exception as e:
-        sys.exit(f"Error: Failed to start Streamlit UI: {e}")
+from neuralnav.capacity_planner import (
+    KVCacheDetail,
+    allocatable_kv_cache_memory,
+    auto_max_model_len,
+    find_possible_tp,
+    get_model_config_from_hf,
+    gpus_required,
+    max_concurrent_requests,
+    model_memory_req,
+    model_total_params,
+    per_gpu_model_memory_required,
+    total_kv_cache_blocks,
+)
+from neuralnav.gpu_recommender import GPURecommender
 
 
 def plan_capacity(args):
@@ -80,27 +56,38 @@ def plan_capacity(args):
         max_model_len_auto = False
         if args.max_model_len == -1:
             if not args.gpu_memory:
-                sys.exit("Error: --max-model-len -1 requires --gpu-memory to be specified for auto-calculation")
+                sys.exit(
+                    "Error: --max-model-len -1 requires --gpu-memory to be specified for auto-calculation"
+                )
             tp = args.tp or 1
             pp = args.pp or 1
             dp = args.dp or 1
             gpu_mem_util = args.gpu_mem_util or 0.9
             max_model_len = auto_max_model_len(
-                args.model, model_config,
+                args.model,
+                model_config,
                 gpu_memory=args.gpu_memory,
                 gpu_mem_util=gpu_mem_util,
-                tp=tp, pp=pp, dp=dp,
+                tp=tp,
+                pp=pp,
+                dp=dp,
                 hf_token=hf_token,
             )
             max_model_len_auto = True
             if max_model_len == 0:
-                sys.exit("Error: Model does not fit in available GPU memory. Try increasing --gpu-memory, --tp, or --pp.")
+                sys.exit(
+                    "Error: Model does not fit in available GPU memory. Try increasing --gpu-memory, --tp, or --pp."
+                )
             if max_model_len < 128:
-                print(f"Warning: Auto-calculated max-model-len is {max_model_len} tokens, which may be too small for practical use.", file=sys.stderr)
+                print(
+                    f"Warning: Auto-calculated max-model-len is {max_model_len} tokens, which may be too small for practical use.",
+                    file=sys.stderr,
+                )
         elif args.max_model_len:
             max_model_len = args.max_model_len
         else:
-            from config_explorer.capacity_planner import max_context_len
+            from neuralnav.capacity_planner import max_context_len
+
             max_model_len = max_context_len(model_config)
 
         batch_size = args.batch_size or 1
@@ -109,7 +96,9 @@ def plan_capacity(args):
         if args.tp:
             possible_tp = find_possible_tp(model_config)
             if args.tp not in possible_tp:
-                sys.exit(f"Error: Invalid --tp value {args.tp}. Valid values for this model are: {possible_tp}")
+                sys.exit(
+                    f"Error: Invalid --tp value {args.tp}. Valid values for this model are: {possible_tp}"
+                )
 
         # Add parameters to input_parameters
         result["input_parameters"]["max_model_len"] = max_model_len
@@ -118,12 +107,7 @@ def plan_capacity(args):
         result["input_parameters"]["batch_size"] = batch_size
 
         # Calculate KV cache details (always calculate with max_model_len)
-        kv_cache_detail = KVCacheDetail(
-            args.model,
-            model_config,
-            max_model_len,
-            batch_size
-        )
+        kv_cache_detail = KVCacheDetail(args.model, model_config, max_model_len, batch_size)
 
         result["kv_cache_detail"] = {
             "attention_type": kv_cache_detail.attention_type,
@@ -162,7 +146,9 @@ def plan_capacity(args):
             result["input_parameters"]["gpu_mem_util"] = gpu_mem_util
 
             # Calculate per-GPU model memory
-            per_gpu_memory = per_gpu_model_memory_required(args.model, model_config, tp, pp, hf_token)
+            per_gpu_memory = per_gpu_model_memory_required(
+                args.model, model_config, tp, pp, hf_token
+            )
             result["per_gpu_model_memory_gb"] = round(per_gpu_memory, 2)
 
             # Calculate total GPUs required
@@ -171,36 +157,48 @@ def plan_capacity(args):
 
             # Calculate allocatable KV cache memory
             allocatable_kv = allocatable_kv_cache_memory(
-                args.model, model_config,
-                gpu_memory_gb, gpu_mem_util,
-                tp, pp, dp,
+                args.model,
+                model_config,
+                gpu_memory_gb,
+                gpu_mem_util,
+                tp,
+                pp,
+                dp,
                 max_model_len=max_model_len,
                 batch_size=batch_size,
-                hf_token=hf_token
+                hf_token=hf_token,
             )
             result["allocatable_kv_cache_memory_gb"] = round(allocatable_kv, 2)
 
             # Calculate max concurrent requests
             max_requests = max_concurrent_requests(
-                args.model, model_config,
+                args.model,
+                model_config,
                 max_model_len,
-                gpu_memory_gb, gpu_mem_util,
+                gpu_memory_gb,
+                gpu_mem_util,
                 batch_size=batch_size,
-                tp=tp, pp=pp, dp=dp,
-                hf_token=hf_token
+                tp=tp,
+                pp=pp,
+                dp=dp,
+                hf_token=hf_token,
             )
             result["max_concurrent_requests"] = max_requests
 
             # Calculate total KV cache blocks (use default block_size of 16 if not provided)
             block_size = args.block_size or 16
             total_blocks = total_kv_cache_blocks(
-                args.model, model_config,
+                args.model,
+                model_config,
                 max_model_len,
-                gpu_memory_gb, gpu_mem_util,
+                gpu_memory_gb,
+                gpu_mem_util,
                 batch_size,
                 block_size,
-                tp, pp, dp,
-                hf_token=hf_token
+                tp,
+                pp,
+                dp,
+                hf_token=hf_token,
             )
             result["total_kv_cache_blocks"] = int(total_blocks)
             # Always record the effective block_size used (including defaults)
@@ -215,7 +213,7 @@ def plan_capacity(args):
         if args.output:
             # Write to file
             output_path = Path(args.output)
-            with open(output_path, 'w') as f:
+            with open(output_path, "w") as f:
                 json.dump(result, f, indent=2)
             print(f"Results written to {output_path}")
         else:
@@ -240,27 +238,31 @@ def estimate_performance(args):
             max_gpus_per_type = {}
             for item in args.max_gpus_per_type:
                 try:
-                    gpu_name, max_count = item.split(':')
+                    gpu_name, max_count = item.split(":")
                     max_gpus_per_type[gpu_name] = int(max_count)
                 except ValueError:
-                    sys.exit(f"Error: Invalid format for --max-gpus-per-type: {item}. Expected format: GPU_NAME:MAX_COUNT")
+                    sys.exit(
+                        f"Error: Invalid format for --max-gpus-per-type: {item}. Expected format: GPU_NAME:MAX_COUNT"
+                    )
 
         # Parse GPU list if provided, otherwise use all GPUs from GPU_SPECS
         if args.gpu_list:
-            gpu_list = [g.strip() for g in args.gpu_list.split(',')]
+            gpu_list = [g.strip() for g in args.gpu_list.split(",")]
         else:
-            gpu_list = sorted(list(GPU_SPECS.keys()))
+            gpu_list = sorted(GPU_SPECS.keys())
 
         # Parse custom GPU costs if provided
         custom_gpu_costs = None
-        if hasattr(args, 'custom_gpu_cost') and args.custom_gpu_cost:
+        if hasattr(args, "custom_gpu_cost") and args.custom_gpu_cost:
             custom_gpu_costs = {}
             for item in args.custom_gpu_cost:
                 try:
-                    gpu_name, cost_str = item.split(':', 1)
+                    gpu_name, cost_str = item.split(":", 1)
                     custom_gpu_costs[gpu_name.strip()] = float(cost_str)
                 except ValueError:
-                    sys.exit(f"Error: Invalid cost format '{item}'. Use GPU_NAME:COST (e.g., H100:30.5)")
+                    sys.exit(
+                        f"Error: Invalid cost format '{item}'. Use GPU_NAME:COST (e.g., H100:30.5)"
+                    )
 
         print(f"Running performance estimation for {args.model}...")
         print(f"Analyzing {len(gpu_list)} GPU type(s)...")
@@ -315,35 +317,35 @@ def estimate_performance(args):
         # Output results
         if args.output:
             output_path = Path(args.output)
-            with open(output_path, 'w') as f:
+            with open(output_path, "w") as f:
                 json.dump(result, f, indent=2)
             print(f"Results written to {output_path}")
-        elif hasattr(args, 'pretty') and args.pretty:
+        elif hasattr(args, "pretty") and args.pretty:
             # Pretty-printed human-readable format
-            print("\n" + "="*80)
+            print("\n" + "=" * 80)
             print("GPU Performance Estimation Results")
-            print("="*80)
+            print("=" * 80)
 
             # Show conditional disclaimer based on whether custom costs are used
             if recommender.cost_manager.is_using_custom_costs():
-                print(f"\n💡 Displaying custom costs")
+                print("\n💡 Displaying custom costs")
             else:
-                print(f"\n💡 Default costs are reference values for comparison purposes.")
+                print("\n💡 Default costs are reference values for comparison purposes.")
 
             print("\n📊 Results sorted by cost (lowest to highest)")
             print("    Only showing GPUs that meet performance requirements")
-            print("="*80)
+            print("=" * 80)
 
             # Show lowest cost GPU
             if "lowest_cost" in performance_summary["estimated_best_performance"]:
                 best_cost_info = performance_summary["estimated_best_performance"]["lowest_cost"]
                 print(f"\n🏆 Best Value GPU: {best_cost_info['gpu']}")
                 print(f"   Cost: ${best_cost_info['cost']:.2f}")
-                if 'throughput_tps' in best_cost_info:
+                if "throughput_tps" in best_cost_info:
                     print(f"   Throughput: {best_cost_info['throughput_tps']:.2f} tokens/s")
-                if 'ttft_ms' in best_cost_info:
+                if "ttft_ms" in best_cost_info:
                     print(f"   TTFT: {best_cost_info['ttft_ms']:.2f} ms")
-                if 'itl_ms' in best_cost_info:
+                if "itl_ms" in best_cost_info:
                     print(f"   ITL: {best_cost_info['itl_ms']:.2f} ms")
 
             # Show sorted results - only include GPUs with valid performance data
@@ -404,7 +406,7 @@ def estimate_performance(args):
                 print("\n⚠️  No GPUs met the performance requirements or had valid configurations.")
                 print("    Try relaxing constraints or selecting different GPUs.")
 
-            print("\n" + "="*80)
+            print("\n" + "=" * 80)
         else:
             # JSON output (default)
             print(json.dumps(result, indent=2))
@@ -414,6 +416,7 @@ def estimate_performance(args):
     except Exception as e:
         if args.verbose:
             import traceback
+
             traceback.print_exc()
         sys.exit(f"Error during performance estimation: {str(e)}")
 
@@ -421,245 +424,199 @@ def estimate_performance(args):
 def main():
     """Main CLI entry point"""
     parser = argparse.ArgumentParser(
-        description="Config Explorer CLI - Capacity planning and configuration tools for LLM deployment",
+        description="NeuralNav CLI - Capacity planning and configuration tools for LLM deployment",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
-  # Start the Streamlit UI
-  config-explorer start
-
   # Basic capacity planning (uses model's default max context length)
-  config-explorer plan --model Qwen/Qwen3-32B
+  neuralnav-plan plan --model Qwen/Qwen3-32B
 
   # Plan with custom max model length
-  config-explorer plan --model Qwen/Qwen3-32B --max-model-len 2048
+  neuralnav-plan plan --model Qwen/Qwen3-32B --max-model-len 2048
 
   # Plan with GPU memory
-  config-explorer plan --model Qwen/Qwen3-32B --gpu-memory 80
+  neuralnav-plan plan --model Qwen/Qwen3-32B --gpu-memory 80
 
   # Plan with full parallelism configuration
-  config-explorer plan --model Qwen/Qwen3-32B \\
+  neuralnav-plan plan --model Qwen/Qwen3-32B \\
     --gpu-memory 80 --max-model-len 8192 --batch-size 128 \\
     --tp 4 --pp 1 --dp 2 \\
     --output results.json
 
   # Show possible TP values for a model
-  config-explorer plan --model Qwen/Qwen3-32B --show-possible-tp
+  neuralnav-plan plan --model Qwen/Qwen3-32B --show-possible-tp
 
   # GPU performance estimation and recommendation
-  config-explorer estimate --model Qwen/Qwen3-32B --input-len 512 --output-len 128
+  neuralnav-plan estimate --model Qwen/Qwen3-32B --input-len 512 --output-len 128
 
   # Estimate with specific GPU list
-  config-explorer estimate --model Qwen/Qwen3-32B --input-len 512 --output-len 128 \\
+  neuralnav-plan estimate --model Qwen/Qwen3-32B --input-len 512 --output-len 128 \\
     --gpu-list H100,A100,L40
 
   # Estimate with performance constraints
-  config-explorer estimate --model Qwen/Qwen3-32B --input-len 512 --output-len 128 \\
+  neuralnav-plan estimate --model Qwen/Qwen3-32B --input-len 512 --output-len 128 \\
     --max-ttft 100 --max-itl 10 --max-latency 2.0
 
   # Estimate with GPU-specific limits
-  config-explorer estimate --model Qwen/Qwen3-32B --input-len 512 --output-len 128 \\
+  neuralnav-plan estimate --model Qwen/Qwen3-32B --input-len 512 --output-len 128 \\
     --max-gpus 4 --max-gpus-per-type H100:8 --max-gpus-per-type A100:4 \\
     --output estimate_results.json
-        """
+        """,
     )
 
-    subparsers = parser.add_subparsers(dest='command', help='Available commands')
-
-    # Start command
-    subparsers.add_parser(
-        'start',
-        help='Start the Streamlit UI'
-    )
+    subparsers = parser.add_subparsers(dest="command", help="Available commands")
 
     # Plan command
-    plan_parser = subparsers.add_parser(
-        'plan',
-        help='Run capacity planning analysis'
-    )
+    plan_parser = subparsers.add_parser("plan", help="Run capacity planning analysis")
 
     # Model parameters
     plan_parser.add_argument(
-        '--model',
+        "--model",
         type=str,
         required=True,
-        help='HuggingFace model ID (e.g., Qwen/Qwen3-32B, meta-llama/Llama-2-70b-hf)'
+        help="HuggingFace model ID (e.g., Qwen/Qwen3-32B, meta-llama/Llama-2-70b-hf)",
     )
 
     # GPU parameters
     plan_parser.add_argument(
-        '--gpu-memory',
+        "--gpu-memory",
         type=int,
-        help='GPU memory in GB (required for GPU-related calculations like allocatable KV cache)'
+        help="GPU memory in GB (required for GPU-related calculations like allocatable KV cache)",
     )
 
     # Workload parameters
     plan_parser.add_argument(
-        '--max-model-len',
+        "--max-model-len",
         type=int,
-        help='Maximum model context length in tokens. Use -1 to auto-calculate based on available GPU memory (requires --gpu-memory). Default: model\'s max_position_embeddings'
+        help="Maximum model context length in tokens. Use -1 to auto-calculate based on available GPU memory (requires --gpu-memory). Default: model's max_position_embeddings",
     )
 
     plan_parser.add_argument(
-        '--batch-size',
-        type=int,
-        default=1,
-        help='Batch size for KV cache calculation (default: 1)'
+        "--batch-size", type=int, default=1, help="Batch size for KV cache calculation (default: 1)"
     )
 
     # Parallelism parameters
     plan_parser.add_argument(
-        '--tp',
-        type=int,
-        default=1,
-        help='Tensor parallelism degree (default: 1)'
+        "--tp", type=int, default=1, help="Tensor parallelism degree (default: 1)"
     )
 
     plan_parser.add_argument(
-        '--pp',
-        type=int,
-        default=1,
-        help='Pipeline parallelism degree (default: 1)'
+        "--pp", type=int, default=1, help="Pipeline parallelism degree (default: 1)"
     )
 
     plan_parser.add_argument(
-        '--dp',
-        type=int,
-        default=1,
-        help='Data parallelism degree (default: 1)'
+        "--dp", type=int, default=1, help="Data parallelism degree (default: 1)"
     )
 
     # Memory parameters
     plan_parser.add_argument(
-        '--gpu-mem-util',
+        "--gpu-mem-util",
         type=float,
         default=0.9,
-        help='GPU memory utilization factor (default: 0.9)'
+        help="GPU memory utilization factor (default: 0.9)",
     )
 
-    plan_parser.add_argument(
-        '--block-size',
-        type=int,
-        help='KV cache block size (e.g., 16, 32)'
-    )
+    plan_parser.add_argument("--block-size", type=int, help="KV cache block size (e.g., 16, 32)")
 
     # Output options
     plan_parser.add_argument(
-        '--output',
-        '-o',
+        "--output",
+        "-o",
         type=str,
-        help='Output file path for JSON results (prints to console if not specified)'
+        help="Output file path for JSON results (prints to console if not specified)",
     )
 
     plan_parser.add_argument(
-        '--show-possible-tp',
-        action='store_true',
-        help='Show possible tensor parallelism values for the model'
+        "--show-possible-tp",
+        action="store_true",
+        help="Show possible tensor parallelism values for the model",
     )
 
-    plan_parser.add_argument(
-        '--verbose',
-        '-v',
-        action='store_true',
-        help='Enable verbose output'
-    )
+    plan_parser.add_argument("--verbose", "-v", action="store_true", help="Enable verbose output")
 
     # Estimate command (GPU performance estimation and recommendation)
     estimate_parser = subparsers.add_parser(
-        'estimate',
-        help='Run GPU performance estimation and recommendation'
+        "estimate", help="Run GPU performance estimation and recommendation"
     )
 
     # Model parameters
     estimate_parser.add_argument(
-        '--model',
+        "--model",
         type=str,
         required=True,
-        help='HuggingFace model ID (e.g., Qwen/Qwen3-32B, meta-llama/Llama-2-70b-hf)'
+        help="HuggingFace model ID (e.g., Qwen/Qwen3-32B, meta-llama/Llama-2-70b-hf)",
     )
 
     # Workload parameters
     estimate_parser.add_argument(
-        '--input-len',
-        type=int,
-        required=True,
-        help='Input sequence length in tokens'
+        "--input-len", type=int, required=True, help="Input sequence length in tokens"
     )
 
     estimate_parser.add_argument(
-        '--output-len',
-        type=int,
-        required=True,
-        help='Output sequence length in tokens'
+        "--output-len", type=int, required=True, help="Output sequence length in tokens"
     )
 
     # GPU parameters
     estimate_parser.add_argument(
-        '--max-gpus',
+        "--max-gpus",
         type=int,
         default=1,
-        help='Default maximum number of GPUs to use for all GPU types (default: 1)'
+        help="Default maximum number of GPUs to use for all GPU types (default: 1)",
     )
 
     estimate_parser.add_argument(
-        '--max-gpus-per-type',
+        "--max-gpus-per-type",
         type=str,
-        action='append',
-        help='GPU-specific max GPU limit in format GPU_NAME:MAX_COUNT (e.g., H100:8). Can be specified multiple times.'
+        action="append",
+        help="GPU-specific max GPU limit in format GPU_NAME:MAX_COUNT (e.g., H100:8). Can be specified multiple times.",
     )
 
     estimate_parser.add_argument(
-        '--gpu-list',
+        "--gpu-list",
         type=str,
-        help='Comma-separated list of GPU names to evaluate (e.g., H100,A100,L40). If not specified, evaluates all available GPUs.'
+        help="Comma-separated list of GPU names to evaluate (e.g., H100,A100,L40). If not specified, evaluates all available GPUs.",
     )
 
     # Performance constraints
     estimate_parser.add_argument(
-        '--max-ttft',
-        type=float,
-        help='Maximum time to first token constraint in milliseconds (ms)'
+        "--max-ttft", type=float, help="Maximum time to first token constraint in milliseconds (ms)"
     )
 
     estimate_parser.add_argument(
-        '--max-itl',
-        type=float,
-        help='Maximum inter-token latency constraint in milliseconds (ms)'
+        "--max-itl", type=float, help="Maximum inter-token latency constraint in milliseconds (ms)"
     )
 
     # Cost parameters
     estimate_parser.add_argument(
-        '--custom-gpu-cost',
+        "--custom-gpu-cost",
         type=str,
-        action='append',
-        help='Custom GPU cost in format GPU_NAME:COST (e.g., H100:30.5). Can be specified multiple times. Use any numbers for relative comparison (e.g., your actual $/hour or $/token pricing).'
+        action="append",
+        help="Custom GPU cost in format GPU_NAME:COST (e.g., H100:30.5). Can be specified multiple times. Use any numbers for relative comparison (e.g., your actual $/hour or $/token pricing).",
     )
 
     estimate_parser.add_argument(
-        '--max-latency',
-        type=float,
-        help='Maximum end-to-end latency constraint in seconds (s)'
+        "--max-latency", type=float, help="Maximum end-to-end latency constraint in seconds (s)"
     )
 
     # Output options
     estimate_parser.add_argument(
-        '--output',
-        '-o',
+        "--output",
+        "-o",
         type=str,
-        help='Output file path for JSON results (prints to console if not specified)'
+        help="Output file path for JSON results (prints to console if not specified)",
     )
 
     estimate_parser.add_argument(
-        '--verbose',
-        '-v',
-        action='store_true',
-        help='Enable verbose output with detailed results for all GPUs'
+        "--verbose",
+        "-v",
+        action="store_true",
+        help="Enable verbose output with detailed results for all GPUs",
     )
 
     estimate_parser.add_argument(
-        '--pretty',
-        action='store_true',
-        help='Output results in human-readable format instead of JSON (results sorted by cost for GPUs meeting performance requirements)'
+        "--pretty",
+        action="store_true",
+        help="Output results in human-readable format instead of JSON (results sorted by cost for GPUs meeting performance requirements)",
     )
 
     args = parser.parse_args()
@@ -668,16 +625,14 @@ Examples:
         parser.print_help()
         sys.exit(1)
 
-    if args.command == 'start':
-        start_ui()
-    elif args.command == 'plan':
+    if args.command == "plan":
         plan_capacity(args)
-    elif args.command == 'estimate':
+    elif args.command == "estimate":
         estimate_performance(args)
     else:
         parser.print_help()
         sys.exit(1)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

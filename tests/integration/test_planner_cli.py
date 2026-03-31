@@ -1,16 +1,17 @@
 #!/usr/bin/env python3
 """
-Test suite for config_explorer CLI
+Test suite for neuralnav CLI
 """
 
-import subprocess
 import json
+import subprocess
+
 import pytest
 
 
 def run_cli(*args):
     """Run CLI command and return result"""
-    cmd = ["config-explorer"] + list(args)
+    cmd = ["neuralnav-plan"] + list(args)
     result = subprocess.run(cmd, capture_output=True, text=True)
     return result
 
@@ -24,7 +25,7 @@ def parse_cli_json_output(stdout):
     # Find where JSON starts (first line with '{')
     json_start = 0
     for i, line in enumerate(lines):
-        if line.strip().startswith('{'):
+        if line.strip().startswith("{"):
             json_start = i
             break
 
@@ -33,6 +34,7 @@ def parse_cli_json_output(stdout):
     return json.loads(json_output)
 
 
+@pytest.mark.integration
 class TestHelp:
     """Test help and usage commands"""
 
@@ -40,7 +42,7 @@ class TestHelp:
         """Test help command"""
         result = run_cli("--help")
         assert result.returncode == 0
-        assert "config-explorer" in result.stdout.lower() or "config explorer" in result.stdout.lower()
+        assert "neuralnav-plan" in result.stdout.lower() or "neuralnav" in result.stdout.lower()
 
     def test_plan_help(self):
         """Test plan help"""
@@ -48,12 +50,8 @@ class TestHelp:
         assert result.returncode == 0
         assert "--model" in result.stdout
 
-    def test_start_help(self):
-        """Test start help"""
-        result = run_cli("start", "--help")
-        assert result.returncode == 0
 
-
+@pytest.mark.integration
 class TestBasicPlan:
     """Test basic capacity planning functionality"""
 
@@ -75,11 +73,7 @@ class TestBasicPlan:
 
     def test_plan_with_custom_max_model_len(self):
         """Test capacity planning with explicit context length"""
-        result = run_cli(
-            "plan",
-            "--model", "Qwen/Qwen2.5-3B",
-            "--max-model-len", "8192"
-        )
+        result = run_cli("plan", "--model", "Qwen/Qwen2.5-3B", "--max-model-len", "8192")
 
         assert result.returncode == 0, f"Failed: {result.stderr}"
 
@@ -90,11 +84,7 @@ class TestBasicPlan:
 
     def test_plan_with_batch_size(self):
         """Test capacity planning with custom batch size"""
-        result = run_cli(
-            "plan",
-            "--model", "Qwen/Qwen2.5-3B",
-            "--batch-size", "32"
-        )
+        result = run_cli("plan", "--model", "Qwen/Qwen2.5-3B", "--batch-size", "32")
 
         assert result.returncode == 0, f"Failed: {result.stderr}"
 
@@ -103,16 +93,14 @@ class TestBasicPlan:
         assert data["kv_cache_detail"]["batch_size"] == 32
 
 
+@pytest.mark.integration
 class TestGPUCalculations:
     """Test GPU-related calculations"""
 
     def test_plan_with_gpu_memory(self):
         """Test capacity planning with GPU memory"""
         result = run_cli(
-            "plan",
-            "--model", "Qwen/Qwen2.5-3B",
-            "--gpu-memory", "80",
-            "--max-model-len", "8192"
+            "plan", "--model", "Qwen/Qwen2.5-3B", "--gpu-memory", "80", "--max-model-len", "8192"
         )
 
         assert result.returncode == 0, f"Failed: {result.stderr}"
@@ -133,11 +121,16 @@ class TestGPUCalculations:
         """Test capacity planning with tensor, pipeline, and data parallelism"""
         result = run_cli(
             "plan",
-            "--model", "Qwen/Qwen2.5-3B",
-            "--gpu-memory", "80",
-            "--tp", "2",
-            "--pp", "1",
-            "--dp", "2"
+            "--model",
+            "Qwen/Qwen2.5-3B",
+            "--gpu-memory",
+            "80",
+            "--tp",
+            "2",
+            "--pp",
+            "1",
+            "--dp",
+            "2",
         )
 
         assert result.returncode == 0, f"Failed: {result.stderr}"
@@ -151,10 +144,7 @@ class TestGPUCalculations:
     def test_plan_with_custom_block_size(self):
         """Test capacity planning with custom block size"""
         result = run_cli(
-            "plan",
-            "--model", "Qwen/Qwen2.5-3B",
-            "--gpu-memory", "80",
-            "--block-size", "32"
+            "plan", "--model", "Qwen/Qwen2.5-3B", "--gpu-memory", "80", "--block-size", "32"
         )
 
         assert result.returncode == 0, f"Failed: {result.stderr}"
@@ -166,10 +156,7 @@ class TestGPUCalculations:
     def test_plan_with_gpu_mem_util(self):
         """Test capacity planning with custom GPU memory utilization"""
         result = run_cli(
-            "plan",
-            "--model", "Qwen/Qwen2.5-3B",
-            "--gpu-memory", "80",
-            "--gpu-mem-util", "0.85"
+            "plan", "--model", "Qwen/Qwen2.5-3B", "--gpu-memory", "80", "--gpu-mem-util", "0.85"
         )
 
         assert result.returncode == 0, f"Failed: {result.stderr}"
@@ -178,16 +165,13 @@ class TestGPUCalculations:
         assert data["input_parameters"]["gpu_mem_util"] == 0.85
 
 
+@pytest.mark.integration
 class TestTPValidation:
     """Test tensor parallelism validation"""
 
     def test_show_possible_tp(self):
         """Test showing possible TP values"""
-        result = run_cli(
-            "plan",
-            "--model", "Qwen/Qwen2.5-3B",
-            "--show-possible-tp"
-        )
+        result = run_cli("plan", "--model", "Qwen/Qwen2.5-3B", "--show-possible-tp")
 
         assert result.returncode == 0, f"Failed: {result.stderr}"
 
@@ -199,12 +183,7 @@ class TestTPValidation:
 
     def test_valid_tp_value(self):
         """Test with a valid TP value"""
-        result = run_cli(
-            "plan",
-            "--model", "Qwen/Qwen2.5-3B",
-            "--gpu-memory", "80",
-            "--tp", "4"
-        )
+        result = run_cli("plan", "--model", "Qwen/Qwen2.5-3B", "--gpu-memory", "80", "--tp", "4")
 
         assert result.returncode == 0, f"Failed: {result.stderr}"
 
@@ -213,16 +192,13 @@ class TestTPValidation:
 
     def test_invalid_tp_value(self):
         """Test with an invalid TP value"""
-        result = run_cli(
-            "plan",
-            "--model", "Qwen/Qwen2.5-3B",
-            "--tp", "11"
-        )
+        result = run_cli("plan", "--model", "Qwen/Qwen2.5-3B", "--tp", "11")
 
         assert result.returncode != 0
         assert "Invalid --tp value" in result.stdout or "Invalid --tp value" in result.stderr
 
 
+@pytest.mark.integration
 class TestOutputFormats:
     """Test output format and file writing"""
 
@@ -230,16 +206,12 @@ class TestOutputFormats:
         """Test writing output to file"""
         output_file = tmp_path / "results.json"
 
-        result = run_cli(
-            "plan",
-            "--model", "Qwen/Qwen2.5-3B",
-            "--output", str(output_file)
-        )
+        result = run_cli("plan", "--model", "Qwen/Qwen2.5-3B", "--output", str(output_file))
 
         assert result.returncode == 0, f"Failed: {result.stderr}"
         assert output_file.exists()
 
-        with open(output_file, 'r') as f:
+        with open(output_file) as f:
             data = json.load(f)
             assert "model_memory_gb" in data
             assert "input_parameters" in data
@@ -255,6 +227,7 @@ class TestOutputFormats:
         assert isinstance(data, dict)
 
 
+@pytest.mark.integration
 class TestKVCacheDetails:
     """Test KV cache detail calculations"""
 
@@ -283,16 +256,8 @@ class TestKVCacheDetails:
 
     def test_kv_cache_with_different_context_lengths(self):
         """Test KV cache scales with context length"""
-        result_short = run_cli(
-            "plan",
-            "--model", "Qwen/Qwen2.5-3B",
-            "--max-model-len", "2048"
-        )
-        result_long = run_cli(
-            "plan",
-            "--model", "Qwen/Qwen2.5-3B",
-            "--max-model-len", "8192"
-        )
+        result_short = run_cli("plan", "--model", "Qwen/Qwen2.5-3B", "--max-model-len", "2048")
+        result_long = run_cli("plan", "--model", "Qwen/Qwen2.5-3B", "--max-model-len", "8192")
 
         assert result_short.returncode == 0
         assert result_long.returncode == 0
@@ -301,10 +266,13 @@ class TestKVCacheDetails:
         data_long = parse_cli_json_output(result_long.stdout)
 
         # Longer context should require more KV cache
-        assert data_long["kv_cache_detail"]["kv_cache_size_gb"] > \
-               data_short["kv_cache_detail"]["kv_cache_size_gb"]
+        assert (
+            data_long["kv_cache_detail"]["kv_cache_size_gb"]
+            > data_short["kv_cache_detail"]["kv_cache_size_gb"]
+        )
 
 
+@pytest.mark.integration
 class TestErrorHandling:
     """Test error handling and validation"""
 
@@ -320,16 +288,13 @@ class TestErrorHandling:
 
     def test_verbose_flag(self):
         """Test verbose flag with an error"""
-        result = run_cli(
-            "plan",
-            "--model", "invalid/model-that-does-not-exist",
-            "--verbose"
-        )
+        result = run_cli("plan", "--model", "invalid/model-that-does-not-exist", "--verbose")
         assert result.returncode != 0
         # Verbose should show traceback
         assert len(result.stderr) > 0 or len(result.stdout) > 0
 
 
+@pytest.mark.integration
 class TestModelInfo:
     """Test model information output"""
 
@@ -345,6 +310,7 @@ class TestModelInfo:
         assert data["model_info"]["total_parameters"] > 0
 
 
+@pytest.mark.integration
 class TestIntegration:
     """Integration tests with multiple parameters"""
 
@@ -352,15 +318,24 @@ class TestIntegration:
         """Test complete deployment planning scenario"""
         result = run_cli(
             "plan",
-            "--model", "Qwen/Qwen2.5-3B",
-            "--gpu-memory", "80",
-            "--max-model-len", "8192",
-            "--batch-size", "64",
-            "--tp", "2",
-            "--pp", "1",
-            "--dp", "2",
-            "--block-size", "32",
-            "--gpu-mem-util", "0.85"
+            "--model",
+            "Qwen/Qwen2.5-3B",
+            "--gpu-memory",
+            "80",
+            "--max-model-len",
+            "8192",
+            "--batch-size",
+            "64",
+            "--tp",
+            "2",
+            "--pp",
+            "1",
+            "--dp",
+            "2",
+            "--block-size",
+            "32",
+            "--gpu-mem-util",
+            "0.85",
         )
 
         assert result.returncode == 0, f"Failed: {result.stderr}"
@@ -383,6 +358,7 @@ class TestIntegration:
         assert "allocatable_kv_cache_memory_gb" in data
 
 
+@pytest.mark.integration
 class TestAutoMaxModelLen:
     """Test auto max-model-len feature"""
 
@@ -390,8 +366,10 @@ class TestAutoMaxModelLen:
         """--max-model-len -1 without --gpu-memory should error"""
         result = run_cli(
             "plan",
-            "--model", "Qwen/Qwen2.5-0.5B",
-            "--max-model-len", "-1",
+            "--model",
+            "Qwen/Qwen2.5-0.5B",
+            "--max-model-len",
+            "-1",
         )
         assert result.returncode != 0
         assert "gpu-memory" in result.stderr.lower() or "gpu_memory" in result.stderr.lower()
@@ -400,9 +378,12 @@ class TestAutoMaxModelLen:
         """--max-model-len -1 with --gpu-memory should auto-calculate"""
         result = run_cli(
             "plan",
-            "--model", "Qwen/Qwen2.5-0.5B",
-            "--gpu-memory", "80",
-            "--max-model-len", "-1",
+            "--model",
+            "Qwen/Qwen2.5-0.5B",
+            "--gpu-memory",
+            "80",
+            "--max-model-len",
+            "-1",
         )
         assert result.returncode == 0
         data = parse_cli_json_output(result.stdout)
@@ -410,6 +391,7 @@ class TestAutoMaxModelLen:
         assert data["input_parameters"]["max_model_len_auto"] is True
 
 
+@pytest.mark.integration
 class TestEstimateCommand:
     """Test GPU performance estimation command"""
 
@@ -424,10 +406,7 @@ class TestEstimateCommand:
     def test_basic_estimate(self):
         """Test basic performance estimation"""
         result = run_cli(
-            "estimate",
-            "--model", "Qwen/Qwen-7B",
-            "--input-len", "512",
-            "--output-len", "128"
+            "estimate", "--model", "Qwen/Qwen-7B", "--input-len", "512", "--output-len", "128"
         )
 
         assert result.returncode == 0, f"Failed: {result.stderr}"
@@ -450,10 +429,14 @@ class TestEstimateCommand:
         """Test estimation with specific GPU list"""
         result = run_cli(
             "estimate",
-            "--model", "Qwen/Qwen-7B",
-            "--input-len", "512",
-            "--output-len", "128",
-            "--gpu-list", "H100,A100"
+            "--model",
+            "Qwen/Qwen-7B",
+            "--input-len",
+            "512",
+            "--output-len",
+            "128",
+            "--gpu-list",
+            "H100,A100",
         )
 
         assert result.returncode == 0, f"Failed: {result.stderr}"
@@ -469,11 +452,16 @@ class TestEstimateCommand:
         """Test estimation with custom max GPUs"""
         result = run_cli(
             "estimate",
-            "--model", "Qwen/Qwen-7B",
-            "--input-len", "512",
-            "--output-len", "128",
-            "--max-gpus", "4",
-            "--gpu-list", "H100"
+            "--model",
+            "Qwen/Qwen-7B",
+            "--input-len",
+            "512",
+            "--output-len",
+            "128",
+            "--max-gpus",
+            "4",
+            "--gpu-list",
+            "H100",
         )
 
         assert result.returncode == 0, f"Failed: {result.stderr}"
@@ -485,12 +473,18 @@ class TestEstimateCommand:
         """Test estimation with GPU-specific limits"""
         result = run_cli(
             "estimate",
-            "--model", "Qwen/Qwen-7B",
-            "--input-len", "512",
-            "--output-len", "128",
-            "--max-gpus-per-type", "H100:8",
-            "--max-gpus-per-type", "A100:4",
-            "--gpu-list", "H100,A100"
+            "--model",
+            "Qwen/Qwen-7B",
+            "--input-len",
+            "512",
+            "--output-len",
+            "128",
+            "--max-gpus-per-type",
+            "H100:8",
+            "--max-gpus-per-type",
+            "A100:4",
+            "--gpu-list",
+            "H100,A100",
         )
 
         assert result.returncode == 0, f"Failed: {result.stderr}"
@@ -504,11 +498,16 @@ class TestEstimateCommand:
         """Test estimation with TTFT constraint"""
         result = run_cli(
             "estimate",
-            "--model", "Qwen/Qwen-7B",
-            "--input-len", "512",
-            "--output-len", "128",
-            "--max-ttft", "100.0",
-            "--gpu-list", "H100"
+            "--model",
+            "Qwen/Qwen-7B",
+            "--input-len",
+            "512",
+            "--output-len",
+            "128",
+            "--max-ttft",
+            "100.0",
+            "--gpu-list",
+            "H100",
         )
 
         assert result.returncode == 0, f"Failed: {result.stderr}"
@@ -520,11 +519,16 @@ class TestEstimateCommand:
         """Test estimation with ITL constraint"""
         result = run_cli(
             "estimate",
-            "--model", "Qwen/Qwen-7B",
-            "--input-len", "512",
-            "--output-len", "128",
-            "--max-itl", "10.0",
-            "--gpu-list", "H100"
+            "--model",
+            "Qwen/Qwen-7B",
+            "--input-len",
+            "512",
+            "--output-len",
+            "128",
+            "--max-itl",
+            "10.0",
+            "--gpu-list",
+            "H100",
         )
 
         assert result.returncode == 0, f"Failed: {result.stderr}"
@@ -536,11 +540,16 @@ class TestEstimateCommand:
         """Test estimation with E2E latency constraint"""
         result = run_cli(
             "estimate",
-            "--model", "Qwen/Qwen-7B",
-            "--input-len", "512",
-            "--output-len", "128",
-            "--max-latency", "2.0",
-            "--gpu-list", "H100"
+            "--model",
+            "Qwen/Qwen-7B",
+            "--input-len",
+            "512",
+            "--output-len",
+            "128",
+            "--max-latency",
+            "2.0",
+            "--gpu-list",
+            "H100",
         )
 
         assert result.returncode == 0, f"Failed: {result.stderr}"
@@ -552,13 +561,20 @@ class TestEstimateCommand:
         """Test estimation with all performance constraints"""
         result = run_cli(
             "estimate",
-            "--model", "Qwen/Qwen-7B",
-            "--input-len", "512",
-            "--output-len", "128",
-            "--max-ttft", "100.0",
-            "--max-itl", "10.0",
-            "--max-latency", "2.0",
-            "--gpu-list", "H100"
+            "--model",
+            "Qwen/Qwen-7B",
+            "--input-len",
+            "512",
+            "--output-len",
+            "128",
+            "--max-ttft",
+            "100.0",
+            "--max-itl",
+            "10.0",
+            "--max-latency",
+            "2.0",
+            "--gpu-list",
+            "H100",
         )
 
         assert result.returncode == 0, f"Failed: {result.stderr}"
@@ -572,10 +588,14 @@ class TestEstimateCommand:
         """Test that estimate output has correct structure"""
         result = run_cli(
             "estimate",
-            "--model", "Qwen/Qwen-7B",
-            "--input-len", "512",
-            "--output-len", "128",
-            "--gpu-list", "H100"
+            "--model",
+            "Qwen/Qwen-7B",
+            "--input-len",
+            "512",
+            "--output-len",
+            "128",
+            "--gpu-list",
+            "H100",
         )
 
         assert result.returncode == 0, f"Failed: {result.stderr}"
@@ -597,10 +617,14 @@ class TestEstimateCommand:
         """Test GPU results have correct structure"""
         result = run_cli(
             "estimate",
-            "--model", "Qwen/Qwen-7B",
-            "--input-len", "512",
-            "--output-len", "128",
-            "--gpu-list", "H100"
+            "--model",
+            "Qwen/Qwen-7B",
+            "--input-len",
+            "512",
+            "--output-len",
+            "128",
+            "--gpu-list",
+            "H100",
         )
 
         assert result.returncode == 0, f"Failed: {result.stderr}"
@@ -631,10 +655,14 @@ class TestEstimateCommand:
         """Test that performance recommendations are present"""
         result = run_cli(
             "estimate",
-            "--model", "Qwen/Qwen-7B",
-            "--input-len", "512",
-            "--output-len", "128",
-            "--gpu-list", "H100,A100"
+            "--model",
+            "Qwen/Qwen-7B",
+            "--input-len",
+            "512",
+            "--output-len",
+            "128",
+            "--gpu-list",
+            "H100,A100",
         )
 
         assert result.returncode == 0, f"Failed: {result.stderr}"
@@ -646,18 +674,27 @@ class TestEstimateCommand:
 
         # At least some recommendations should be present if any GPUs succeeded
         if len(data["gpu_results"]) > 0:
-            possible_keys = ["highest_throughput", "lowest_ttft", "lowest_itl", "lowest_e2e_latency"]
+            possible_keys = [
+                "highest_throughput",
+                "lowest_ttft",
+                "lowest_itl",
+                "lowest_e2e_latency",
+            ]
             assert any(key in estimated_best_perf for key in possible_keys)
 
     def test_estimate_verbose_mode(self):
         """Test verbose mode includes concurrency analysis"""
         result = run_cli(
             "estimate",
-            "--model", "Qwen/Qwen-7B",
-            "--input-len", "512",
-            "--output-len", "128",
-            "--gpu-list", "H100",
-            "--verbose"
+            "--model",
+            "Qwen/Qwen-7B",
+            "--input-len",
+            "512",
+            "--output-len",
+            "128",
+            "--gpu-list",
+            "H100",
+            "--verbose",
         )
 
         assert result.returncode == 0, f"Failed: {result.stderr}"
@@ -677,17 +714,22 @@ class TestEstimateCommand:
 
         result = run_cli(
             "estimate",
-            "--model", "Qwen/Qwen-7B",
-            "--input-len", "512",
-            "--output-len", "128",
-            "--gpu-list", "H100",
-            "--output", str(output_file)
+            "--model",
+            "Qwen/Qwen-7B",
+            "--input-len",
+            "512",
+            "--output-len",
+            "128",
+            "--gpu-list",
+            "H100",
+            "--output",
+            str(output_file),
         )
 
         assert result.returncode == 0, f"Failed: {result.stderr}"
         assert output_file.exists()
 
-        with open(output_file, 'r') as f:
+        with open(output_file) as f:
             data = json.load(f)
             assert "input_parameters" in data
             assert "estimated_best_performance" in data
@@ -711,10 +753,14 @@ class TestEstimateCommand:
         """Test GPU list with spaces is accepted and trimmed"""
         result = run_cli(
             "estimate",
-            "--model", "Qwen/Qwen-7B",
-            "--input-len", "512",
-            "--output-len", "128",
-            "--gpu-list", "H100, A100, L40"  # With spaces - should be trimmed
+            "--model",
+            "Qwen/Qwen-7B",
+            "--input-len",
+            "512",
+            "--output-len",
+            "128",
+            "--gpu-list",
+            "H100, A100, L40",  # With spaces - should be trimmed
         )
 
         assert result.returncode == 0, f"Failed: {result.stderr}"
@@ -729,10 +775,14 @@ class TestEstimateCommand:
         """Test error with invalid max-gpus-per-type format"""
         result = run_cli(
             "estimate",
-            "--model", "Qwen/Qwen-7B",
-            "--input-len", "512",
-            "--output-len", "128",
-            "--max-gpus-per-type", "H100:invalid"
+            "--model",
+            "Qwen/Qwen-7B",
+            "--input-len",
+            "512",
+            "--output-len",
+            "128",
+            "--max-gpus-per-type",
+            "H100:invalid",
         )
 
         assert result.returncode != 0
@@ -742,10 +792,14 @@ class TestEstimateCommand:
         """Test estimation with a large model that may fail on some GPUs"""
         result = run_cli(
             "estimate",
-            "--model", "Qwen/Qwen2.5-3B",
-            "--input-len", "512",
-            "--output-len", "128",
-            "--gpu-list", "L20,H100"  # L20 likely to fail, H100 likely to succeed
+            "--model",
+            "Qwen/Qwen2.5-3B",
+            "--input-len",
+            "512",
+            "--output-len",
+            "128",
+            "--gpu-list",
+            "L20,H100",  # L20 likely to fail, H100 likely to succeed
         )
 
         assert result.returncode == 0, f"Failed: {result.stderr}"
@@ -761,10 +815,14 @@ class TestEstimateCommand:
         """Test that estimate output is valid JSON"""
         result = run_cli(
             "estimate",
-            "--model", "Qwen/Qwen-7B",
-            "--input-len", "512",
-            "--output-len", "128",
-            "--gpu-list", "H100"
+            "--model",
+            "Qwen/Qwen-7B",
+            "--input-len",
+            "512",
+            "--output-len",
+            "128",
+            "--gpu-list",
+            "H100",
         )
 
         assert result.returncode == 0, f"Failed: {result.stderr}"

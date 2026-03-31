@@ -1,9 +1,12 @@
 """Unit tests for CostManager"""
-import pytest
+
 import json
 import tempfile
 from pathlib import Path
-from config_explorer.recommender.cost_manager import CostManager
+
+import pytest
+
+from neuralnav.gpu_recommender import CostManager
 
 
 class TestCostManager:
@@ -109,7 +112,7 @@ class TestCostManager:
         """Test that default costs have expected structure"""
         manager = CostManager()
 
-        for gpu_name, data in manager.default_costs.items():
+        for _gpu_name, data in manager.default_costs.items():
             # Skip non-GPU entries like _disclaimer
             if not isinstance(data, dict):
                 continue
@@ -118,7 +121,7 @@ class TestCostManager:
 
             assert "cost" in data
             assert "source" in data
-            assert isinstance(data["cost"], (int, float))
+            assert isinstance(data["cost"], int | float)
             assert data["cost"] >= 0
 
     def test_custom_costs_override_all(self):
