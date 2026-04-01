@@ -2,12 +2,15 @@
 Main Page
 """
 
+import json
+from pathlib import Path
 from matplotlib import pyplot as plt
 import streamlit as st
-import db
 import util
-from src.config_explorer.capacity_planner import *
+from neuralnav.capacity_planner import *
 from decimal import Decimal
+
+gpu_specs = json.loads((Path(__file__).parent.parent / "data" / "configuration" / "gpu_specs.json").read_text())
 
 def update_gpu_spec():
     """
@@ -26,7 +29,7 @@ def register_new_accelerator():
     if st.button("Register", use_container_width=True):
         if acc_name:
 
-            db.gpu_specs[acc_name] = {
+            gpu_specs[acc_name] = {
                 "name": acc_name,
                 "memory": acc_mem
             }
@@ -264,11 +267,11 @@ def workload_specification():
         )
 
         if auto_max_model_len_checked:
-            from src.config_explorer.capacity_planner import auto_max_model_len as calc_auto_max_model_len
+            from neuralnav.capacity_planner import auto_max_model_len as calc_auto_max_model_len
             auto_val = calc_auto_max_model_len(
                 user_scenario.model_name,
                 model_config,
-                gpu_memory=user_scenario.get_gpu_memory(db.gpu_specs),
+                gpu_memory=user_scenario.get_gpu_memory(gpu_specs),
                 gpu_mem_util=user_scenario.gpu_mem_util,
                 tp=user_scenario.tp_size,
                 pp=user_scenario.pp_size,
@@ -310,7 +313,7 @@ def workload_specification():
                 user_scenario.model_name,
                 model_config,
                 user_scenario.max_model_len,
-                gpu_memory=user_scenario.get_gpu_memory(db.gpu_specs),
+                gpu_memory=user_scenario.get_gpu_memory(gpu_specs),
                 gpu_mem_util=user_scenario.gpu_mem_util,
                 batch_size=user_scenario.concurrency,
                 tp=user_scenario.tp_size,
@@ -407,7 +410,7 @@ Runtime per-request activation buffers (which DO scale with actual sequence leng
             tp = user_scenario.tp_size
 
             # Determine model type and activation memory source
-            from src.config_explorer.capacity_planner import (
+            from neuralnav.capacity_planner import (
                 is_moe,
                 is_multimodal,
                 ACTIVATION_MEMORY_BASE_DENSE_GIB,
@@ -518,8 +521,8 @@ def hardware_specification():
         col1, col2 = st.columns([0.6, 0.4])
 
         index = 0
-        if user_scenario.gpu_name in db.gpu_specs.keys():
-            index = list(db.gpu_specs.keys()).index(user_scenario.gpu_name)
+        if user_scenario.gpu_name in gpu_specs.keys():
+            index = list(gpu_specs.keys()).index(user_scenario.gpu_name)
 
         col1.number_input("GPU utilization ratio",
                 key=util.SELECTED_GPU_MEMORY_UTIL_KEY,
@@ -534,7 +537,7 @@ def hardware_specification():
         selected_gpu_name = col1.selectbox("Accelerator",
                                 key=util.SELECTED_GPU_NAME_KEY,
                                 index=index,
-                                options=db.gpu_specs,
+                                options=gpu_specs,
                                 on_change=util.update_scenario,
                                 args=[util.SELECTED_GPU_NAME_KEY, "gpu_name"],
                                 )
@@ -548,7 +551,7 @@ def hardware_specification():
         if selected_gpu_name:
 
             # Get info
-            gpu_memory = user_scenario.get_gpu_memory(db.gpu_specs)
+            gpu_memory = user_scenario.get_gpu_memory(gpu_specs)
             available_gpu_count = gpus_required(tp, pp, dp)
             available_gpu_mem = available_gpu_memory(gpu_memory, user_scenario.gpu_mem_util)
             model_name = user_scenario.model_name
@@ -681,7 +684,7 @@ def memory_util_chart(st_context):
     model_name = user_scenario.model_name
     model_config = user_scenario.model_config
     text_config = user_scenario.text_config
-    gpu_memory = user_scenario.get_gpu_memory(db.gpu_specs)
+    gpu_memory = user_scenario.get_gpu_memory(gpu_specs)
     gpu_memory_util = user_scenario.gpu_mem_util
     concurrency = user_scenario.concurrency
     tp = user_scenario.tp_size

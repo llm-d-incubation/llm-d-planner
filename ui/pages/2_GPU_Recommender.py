@@ -10,16 +10,8 @@ import plotly.graph_objects as go
 import plotly.express as px
 from plotly.subplots import make_subplots
 
-# Import the recommender
-import sys
-import os
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))
-
-from config_explorer.recommender.recommender import GPURecommender
+from neuralnav.gpu_recommender import GPURecommender, CostManager
 from llm_optimizer.predefined.gpus import GPU_SPECS
-
-# Import CostManager to get default costs
-from config_explorer.recommender.cost_manager import CostManager
 cost_manager_temp = CostManager()
 
 # Helper function to convert result objects to JSON-serializable format
