@@ -45,12 +45,6 @@ def result_to_dict(result) -> dict:
 
     return convert_value(result)
 
-# Page configuration
-st.set_page_config(
-    page_title="GPU Recommender",
-    layout="wide"
-)
-
 # Initialize session state
 if 'recommendation_results' not in st.session_state:
     st.session_state.recommendation_results = None

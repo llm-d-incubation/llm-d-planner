@@ -1,5 +1,5 @@
 """
-NeuralNav entrypoint — defines page navigation with friendly titles.
+Planner entrypoint — defines page navigation with friendly titles.
 Run with: streamlit run ui/main.py
 """
 
@@ -7,6 +7,7 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent))
+sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
 import streamlit as st
 

@@ -784,26 +784,17 @@ def memory_util_chart(st_context):
     with col:
         st.pyplot(fig, bbox_inches="tight")
 
-if __name__ == '__main__':
+st.title("Configuration Explorer")
+st.caption("This tool helps you find the most cost-effective, optimal configuration for serving models on llm-d based on hardware specification, workload characteristics, and SLO requirements.")
 
-    # Set up streamlit config
-    st.set_page_config(page_title="Configuration Explorer",
-                       page_icon=None,
-                       layout="wide",
-                       initial_sidebar_state="expanded",
-                       menu_items=None)
+util.init_session_state()
 
-    st.title("Configuration Explorer")
-    st.caption("This tool helps you find the most cost-effective, optimal configuration for serving models on llm-d based on hardware specification, workload characteristics, and SLO requirements.")
+# Display Capacity Planner headings
+st.subheader("Capacity Planner")
+st.caption("Determine how many GPUs you need to fit your model and how many requests can be served at once depending on request patterns.")
 
-    util.init_session_state()
-
-    # Display Capacity Planner headings
-    st.subheader("Capacity Planner")
-    st.caption("Determine how many GPUs you need to fit your model and how many requests can be served at once depending on request patterns.")
-
-    # Get user inputs and show outputs
-    model_specification()
-    parallelism_specification()
-    workload_specification()
-    hardware_specification()
+# Get user inputs and show outputs
+model_specification()
+parallelism_specification()
+workload_specification()
+hardware_specification()

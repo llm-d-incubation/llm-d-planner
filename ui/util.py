@@ -28,7 +28,7 @@ SELECTED_ENABLE_EP_KEY = "selected_enable_ep"
 @dataclass
 class Scenario:
     """Scenario stores info about an user scenario in Streamlit"""
-    model_name: str = 'deepseek-ai/DeepSeek-V3.1'
+    model_name: str = 'Qwen/Qwen2.5-7B-Instruct'
     model_config: AutoConfig | None = None      # Info about model
     text_config: AutoConfig | None = None       # Info about the model like max positional embeddings can be nested inside text_config for certain architectures like MistralConfig
     max_model_len: int = 1
@@ -47,7 +47,7 @@ class Scenario:
 
     def get_model_name(self) -> str:
         if not self.model_name:
-            self.model_name = 'deepseek-ai/DeepSeek-V3.1'
+            self.model_name = 'Qwen/Qwen2.5-7B-Instruct'
         return self.model_name
 
     def get_gpu_spec(self, gpu_specs_db: dict) -> dict:
@@ -68,7 +68,7 @@ class Scenario:
         """
         Resets inputs
         """
-        self.model_name = 'deepseek-ai/DeepSeek-V3.1'
+        self.model_name = 'Qwen/Qwen2.5-7B-Instruct'
         self.model_config = None
         self.max_model_len = 1
         self.concurrency = 1
