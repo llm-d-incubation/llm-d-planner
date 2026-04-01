@@ -5,9 +5,9 @@ import logging
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel
 
-from neuralnav.api.dependencies import get_workflow
-from neuralnav.intent_extraction import IntentExtractor
-from neuralnav.orchestration.workflow import RecommendationWorkflow
+from planner.api.dependencies import get_workflow
+from planner.intent_extraction import IntentExtractor
+from planner.orchestration.workflow import RecommendationWorkflow
 
 logger = logging.getLogger(__name__)
 

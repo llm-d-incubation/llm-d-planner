@@ -5,7 +5,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-import neuralnav.api.dependencies as deps
+import planner.api.dependencies as deps
 
 
 @pytest.mark.unit
@@ -59,19 +59,15 @@ def test_model_catalog_mode_creates_client_and_syncs():
     """When source is model_catalog, init_app_state() creates client and starts sync."""
     app = _make_mock_app()
     with (
-        patch(
-            "neuralnav.knowledge_base.model_catalog_client.ModelCatalogClient"
-        ) as mock_client_cls,
-        patch("neuralnav.api.dependencies._sync_model_catalog_async") as mock_sync,
-        patch("neuralnav.api.dependencies.RecommendationWorkflow") as mock_wf_cls,
-        patch("neuralnav.api.dependencies.ModelCatalog") as mock_mc,
-        patch("neuralnav.api.dependencies.SLOTemplateRepository"),
-        patch("neuralnav.api.dependencies.DeploymentGenerator"),
-        patch("neuralnav.api.dependencies.YAMLValidator"),
-        patch(
-            "neuralnav.recommendation.quality.usecase_scorer.UseCaseQualityScorer"
-        ) as mock_qs_cls,
-        patch("neuralnav.recommendation.config_finder.ConfigFinder") as mock_cf_cls,
+        patch("planner.knowledge_base.model_catalog_client.ModelCatalogClient") as mock_client_cls,
+        patch("planner.api.dependencies._sync_model_catalog_async") as mock_sync,
+        patch("planner.api.dependencies.RecommendationWorkflow") as mock_wf_cls,
+        patch("planner.api.dependencies.ModelCatalog") as mock_mc,
+        patch("planner.api.dependencies.SLOTemplateRepository"),
+        patch("planner.api.dependencies.DeploymentGenerator"),
+        patch("planner.api.dependencies.YAMLValidator"),
+        patch("planner.recommendation.quality.usecase_scorer.UseCaseQualityScorer") as mock_qs_cls,
+        patch("planner.recommendation.config_finder.ConfigFinder") as mock_cf_cls,
     ):
         deps.init_app_state(app)
 
@@ -97,11 +93,11 @@ def test_postgresql_workflow_uses_defaults():
     """When source is postgresql, init_app_state() creates default RecommendationWorkflow."""
     app = _make_mock_app()
     with (
-        patch("neuralnav.api.dependencies.RecommendationWorkflow") as mock_wf_cls,
-        patch("neuralnav.api.dependencies.ModelCatalog"),
-        patch("neuralnav.api.dependencies.SLOTemplateRepository"),
-        patch("neuralnav.api.dependencies.DeploymentGenerator"),
-        patch("neuralnav.api.dependencies.YAMLValidator"),
+        patch("planner.api.dependencies.RecommendationWorkflow") as mock_wf_cls,
+        patch("planner.api.dependencies.ModelCatalog"),
+        patch("planner.api.dependencies.SLOTemplateRepository"),
+        patch("planner.api.dependencies.DeploymentGenerator"),
+        patch("planner.api.dependencies.YAMLValidator"),
     ):
         deps.init_app_state(app)
         mock_wf_cls.assert_called_once_with()
@@ -115,11 +111,11 @@ def test_init_app_state_sets_all_singletons():
     """init_app_state() populates all expected attributes on app.state."""
     app = _make_mock_app()
     with (
-        patch("neuralnav.api.dependencies.RecommendationWorkflow"),
-        patch("neuralnav.api.dependencies.ModelCatalog") as mock_mc,
-        patch("neuralnav.api.dependencies.SLOTemplateRepository") as mock_slo,
-        patch("neuralnav.api.dependencies.DeploymentGenerator") as mock_dg,
-        patch("neuralnav.api.dependencies.YAMLValidator") as mock_yv,
+        patch("planner.api.dependencies.RecommendationWorkflow"),
+        patch("planner.api.dependencies.ModelCatalog") as mock_mc,
+        patch("planner.api.dependencies.SLOTemplateRepository") as mock_slo,
+        patch("planner.api.dependencies.DeploymentGenerator") as mock_dg,
+        patch("planner.api.dependencies.YAMLValidator") as mock_yv,
     ):
         deps.init_app_state(app)
 

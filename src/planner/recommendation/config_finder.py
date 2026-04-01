@@ -21,9 +21,9 @@ import logging
 import math
 from typing import Protocol
 
-from neuralnav.knowledge_base.benchmarks import BenchmarkData, BenchmarkRepository
-from neuralnav.knowledge_base.model_catalog import ModelCatalog, ModelInfo
-from neuralnav.shared.schemas import (
+from planner.knowledge_base.benchmarks import BenchmarkData, BenchmarkRepository
+from planner.knowledge_base.model_catalog import ModelCatalog, ModelInfo
+from planner.shared.schemas import (
     ConfigurationScores,
     DeploymentIntent,
     DeploymentRecommendation,
@@ -31,7 +31,7 @@ from neuralnav.shared.schemas import (
     SLOTargets,
     TrafficProfile,
 )
-from neuralnav.shared.utils import normalize_gpu_types
+from planner.shared.utils import normalize_gpu_types
 
 from .analyzer import get_task_bonus
 from .scorer import Scorer

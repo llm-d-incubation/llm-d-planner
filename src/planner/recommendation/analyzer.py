@@ -18,7 +18,7 @@ TASK-SPECIFIC BONUSES (Balanced card only):
 
 import logging
 
-from neuralnav.shared.schemas import DeploymentRecommendation
+from planner.shared.schemas import DeploymentRecommendation
 
 logger = logging.getLogger(__name__)
 

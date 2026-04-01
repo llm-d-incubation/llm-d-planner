@@ -4,9 +4,9 @@ import logging
 from datetime import datetime
 from pathlib import Path
 
-from neuralnav.llm.ollama_client import OllamaClient
-from neuralnav.llm.prompts import INTENT_EXTRACTION_SCHEMA, build_intent_extraction_prompt
-from neuralnav.shared.schemas import ConversationMessage, DeploymentIntent
+from planner.llm.ollama_client import OllamaClient
+from planner.llm.prompts import INTENT_EXTRACTION_SCHEMA, build_intent_extraction_prompt
+from planner.shared.schemas import ConversationMessage, DeploymentIntent
 
 logger = logging.getLogger(__name__)
 

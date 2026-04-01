@@ -14,8 +14,8 @@ Tests cover:
 
 import pytest
 
-from neuralnav.knowledge_base.benchmarks import BenchmarkData, BenchmarkRepository
-from neuralnav.knowledge_base.slo_templates import SLOTemplateRepository
+from planner.knowledge_base.benchmarks import BenchmarkData, BenchmarkRepository
+from planner.knowledge_base.slo_templates import SLOTemplateRepository
 
 
 @pytest.mark.database

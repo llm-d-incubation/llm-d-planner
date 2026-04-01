@@ -8,7 +8,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from neuralnav.api.routes import (
+from planner.api.routes import (
     configuration_router,
     database_router,
     health_router,
@@ -32,7 +32,7 @@ logger = logging.getLogger(__name__)
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Initialize all singletons on app.state during startup."""
-    from neuralnav.api.dependencies import init_app_state
+    from planner.api.dependencies import init_app_state
 
     logger.info("Initializing app state...")
     try:

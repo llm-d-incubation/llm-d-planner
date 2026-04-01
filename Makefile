@@ -57,6 +57,7 @@ PGDUMP_OUTPUT ?= data/benchmarks/performance/benchmarks_GuideLLM.json
 
 SRC_DIR := src
 UI_DIR := ui
+TEST_DIR := tests
 SIMULATOR_DIR := simulator
 
 VENV := .venv
@@ -191,7 +192,7 @@ start-backend: ## Start FastAPI backend
 	@if [ -f $(BACKEND_PID) ] && [ -s $(BACKEND_PID) ] && kill -0 $$(cat $(BACKEND_PID) 2>/dev/null) 2>/dev/null; then \
 		printf "$(YELLOW)Backend already running (PID: $$(cat $(BACKEND_PID)))$(NC)\n"; \
 	else \
-		( PYTHONPATH=src uv run uvicorn neuralnav.api.app:app --reload --host 0.0.0.0 --port 8000 > $(LOG_DIR)/backend.log 2>&1 & echo $$! > $(BACKEND_PID) ); \
+		( PYTHONPATH=src uv run uvicorn planner.api.app:app --reload --host 0.0.0.0 --port 8000 > $(LOG_DIR)/backend.log 2>&1 & echo $$! > $(BACKEND_PID) ); \
 		sleep 2; \
 		printf "$(GREEN)✓ Backend started (PID: $$(cat $(BACKEND_PID)))$(NC)\n"; \
 	fi
@@ -220,12 +221,12 @@ stop: ## Stop Backend + UI (leaves Ollama and DB running)
 	fi
 	@# Kill any remaining NeuralNav processes by pattern matching
 	@pkill -f "streamlit run ui/app.py" 2>/dev/null || true
-	@pkill -f "uvicorn neuralnav.api.app:app" 2>/dev/null || true
+	@pkill -f "uvicorn planner.api.app:app" 2>/dev/null || true
 	@# Give processes time to exit gracefully
 	@sleep 1
 	@# Force kill if still running
 	@pkill -9 -f "streamlit run ui/app.py" 2>/dev/null || true
-	@pkill -9 -f "uvicorn neuralnav.api.app:app" 2>/dev/null || true
+	@pkill -9 -f "uvicorn planner.api.app:app" 2>/dev/null || true
 	@printf "$(GREEN)✓ All NeuralNav services stopped$(NC)\n"
 	@# Don't stop Ollama or DB as they might be used by other apps/tools
 	@if [ "$(MAKECMDGOALS)" != "stop-all" ]; then \
@@ -538,12 +539,12 @@ test-integration: setup-ollama ## Run integration tests (requires Ollama and DB)
 
 lint: ## Run linters
 	@printf "$(BLUE)Running linters...$(NC)\n"
-	@if uv run ruff --version >/dev/null 2>&1; then uv run ruff check $(SRC_DIR)/ $(UI_DIR)/; else printf "$(YELLOW)ruff not installed, skipping$(NC)\n"; fi
+	@if uv run ruff --version >/dev/null 2>&1; then uv run ruff check $(SRC_DIR)/ $(TEST_DIR)/ $(UI_DIR)/; else printf "$(YELLOW)ruff not installed, skipping$(NC)\n"; fi
 	@printf "$(GREEN)✓ Linting complete$(NC)\n"
 
 format: ## Auto-format code
 	@printf "$(BLUE)Formatting code...$(NC)\n"
-	@if uv run ruff --version >/dev/null 2>&1; then uv run ruff format $(SRC_DIR)/ $(UI_DIR)/; else printf "$(YELLOW)ruff not installed, skipping$(NC)\n"; fi
+	@if uv run ruff --version >/dev/null 2>&1; then uv run ruff format $(SRC_DIR)/ $(TEST_DIR)/ $(UI_DIR)/; else printf "$(YELLOW)ruff not installed, skipping$(NC)\n"; fi
 	@printf "$(GREEN)✓ Formatting complete$(NC)\n"
 
 typecheck:  ## Run typecheck

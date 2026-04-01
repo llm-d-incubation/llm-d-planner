@@ -6,7 +6,7 @@ from pathlib import Path
 
 import pytest
 
-from neuralnav.orchestration.workflow import RecommendationWorkflow
+from planner.orchestration.workflow import RecommendationWorkflow
 
 # Configure logging
 logging.basicConfig(

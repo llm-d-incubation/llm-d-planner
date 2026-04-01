@@ -14,11 +14,11 @@ from typing import Any, cast
 from fastapi import FastAPI, HTTPException, Request, status
 from starlette.concurrency import run_in_threadpool
 
-from neuralnav.cluster import KubernetesClusterManager, KubernetesDeploymentError
-from neuralnav.configuration import DeploymentGenerator, YAMLValidator
-from neuralnav.knowledge_base.model_catalog import ModelCatalog
-from neuralnav.knowledge_base.slo_templates import SLOTemplateRepository
-from neuralnav.orchestration.workflow import RecommendationWorkflow
+from planner.cluster import KubernetesClusterManager, KubernetesDeploymentError
+from planner.configuration import DeploymentGenerator, YAMLValidator
+from planner.knowledge_base.model_catalog import ModelCatalog
+from planner.knowledge_base.slo_templates import SLOTemplateRepository
+from planner.orchestration.workflow import RecommendationWorkflow
 
 # Configure logging
 debug_mode = os.getenv("NEURALNAV_DEBUG", "false").lower() == "true"
@@ -61,7 +61,7 @@ def _sync_model_catalog_async(
         try:
             import psycopg2
 
-            from neuralnav.knowledge_base.model_catalog_sync import sync_model_catalog
+            from planner.knowledge_base.model_catalog_sync import sync_model_catalog
 
             logger.info("Background sync: loading Model Catalog data into PostgreSQL...")
             conn = psycopg2.connect(database_url)
@@ -105,9 +105,9 @@ def init_app_state(app: FastAPI) -> None:
     app.state.cluster_managers = {}  # dict[str, KubernetesClusterManager]
 
     if source_type == "model_catalog":
-        from neuralnav.knowledge_base.model_catalog_client import ModelCatalogClient
-        from neuralnav.recommendation.config_finder import ConfigFinder
-        from neuralnav.recommendation.quality.usecase_scorer import UseCaseQualityScorer
+        from planner.knowledge_base.model_catalog_client import ModelCatalogClient
+        from planner.recommendation.config_finder import ConfigFinder
+        from planner.recommendation.quality.usecase_scorer import UseCaseQualityScorer
 
         client = ModelCatalogClient()
         app.state.model_catalog_client = client

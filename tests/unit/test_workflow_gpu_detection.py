@@ -36,15 +36,15 @@ class TestWorkflowGPUDetection:
     connection attempts during instantiation.
     """
 
-    @patch("neuralnav.orchestration.workflow.detect_cluster_gpus", return_value=["H100"])
-    @patch("neuralnav.orchestration.workflow.ConfigFinder")
+    @patch("planner.orchestration.workflow.detect_cluster_gpus", return_value=["H100"])
+    @patch("planner.orchestration.workflow.ConfigFinder")
     def test_generate_recommendation_from_specs_calls_detector(
         self, mock_config_finder, mock_detect
     ):
         mock_finder = mock_config_finder.return_value
         mock_finder.plan_all_capacities.return_value = []
 
-        from neuralnav.orchestration.workflow import RecommendationWorkflow
+        from planner.orchestration.workflow import RecommendationWorkflow
 
         workflow = RecommendationWorkflow()
         # Will raise ValueError because no configs returned — that's fine
@@ -55,15 +55,15 @@ class TestWorkflowGPUDetection:
         call_kwargs = mock_finder.plan_all_capacities.call_args
         assert call_kwargs.kwargs.get("cluster_gpu_types") == ["H100"]
 
-    @patch("neuralnav.orchestration.workflow.detect_cluster_gpus", return_value=["A100-80"])
-    @patch("neuralnav.orchestration.workflow.ConfigFinder")
-    @patch("neuralnav.orchestration.workflow.Analyzer")
+    @patch("planner.orchestration.workflow.detect_cluster_gpus", return_value=["A100-80"])
+    @patch("planner.orchestration.workflow.ConfigFinder")
+    @patch("planner.orchestration.workflow.Analyzer")
     def test_generate_ranked_recommendations_calls_detector(
         self, mock_analyzer_cls, mock_config_finder, mock_detect
     ):
         """Tests generate_ranked_recommendations() — the method with its
         own inline plan_all_capacities() call (does NOT delegate)."""
-        from neuralnav.shared.schemas import (
+        from planner.shared.schemas import (
             DeploymentIntent,
             DeploymentSpecification,
             SLOTargets,
@@ -85,7 +85,7 @@ class TestWorkflowGPUDetection:
         }
         mock_analyzer.get_unique_configs_count.return_value = 0
 
-        from neuralnav.orchestration.workflow import RecommendationWorkflow
+        from planner.orchestration.workflow import RecommendationWorkflow
 
         workflow = RecommendationWorkflow()
         # Mock generate_specification with proper schema objects
@@ -106,13 +106,13 @@ class TestWorkflowGPUDetection:
         call_kwargs = mock_finder.plan_all_capacities.call_args
         assert call_kwargs.kwargs.get("cluster_gpu_types") == ["A100-80"]
 
-    @patch("neuralnav.orchestration.workflow.detect_cluster_gpus", return_value=["A100-80"])
-    @patch("neuralnav.orchestration.workflow.ConfigFinder")
+    @patch("planner.orchestration.workflow.detect_cluster_gpus", return_value=["A100-80"])
+    @patch("planner.orchestration.workflow.ConfigFinder")
     def test_generate_ranked_from_spec_calls_detector(self, mock_config_finder, mock_detect):
         mock_finder = mock_config_finder.return_value
         mock_finder.plan_all_capacities.return_value = []
 
-        from neuralnav.orchestration.workflow import RecommendationWorkflow
+        from planner.orchestration.workflow import RecommendationWorkflow
 
         workflow = RecommendationWorkflow()
         workflow.generate_ranked_recommendations_from_spec(_make_specs())
@@ -121,13 +121,13 @@ class TestWorkflowGPUDetection:
         call_kwargs = mock_finder.plan_all_capacities.call_args
         assert call_kwargs.kwargs.get("cluster_gpu_types") == ["A100-80"]
 
-    @patch("neuralnav.orchestration.workflow.detect_cluster_gpus", return_value=[])
-    @patch("neuralnav.orchestration.workflow.ConfigFinder")
+    @patch("planner.orchestration.workflow.detect_cluster_gpus", return_value=[])
+    @patch("planner.orchestration.workflow.ConfigFinder")
     def test_empty_detection_passes_empty_list(self, mock_config_finder, mock_detect):
         mock_finder = mock_config_finder.return_value
         mock_finder.plan_all_capacities.return_value = []
 
-        from neuralnav.orchestration.workflow import RecommendationWorkflow
+        from planner.orchestration.workflow import RecommendationWorkflow
 
         workflow = RecommendationWorkflow()
         workflow.generate_ranked_recommendations_from_spec(_make_specs())

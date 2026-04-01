@@ -2,7 +2,7 @@
 
 import pytest
 
-from neuralnav.recommendation.quality.usecase_scorer import UseCaseQualityScorer
+from planner.recommendation.quality.usecase_scorer import UseCaseQualityScorer
 
 
 @pytest.mark.unit

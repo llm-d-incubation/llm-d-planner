@@ -2,7 +2,7 @@
 
 import pytest
 
-from neuralnav.gpu_recommender import GPURecommender
+from planner.gpu_recommender import GPURecommender
 
 
 @pytest.mark.integration

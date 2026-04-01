@@ -4,9 +4,9 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from neuralnav.knowledge_base.benchmarks import BenchmarkData
-from neuralnav.recommendation.config_finder import ConfigFinder
-from neuralnav.shared.schemas import DeploymentIntent, SLOTargets, TrafficProfile
+from planner.knowledge_base.benchmarks import BenchmarkData
+from planner.recommendation.config_finder import ConfigFinder
+from planner.shared.schemas import DeploymentIntent, SLOTargets, TrafficProfile
 
 
 def _make_bench(
@@ -153,7 +153,7 @@ def test_default_scorer_used_when_none_injected():
     )
 
     with patch(
-        "neuralnav.recommendation.quality.score_model_quality",
+        "planner.recommendation.quality.score_model_quality",
         return_value=60.0,
     ) as mock_default:
         results = finder.plan_all_capacities(

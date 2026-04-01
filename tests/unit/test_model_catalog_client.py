@@ -4,7 +4,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from neuralnav.knowledge_base.model_catalog_client import ModelCatalogClient
+from planner.knowledge_base.model_catalog_client import ModelCatalogClient
 
 
 @pytest.fixture
@@ -87,7 +87,7 @@ FAKE_ARTIFACTS_RESPONSE = {
 
 
 @pytest.mark.unit
-@patch("neuralnav.knowledge_base.model_catalog_client.httpx")
+@patch("planner.knowledge_base.model_catalog_client.httpx")
 def test_list_models(mock_httpx, client):
     mock_response = MagicMock()
     mock_response.status_code = 200
@@ -105,7 +105,7 @@ def test_list_models(mock_httpx, client):
 
 
 @pytest.mark.unit
-@patch("neuralnav.knowledge_base.model_catalog_client.httpx")
+@patch("planner.knowledge_base.model_catalog_client.httpx")
 def test_get_artifacts(mock_httpx, client):
     mock_response = MagicMock()
     mock_response.status_code = 200

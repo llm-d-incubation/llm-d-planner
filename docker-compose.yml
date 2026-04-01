@@ -74,7 +74,7 @@ services:
       CORS_ORIGINS: http://localhost:8501,http://ui:8501
     volumes:
       # Mount source code for development (hot reload)
-      - ./src/neuralnav:/app/src/neuralnav
+      - ./src/planner:/app/src/planner
       - ./data:/app/data
       - ./generated_configs:/app/generated_configs
       - ./logs:/app/logs

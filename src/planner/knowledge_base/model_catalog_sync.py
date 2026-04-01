@@ -16,9 +16,9 @@ from psycopg2.extensions import connection as pg_connection
 from psycopg2.extras import execute_batch
 
 if TYPE_CHECKING:
-    from neuralnav.knowledge_base.model_catalog import ModelCatalog, ModelInfo
-    from neuralnav.knowledge_base.model_catalog_client import ModelCatalogClient
-    from neuralnav.recommendation.quality.usecase_scorer import UseCaseQualityScorer
+    from planner.knowledge_base.model_catalog import ModelCatalog, ModelInfo
+    from planner.knowledge_base.model_catalog_client import ModelCatalogClient
+    from planner.recommendation.quality.usecase_scorer import UseCaseQualityScorer
 
 logger = logging.getLogger(__name__)
 
@@ -98,7 +98,7 @@ def _extract_family(name: str) -> str:
 
 def _catalog_model_to_model_info(model: dict) -> ModelInfo:
     """Map a Model Catalog model dict to a ModelInfo instance."""
-    from neuralnav.knowledge_base.model_catalog import ModelInfo as _ModelInfo
+    from planner.knowledge_base.model_catalog import ModelInfo as _ModelInfo
 
     name = model.get("name", "")
     props = model.get("customProperties", {})

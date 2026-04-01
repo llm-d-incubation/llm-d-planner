@@ -22,7 +22,7 @@ This repository contains the architecture design for **NeuralNav**, an open-sour
   - State machine for workflow orchestration
   - Entity-relationship diagrams for data models
 
-- **src/neuralnav/**: Python package (PyPA src layout)
+- **src/planner/**: Python package (PyPA src layout)
   - **api/**: FastAPI REST API layer
     - `app.py`: FastAPI app factory
     - `dependencies.py`: Singleton dependency injection
@@ -172,10 +172,10 @@ The recommendation engine uses **multi-criteria scoring** to rank configurations
 
 **Key Files**:
 
-- `src/neuralnav/recommendation/scorer.py` - Calculates 4 scores
-- `src/neuralnav/recommendation/quality/usecase_scorer.py` - Artificial Analysis benchmark scoring
-- `src/neuralnav/recommendation/analyzer.py` - Generates 5 ranked lists
-- `src/neuralnav/recommendation/config_finder.py` - Orchestrates scoring during capacity planning
+- `src/planner/recommendation/scorer.py` - Calculates 4 scores
+- `src/planner/recommendation/quality/usecase_scorer.py` - Artificial Analysis benchmark scoring
+- `src/planner/recommendation/analyzer.py` - Generates 5 ranked lists
+- `src/planner/recommendation/config_finder.py` - Orchestrates scoring during capacity planning
 
 ## Development Environment
 
@@ -325,7 +325,7 @@ All API endpoints **must** follow these rules:
 - **Health check exception**: `/health` stays at root with no prefix (standard for load balancer probes). This is the only endpoint outside `/api/v1/`.
 - **Versioning**: All endpoints are under `/api/v1/`. When a v2 is needed, add new route files with `prefix="/api/v2"`.
 - **Naming**: Use kebab-case for multi-word paths (e.g., `/deploy-to-cluster`, `/ranked-recommend-from-spec`).
-- **When adding a new route file**: Set `prefix="/api/v1"` on the `APIRouter` and use relative paths in all decorators. Register the router in `src/neuralnav/api/routes/__init__.py` and include it in `src/neuralnav/api/app.py`.
+- **When adding a new route file**: Set `prefix="/api/v1"` on the `APIRouter` and use relative paths in all decorators. Register the router in `src/planner/api/routes/__init__.py` and include it in `src/planner/api/app.py`.
 
 ### Common Editing Patterns
 
@@ -346,7 +346,7 @@ All API endpoints **must** follow these rules:
 6. Update docs/architecture-diagram.md data model ERD
 
 **Adding a new API endpoint**:
-1. Add the route to the appropriate file in `src/neuralnav/api/routes/` (or create a new route file)
+1. Add the route to the appropriate file in `src/planner/api/routes/` (or create a new route file)
 2. Use a relative path in the decorator (e.g., `@router.get("/my-endpoint")`) — the `/api/v1` prefix comes from the router
 3. If creating a new route file, set `APIRouter(prefix="/api/v1")` and register it in `routes/__init__.py` and `app.py`
 4. Update `ui/app.py` if the UI calls the new endpoint
@@ -356,7 +356,7 @@ All API endpoints **must** follow these rules:
 1. Add numbered section to docs/ARCHITECTURE.md (maintain sequential numbering)
 2. Update "Architecture Components" count in Overview
 3. Add to docs/architecture-diagram.md component diagram
-4. Create corresponding src/neuralnav/<component>/ directory
+4. Create corresponding src/planner/<component>/ directory
 5. Update sequence diagram if component participates in main flow
 6. Update Phase 1 technology choices table if relevant
 
@@ -439,7 +439,7 @@ The system now supports two deployment modes:
 - **Purpose**: GPU-free development and testing on local machines
 - **Location**: `simulator/` directory contains the vLLM simulator service
 - **Docker Image**: `vllm-simulator:latest` (single image for all models)
-- **Configuration**: Set `DeploymentGenerator(simulator_mode=True)` in `src/neuralnav/api/dependencies.py`
+- **Configuration**: Set `DeploymentGenerator(simulator_mode=True)` in `src/planner/api/dependencies.py`
 - **Benefits**:
   - No GPU hardware required
   - Fast deployment (~10-15 seconds to Ready)
@@ -449,7 +449,7 @@ The system now supports two deployment modes:
 
 ### Real vLLM Mode (Production)
 - **Purpose**: Actual model inference with GPUs
-- **Configuration**: Set `DeploymentGenerator(simulator_mode=False)` in `src/neuralnav/api/dependencies.py`
+- **Configuration**: Set `DeploymentGenerator(simulator_mode=False)` in `src/planner/api/dependencies.py`
 - **Requirements**:
   - GPU-enabled Kubernetes cluster
   - NVIDIA GPU Operator installed
@@ -477,7 +477,7 @@ The system now supports two deployment modes:
 
 ### Technical Details
 
-The deployment template (`src/neuralnav/configuration/templates/kserve-inferenceservice.yaml.j2`) uses Jinja2 conditionals:
+The deployment template (`src/planner/configuration/templates/kserve-inferenceservice.yaml.j2`) uses Jinja2 conditionals:
 - `{% if simulator_mode %}` - Uses `vllm-simulator:latest`, no GPU resources, fast health checks
 - `{% else %}` - Uses `vllm/vllm-openai:v0.6.2`, requests GPUs, longer health checks
 

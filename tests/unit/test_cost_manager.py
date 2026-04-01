@@ -6,7 +6,7 @@ from pathlib import Path
 
 import pytest
 
-from neuralnav.gpu_recommender import CostManager
+from planner.gpu_recommender import CostManager
 
 
 class TestCostManager:

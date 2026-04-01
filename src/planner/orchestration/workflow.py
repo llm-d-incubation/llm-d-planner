@@ -2,17 +2,17 @@
 
 import logging
 
-from neuralnav.cluster.gpu_detector import detect_cluster_gpus
-from neuralnav.intent_extraction import IntentExtractor
-from neuralnav.llm.ollama_client import OllamaClient
-from neuralnav.recommendation.analyzer import Analyzer
-from neuralnav.recommendation.config_finder import ConfigFinder
-from neuralnav.shared.schemas import (
+from planner.cluster.gpu_detector import detect_cluster_gpus
+from planner.intent_extraction import IntentExtractor
+from planner.llm.ollama_client import OllamaClient
+from planner.recommendation.analyzer import Analyzer
+from planner.recommendation.config_finder import ConfigFinder
+from planner.shared.schemas import (
     ConversationMessage,
     DeploymentRecommendation,
     RankedRecommendationsResponse,
 )
-from neuralnav.specification import TrafficProfileGenerator
+from planner.specification import TrafficProfileGenerator
 
 logger = logging.getLogger(__name__)
 
@@ -53,7 +53,7 @@ class RecommendationWorkflow:
         Returns:
             Tuple of (DeploymentSpecification, intent, traffic_profile, slo_targets)
         """
-        from neuralnav.shared.schemas import DeploymentSpecification
+        from planner.shared.schemas import DeploymentSpecification
 
         logger.info("Step 1: Extracting deployment intent")
         intent = self.intent_extractor.extract_intent(user_message, conversation_history)
@@ -134,7 +134,7 @@ class RecommendationWorkflow:
         Raises:
             ValueError: If recommendation cannot be generated
         """
-        from neuralnav.shared.schemas import DeploymentIntent, SLOTargets, TrafficProfile
+        from planner.shared.schemas import DeploymentIntent, SLOTargets, TrafficProfile
 
         logger.info("Generating recommendation from specifications")
 
@@ -345,7 +345,7 @@ class RecommendationWorkflow:
         Returns:
             RankedRecommendationsResponse with 5 ranked lists
         """
-        from neuralnav.shared.schemas import (
+        from planner.shared.schemas import (
             DeploymentIntent,
             DeploymentSpecification,
             SLOTargets,

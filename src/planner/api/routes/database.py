@@ -13,7 +13,7 @@ import os
 import psycopg2
 from fastapi import APIRouter, File, HTTPException, UploadFile, status
 
-from neuralnav.knowledge_base.loader import get_db_stats, insert_benchmarks, reset_benchmarks
+from planner.knowledge_base.loader import get_db_stats, insert_benchmarks, reset_benchmarks
 
 logger = logging.getLogger(__name__)
 

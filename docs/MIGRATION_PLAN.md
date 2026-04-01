@@ -16,7 +16,7 @@ Config Explorer has 2 functional areas: **Capacity Planner** (memory/KV cache ca
 Config Explorer modules are **flattened** as peers alongside existing modules (not nested under a `config_explorer/` sub-package). A shared `cli/` package holds all CLI entry points.
 
 ```
-src/planner/                          # renamed from src/neuralnav/
+src/planner/                          # renamed from src/planner/
 ├── __init__.py
 ├── api/                              # (unchanged internal structure)
 ├── capacity_planner.py              # NEW: from config_explorer (memory/KV cache calculations)
@@ -193,11 +193,11 @@ elif view == "Config Explorer":
 
 ## 5. Step-by-Step Migration Plan
 
-### Step 1: Rename `src/neuralnav/` → `src/planner/`
+### Step 1: Rename `src/planner/` → `src/planner/`
 
 **Files to modify:**
 
-- `mv src/neuralnav src/planner`
+- `mv src/planner src/planner`
 - Update ALL `from neuralnav.` → `from planner.` imports in:
   - `src/planner/**/*.py` (17+ source files)
   - `tests/*.py` (conftest.py, 3 test files)

@@ -7,9 +7,9 @@ from pathlib import Path
 
 from fastapi import APIRouter, Depends, HTTPException, status
 
-from neuralnav.api.dependencies import get_model_catalog, get_slo_repo
-from neuralnav.knowledge_base.model_catalog import ModelCatalog
-from neuralnav.knowledge_base.slo_templates import SLOTemplateRepository
+from planner.api.dependencies import get_model_catalog, get_slo_repo
+from planner.knowledge_base.model_catalog import ModelCatalog
+from planner.knowledge_base.slo_templates import SLOTemplateRepository
 
 logger = logging.getLogger(__name__)
 

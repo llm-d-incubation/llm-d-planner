@@ -5,7 +5,7 @@ Load benchmark data from benchmarks.json into PostgreSQL.
 This script reads benchmark data from a JSON file
 and inserts it into the PostgreSQL exported_summaries table.
 
-Core loading logic lives in neuralnav.knowledge_base.loader and is
+Core loading logic lives in planner.knowledge_base.loader and is
 shared with the /api/v1/db/* API endpoints.
 """
 
@@ -16,7 +16,7 @@ from pathlib import Path
 
 import psycopg2
 
-from neuralnav.knowledge_base.loader import insert_benchmarks
+from planner.knowledge_base.loader import insert_benchmarks
 
 
 def get_db_connection():

@@ -9,9 +9,9 @@ This script tests the complete workflow:
 
 import logging
 
-from neuralnav.configuration.generator import DeploymentGenerator
-from neuralnav.configuration.validator import YAMLValidator
-from neuralnav.shared.schemas import (
+from planner.configuration.generator import DeploymentGenerator
+from planner.configuration.validator import YAMLValidator
+from planner.shared.schemas import (
     DeploymentIntent,
     DeploymentRecommendation,
     GPUConfig,

@@ -21,7 +21,7 @@ COPY pyproject.toml uv.lock README.md ./
 RUN uv sync --frozen --no-dev --extra cluster
 
 # Copy backend source code
-COPY src/neuralnav ./src/neuralnav
+COPY src/planner ./src/planner
 
 # Copy data files (Knowledge Base)
 COPY data ./data

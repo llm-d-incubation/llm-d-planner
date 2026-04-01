@@ -4,8 +4,8 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from neuralnav.recommendation.config_finder import ConfigFinder
-from neuralnav.shared.schemas import DeploymentIntent, SLOTargets, TrafficProfile
+from planner.recommendation.config_finder import ConfigFinder
+from planner.shared.schemas import DeploymentIntent, SLOTargets, TrafficProfile
 
 
 def _make_intent(

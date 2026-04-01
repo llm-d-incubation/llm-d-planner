@@ -6,10 +6,10 @@ from typing import Literal
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel
 
-from neuralnav.api.dependencies import get_deployment_generator, get_workflow
-from neuralnav.configuration import DeploymentGenerator
-from neuralnav.orchestration.workflow import RecommendationWorkflow
-from neuralnav.shared.schemas import DeploymentRecommendation
+from planner.api.dependencies import get_deployment_generator, get_workflow
+from planner.configuration import DeploymentGenerator
+from planner.orchestration.workflow import RecommendationWorkflow
+from planner.shared.schemas import DeploymentRecommendation
 
 logger = logging.getLogger(__name__)
 

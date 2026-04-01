@@ -326,7 +326,7 @@ curl -X POST http://localhost:8000/api/v1/db/reset
 
 All loading methods are append-mode — duplicates (same model/hardware/traffic/load config) are silently skipped via `ON CONFLICT (config_id) DO NOTHING`.
 
-**Core loading logic** lives in `src/neuralnav/knowledge_base/loader.py` and is shared by the CLI script, API endpoints, and UI.
+**Core loading logic** lives in `src/planner/knowledge_base/loader.py` and is shared by the CLI script, API endpoints, and UI.
 
 ### Cluster Development
 
@@ -578,7 +578,7 @@ curl http://localhost:8080/health
 }
 ```
 
-2. Update `src/neuralnav/intent_extraction/extractor.py` USE_CASE_MAP
+2. Update `src/planner/intent_extraction/extractor.py` USE_CASE_MAP
 3. Restart backend
 
 ### Modifying the UI
@@ -593,14 +593,14 @@ UI code is in `ui/app.py`. Changes auto-reload in the browser.
 
 ### Modifying the Recommendation Algorithm
 
-**Model scoring:** `src/neuralnav/recommendation/scorer.py`
+**Model scoring:** `src/planner/recommendation/scorer.py`
 - `Scorer` class - Adjust scoring weights
 
-**Capacity planning:** `src/neuralnav/recommendation/config_finder.py`
+**Capacity planning:** `src/planner/recommendation/config_finder.py`
 - `plan_capacity()` - GPU sizing logic
 - `_calculate_required_replicas()` - Scaling calculations
 
-**Traffic profiling:** `src/neuralnav/specification/traffic_profile.py`
+**Traffic profiling:** `src/planner/specification/traffic_profile.py`
 - `generate_profile()` - Traffic estimation
 - `generate_slo_targets()` - SLO target generation
 
@@ -986,7 +986,7 @@ Once deployed:
 To use real vLLM with actual GPUs (requires GPU-enabled cluster):
 
 ```python
-# In src/neuralnav/api/routes.py
+# In src/planner/api/routes.py
 deployment_generator = DeploymentGenerator(simulator_mode=False)
 ```
 

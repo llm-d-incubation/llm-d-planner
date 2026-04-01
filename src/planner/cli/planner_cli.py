@@ -12,7 +12,7 @@ from typing import Any
 
 from llm_optimizer.predefined.gpus import GPU_SPECS
 
-from neuralnav.capacity_planner import (
+from planner.capacity_planner import (
     KVCacheDetail,
     allocatable_kv_cache_memory,
     auto_max_model_len,
@@ -25,7 +25,7 @@ from neuralnav.capacity_planner import (
     per_gpu_model_memory_required,
     total_kv_cache_blocks,
 )
-from neuralnav.gpu_recommender import GPURecommender
+from planner.gpu_recommender import GPURecommender
 
 
 def plan_capacity(args):
@@ -87,7 +87,7 @@ def plan_capacity(args):
         elif args.max_model_len:
             max_model_len = args.max_model_len
         else:
-            from neuralnav.capacity_planner import max_context_len
+            from planner.capacity_planner import max_context_len
 
             max_model_len = max_context_len(model_config)
 

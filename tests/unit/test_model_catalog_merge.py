@@ -4,7 +4,7 @@ import json
 
 import pytest
 
-from neuralnav.knowledge_base.model_catalog import ModelCatalog, ModelInfo
+from planner.knowledge_base.model_catalog import ModelCatalog, ModelInfo
 
 
 def _make_model_info(model_id: str, name: str = "test", provider: str = "TestOrg") -> ModelInfo:

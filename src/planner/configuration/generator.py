@@ -11,8 +11,8 @@ from typing import Any
 
 from jinja2 import Environment, FileSystemLoader
 
-from neuralnav.knowledge_base.model_catalog import ModelCatalog
-from neuralnav.shared.schemas import DeploymentRecommendation
+from planner.knowledge_base.model_catalog import ModelCatalog
+from planner.shared.schemas import DeploymentRecommendation
 
 logger = logging.getLogger(__name__)
 

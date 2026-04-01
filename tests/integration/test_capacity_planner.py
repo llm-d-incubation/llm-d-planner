@@ -6,7 +6,7 @@ import math
 
 import pytest
 
-from neuralnav.capacity_planner import (
+from planner.capacity_planner import (
     # Constants
     ACTIVATION_MEMORY_BASE_DENSE_GIB,
     ACTIVATION_MEMORY_BASE_MULTIMODAL_GIB,
@@ -362,7 +362,7 @@ def test_total_kv_cache_blocks(monkeypatch):
             return 68.09  # observed in experiments
 
     monkeypatch.setattr(
-        "neuralnav.capacity_planner.allocatable_kv_cache_memory", fake_allocatable_kv_cache_memory
+        "planner.capacity_planner.allocatable_kv_cache_memory", fake_allocatable_kv_cache_memory
     )
     ## tp = 1
     actual_blocks = total_kv_cache_blocks(
@@ -420,7 +420,7 @@ def test_allocatable_kv_cache_memory():
     """
     Tests allocatable kv cache memory is correctly calculated
     """
-    # Import not needed since we're using explicit imports from neuralnav.capacity_planner
+    # Import not needed since we're using explicit imports from planner.capacity_planner
     # The functions are already available: estimate_vllm_activation_memory,
     # estimate_vllm_cuda_graph_memory, estimate_vllm_non_torch_memory
 

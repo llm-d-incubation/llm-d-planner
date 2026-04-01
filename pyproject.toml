@@ -1,5 +1,5 @@
 [project]
-name = "neuralnav"
+name = "planner"
 version = "0.1.0"
 description = "Confidently navigate LLM deployments from concept to production"
 readme = "README.md"
@@ -47,7 +47,7 @@ dev = [
 ]
 
 [project.scripts]
-neuralnav-plan = "neuralnav.cli.planner_cli:main"
+neuralnav-plan = "planner.cli.planner_cli:main"
 
 [build-system]
 requires = ["hatchling"]
@@ -57,7 +57,7 @@ build-backend = "hatchling.build"
 allow-direct-references = true
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/neuralnav"]
+packages = ["src/planner"]
 
 [tool.ruff]
 # Set the maximum line length
@@ -125,7 +125,7 @@ line-ending = "auto"
 
 [tool.ruff.lint.isort]
 # Organize imports into sections
-known-first-party = ["neuralnav"]
+known-first-party = ["planner"]
 section-order = ["future", "standard-library", "third-party", "first-party", "local-folder"]
 
 [tool.mypy]

@@ -10,13 +10,13 @@ from fastapi import APIRouter, Depends, HTTPException, Request, status
 from pydantic import BaseModel
 from starlette.concurrency import run_in_threadpool
 
-from neuralnav.api.dependencies import (
+from planner.api.dependencies import (
     get_cluster_manager_or_raise,
     get_deployment_generator,
     get_yaml_validator,
 )
-from neuralnav.configuration import DeploymentGenerator, YAMLValidator
-from neuralnav.shared.schemas import DeploymentMode, DeploymentRecommendation
+from planner.configuration import DeploymentGenerator, YAMLValidator
+from planner.shared.schemas import DeploymentMode, DeploymentRecommendation
 
 logger = logging.getLogger(__name__)
 

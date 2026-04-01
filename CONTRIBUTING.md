@@ -288,7 +288,7 @@ make format
 
 ### Writing Tests
 
-- Test files should mirror source structure: `src/neuralnav/foo/bar.py` → `tests/test_foo_bar.py`
+- Test files should mirror source structure: `src/planner/foo/bar.py` → `tests/test_foo_bar.py`
 - Use descriptive test names: `test_plan_capacity_with_minimum_accuracy_threshold()`
 - Include both positive and negative test cases
 - Mock external dependencies (databases, APIs, LLM calls)

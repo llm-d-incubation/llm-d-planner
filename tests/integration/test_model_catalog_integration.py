@@ -23,7 +23,7 @@ def client():
     token = os.getenv("MODEL_CATALOG_TOKEN")
     if not url or not token:
         pytest.skip("MODEL_CATALOG_URL and MODEL_CATALOG_TOKEN required")
-    from neuralnav.knowledge_base.model_catalog_client import ModelCatalogClient
+    from planner.knowledge_base.model_catalog_client import ModelCatalogClient
 
     verify_raw = os.getenv("MODEL_CATALOG_VERIFY_SSL", "true").strip().lower()
     verify_ssl = verify_raw not in {"0", "false", "no", "off"}
@@ -42,9 +42,9 @@ def test_sync_writes_to_postgresql(client):
     if not db_url:
         pytest.skip("DATABASE_URL required")
 
-    from neuralnav.knowledge_base.model_catalog import ModelCatalog
-    from neuralnav.knowledge_base.model_catalog_sync import sync_model_catalog
-    from neuralnav.recommendation.quality.usecase_scorer import UseCaseQualityScorer
+    from planner.knowledge_base.model_catalog import ModelCatalog
+    from planner.knowledge_base.model_catalog_sync import sync_model_catalog
+    from planner.recommendation.quality.usecase_scorer import UseCaseQualityScorer
 
     conn = psycopg2.connect(db_url)
     try:

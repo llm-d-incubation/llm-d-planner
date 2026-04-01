@@ -12,7 +12,7 @@ from llm_optimizer.performance import (
 )
 from llm_optimizer.predefined.gpus import GPU_SPECS
 
-from neuralnav.capacity_planner import (
+from planner.capacity_planner import (
     get_model_config_from_hf,
     get_model_info_from_hf,
     get_text_config,
@@ -121,7 +121,7 @@ class CostManager:
         Returns:
             Dict mapping GPU names to cost data dictionaries
         """
-        # Navigate from neuralnav module to repo root, then to data/configuration
+        # Navigate from planner module to repo root, then to data/configuration
         cost_file = (
             Path(__file__).parent.parent.parent / "data" / "configuration" / "gpu_costs.json"
         )

@@ -5,7 +5,7 @@ import sys
 
 import pytest
 
-from neuralnav.gpu_recommender import CostManager, GPURecommender
+from planner.gpu_recommender import CostManager, GPURecommender
 
 
 @pytest.mark.integration

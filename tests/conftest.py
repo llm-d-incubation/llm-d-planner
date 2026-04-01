@@ -13,7 +13,7 @@ import psycopg2
 import pytest
 from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
 
-from neuralnav.knowledge_base.loader import insert_benchmarks
+from planner.knowledge_base.loader import insert_benchmarks
 
 logger = logging.getLogger(__name__)
 

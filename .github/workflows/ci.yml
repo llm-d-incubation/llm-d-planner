@@ -54,7 +54,7 @@ jobs:
         run: >
           uv run pytest tests/ -v --tb=short
           -m "not database and not integration"
-          --cov=src/neuralnav
+          --cov=src/planner
           --cov-report=xml
           --cov-report=term
 

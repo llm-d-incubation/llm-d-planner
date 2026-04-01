@@ -8,7 +8,7 @@ import logging
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from neuralnav.knowledge_base.model_catalog import ModelCatalog
+    from planner.knowledge_base.model_catalog import ModelCatalog
 
 logger = logging.getLogger(__name__)
 
@@ -29,7 +29,7 @@ def _get_catalog() -> "ModelCatalog":
     """Get or create the ModelCatalog singleton."""
     global _catalog_instance
     if _catalog_instance is None:
-        from neuralnav.knowledge_base.model_catalog import ModelCatalog
+        from planner.knowledge_base.model_catalog import ModelCatalog
 
         _catalog_instance = ModelCatalog()
     return _catalog_instance

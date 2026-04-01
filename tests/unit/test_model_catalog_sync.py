@@ -103,7 +103,7 @@ class TestArtifactToRow:
     """Tests for _artifact_to_row mapping."""
 
     def test_maps_fields_correctly(self):
-        from neuralnav.knowledge_base.model_catalog_sync import _artifact_to_row
+        from planner.knowledge_base.model_catalog_sync import _artifact_to_row
 
         artifact = _perf_artifact(
             model_id="RedHatAI/test-model",
@@ -125,7 +125,7 @@ class TestArtifactToRow:
         assert row["source"] == "model_catalog"
 
     def test_generates_id_and_config_id(self):
-        from neuralnav.knowledge_base.model_catalog_sync import _artifact_to_row
+        from planner.knowledge_base.model_catalog_sync import _artifact_to_row
 
         row = _artifact_to_row(_perf_artifact())
         assert row is not None
@@ -136,40 +136,40 @@ class TestArtifactToRow:
         assert len(row["config_id"]) == 32
 
     def test_returns_none_for_missing_model_id(self):
-        from neuralnav.knowledge_base.model_catalog_sync import _artifact_to_row
+        from planner.knowledge_base.model_catalog_sync import _artifact_to_row
 
         artifact = _perf_artifact()
         del artifact["customProperties"]["model_id"]
         assert _artifact_to_row(artifact) is None
 
     def test_returns_none_for_missing_hardware(self):
-        from neuralnav.knowledge_base.model_catalog_sync import _artifact_to_row
+        from planner.knowledge_base.model_catalog_sync import _artifact_to_row
 
         artifact = _perf_artifact()
         del artifact["customProperties"]["hardware_type"]
         assert _artifact_to_row(artifact) is None
 
     def test_returns_none_for_zero_prompt_tokens(self):
-        from neuralnav.knowledge_base.model_catalog_sync import _artifact_to_row
+        from planner.knowledge_base.model_catalog_sync import _artifact_to_row
 
         artifact = _perf_artifact(prompt_tokens=0, output_tokens=256)
         # profiler_config will have prompt_tokens=0
         assert _artifact_to_row(artifact) is None
 
     def test_returns_none_for_zero_rps(self):
-        from neuralnav.knowledge_base.model_catalog_sync import _artifact_to_row
+        from planner.knowledge_base.model_catalog_sync import _artifact_to_row
 
         artifact = _perf_artifact(rps=0.0)
         assert _artifact_to_row(artifact) is None
 
     def test_returns_none_for_zero_hardware_count(self):
-        from neuralnav.knowledge_base.model_catalog_sync import _artifact_to_row
+        from planner.knowledge_base.model_catalog_sync import _artifact_to_row
 
         artifact = _perf_artifact(hw_count=0)
         assert _artifact_to_row(artifact) is None
 
     def test_all_latency_fields_present(self):
-        from neuralnav.knowledge_base.model_catalog_sync import _artifact_to_row
+        from planner.knowledge_base.model_catalog_sync import _artifact_to_row
 
         row = _artifact_to_row(_perf_artifact(ttft_p95=100.0, itl_p95=25.0, e2e_p95=6000.0))
         assert row is not None
@@ -182,7 +182,7 @@ class TestArtifactToRow:
         assert row["e2e_p95"] == pytest.approx(6000.0)
 
     def test_timestamps_and_defaults(self):
-        from neuralnav.knowledge_base.model_catalog_sync import _artifact_to_row
+        from planner.knowledge_base.model_catalog_sync import _artifact_to_row
 
         row = _artifact_to_row(_perf_artifact())
         assert row is not None
@@ -202,7 +202,7 @@ class TestCatalogModelToModelInfo:
     """Tests for _catalog_model_to_model_info mapping."""
 
     def test_maps_correctly(self):
-        from neuralnav.knowledge_base.model_catalog_sync import (
+        from planner.knowledge_base.model_catalog_sync import (
             _catalog_model_to_model_info,
         )
 
@@ -215,7 +215,7 @@ class TestCatalogModelToModelInfo:
         assert "chatbot_conversational" in info.supported_tasks
 
     def test_unvalidated_model_pending(self):
-        from neuralnav.knowledge_base.model_catalog_sync import (
+        from planner.knowledge_base.model_catalog_sync import (
             _catalog_model_to_model_info,
         )
 
@@ -224,7 +224,7 @@ class TestCatalogModelToModelInfo:
         assert info.approval_status == "pending"
 
     def test_size_parsing(self):
-        from neuralnav.knowledge_base.model_catalog_sync import (
+        from planner.knowledge_base.model_catalog_sync import (
             _catalog_model_to_model_info,
         )
 
@@ -233,7 +233,7 @@ class TestCatalogModelToModelInfo:
         assert info.size_parameters == "70B"
 
     def test_license_type_permissive(self):
-        from neuralnav.knowledge_base.model_catalog_sync import (
+        from planner.knowledge_base.model_catalog_sync import (
             _catalog_model_to_model_info,
         )
 
@@ -242,7 +242,7 @@ class TestCatalogModelToModelInfo:
         assert info.license_type == "permissive"
 
     def test_license_type_restricted(self):
-        from neuralnav.knowledge_base.model_catalog_sync import (
+        from planner.knowledge_base.model_catalog_sync import (
             _catalog_model_to_model_info,
         )
 
@@ -282,9 +282,9 @@ class TestSyncModelCatalog:
 
         return client, conn, cursor, model_catalog, quality_scorer
 
-    @patch("neuralnav.knowledge_base.model_catalog_sync.execute_batch")
+    @patch("planner.knowledge_base.model_catalog_sync.execute_batch")
     def test_full_flow(self, mock_execute_batch):
-        from neuralnav.knowledge_base.model_catalog_sync import sync_model_catalog
+        from planner.knowledge_base.model_catalog_sync import sync_model_catalog
 
         client, conn, cursor, model_catalog, quality_scorer = self._build_mocks()
 
@@ -319,18 +319,18 @@ class TestSyncModelCatalog:
         assert result.quality_scores_loaded == 1
         assert result.errors == []
 
-    @patch("neuralnav.knowledge_base.model_catalog_sync.execute_batch")
+    @patch("planner.knowledge_base.model_catalog_sync.execute_batch")
     def test_transaction_committed(self, mock_execute_batch):
-        from neuralnav.knowledge_base.model_catalog_sync import sync_model_catalog
+        from planner.knowledge_base.model_catalog_sync import sync_model_catalog
 
         client, conn, cursor, model_catalog, quality_scorer = self._build_mocks()
         sync_model_catalog(client, conn, model_catalog, quality_scorer)
 
         conn.commit.assert_called()
 
-    @patch("neuralnav.knowledge_base.model_catalog_sync.execute_batch")
+    @patch("planner.knowledge_base.model_catalog_sync.execute_batch")
     def test_db_error_rolls_back(self, mock_execute_batch):
-        from neuralnav.knowledge_base.model_catalog_sync import sync_model_catalog
+        from planner.knowledge_base.model_catalog_sync import sync_model_catalog
 
         client, conn, cursor, model_catalog, quality_scorer = self._build_mocks()
         mock_execute_batch.side_effect = Exception("DB error")
@@ -341,9 +341,9 @@ class TestSyncModelCatalog:
         assert result.benchmarks_inserted == 0
         assert len(result.errors) > 0
 
-    @patch("neuralnav.knowledge_base.model_catalog_sync.execute_batch")
+    @patch("planner.knowledge_base.model_catalog_sync.execute_batch")
     def test_skips_malformed_artifacts(self, mock_execute_batch):
-        from neuralnav.knowledge_base.model_catalog_sync import sync_model_catalog
+        from planner.knowledge_base.model_catalog_sync import sync_model_catalog
 
         client, conn, cursor, model_catalog, quality_scorer = self._build_mocks()
 
@@ -361,9 +361,9 @@ class TestSyncModelCatalog:
         # Only the valid artifact should be inserted
         assert result.benchmarks_inserted == 1
 
-    @patch("neuralnav.knowledge_base.model_catalog_sync.execute_batch")
+    @patch("planner.knowledge_base.model_catalog_sync.execute_batch")
     def test_client_list_failure(self, mock_execute_batch):
-        from neuralnav.knowledge_base.model_catalog_sync import sync_model_catalog
+        from planner.knowledge_base.model_catalog_sync import sync_model_catalog
 
         client, conn, cursor, model_catalog, quality_scorer = self._build_mocks()
         client.list_models.side_effect = Exception("Network error")
