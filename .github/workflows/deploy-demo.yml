@@ -1,0 +1,316 @@
+name: Deploy Demo
+
+on:
+  workflow_dispatch:  # Manual trigger from GitHub UI
+    inputs:
+      environment:
+        description: 'Environment name (leave blank for branch name)'
+        required: false
+        default: ''
+  push:
+    branches:
+      - 'demo/**'      # Auto-deploy branches starting with demo/
+      - 'feature/**'   # Auto-deploy feature branches (optional)
+
+env:
+  REGISTRY: ghcr.io
+  BACKEND_IMAGE: ghcr.io/${{ github.repository }}/backend
+  UI_IMAGE: ghcr.io/${{ github.repository }}/ui
+
+jobs:
+  build-and-push:
+    name: Build and Push Images
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    outputs:
+      image_tag: ${{ steps.meta.outputs.tag }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Generate image tag
+        id: meta
+        run: |
+          BRANCH_NAME=$(echo "${{ github.ref_name }}" | sed 's/[^a-zA-Z0-9._-]/-/g')
+          TAG="${BRANCH_NAME}-${{ github.sha }}"
+          echo "tag=${TAG}" >> $GITHUB_OUTPUT
+          echo "branch=${BRANCH_NAME}" >> $GITHUB_OUTPUT
+
+      - name: Build and push Backend image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile
+          push: true
+          tags: |
+            ${{ env.BACKEND_IMAGE }}:${{ steps.meta.outputs.tag }}
+            ${{ env.BACKEND_IMAGE }}:${{ steps.meta.outputs.branch }}-latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          platforms: linux/amd64
+
+      - name: Build and push UI image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./ui/Dockerfile
+          push: true
+          tags: |
+            ${{ env.UI_IMAGE }}:${{ steps.meta.outputs.tag }}
+            ${{ env.UI_IMAGE }}:${{ steps.meta.outputs.branch }}-latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          platforms: linux/amd64
+
+  deploy:
+    name: Deploy to OpenShift
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch' || startsWith(github.ref, 'refs/heads/demo/') || startsWith(github.ref, 'refs/heads/feature/')
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install OpenShift CLI
+        uses: redhat-actions/openshift-tools-installer@v1
+        with:
+          oc: "latest"
+
+      - name: Generate namespace name
+        id: namespace
+        run: |
+          BRANCH_NAME=$(echo "${{ github.ref_name }}" | sed 's/[^a-zA-Z0-9-]/-/g' | tr '[:upper:]' '[:lower:]')
+          NAMESPACE="llm-planner-demo-${BRANCH_NAME}"
+          # Truncate to 63 chars (K8s limit)
+          NAMESPACE=$(echo "$NAMESPACE" | cut -c1-63 | sed 's/-$//')
+          echo "name=${NAMESPACE}" >> $GITHUB_OUTPUT
+
+      - name: Deploy to OpenShift
+        env:
+          KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}
+          NAMESPACE: ${{ steps.namespace.outputs.name }}
+          IMAGE_TAG: ${{ needs.build-and-push.outputs.image_tag }}
+        run: |
+          if [ -z "$KUBE_CONFIG" ]; then
+            echo "⚠️  KUBE_CONFIG secret not set."
+            echo "Add it in: Settings → Secrets and variables → Actions → New repository secret"
+            exit 1
+          fi
+
+          # Setup kubeconfig
+          echo "$KUBE_CONFIG" | base64 -d > /tmp/kubeconfig
+          export KUBECONFIG=/tmp/kubeconfig
+
+          echo "🚀 Deploying to namespace: $NAMESPACE"
+          echo "📦 Backend: ${{ env.BACKEND_IMAGE }}:${IMAGE_TAG}"
+          echo "📦 UI: ${{ env.UI_IMAGE }}:${IMAGE_TAG}"
+
+          # Create namespace
+          oc create namespace $NAMESPACE --dry-run=client -o yaml | oc apply -f -
+          oc label namespace $NAMESPACE app=llm-planner-demo --overwrite
+
+          # Deploy Backend (demo mode)
+          cat <<EOF | oc apply -n $NAMESPACE -f -
+          ---
+          apiVersion: v1
+          kind: ConfigMap
+          metadata:
+            name: backend-demo-config
+          data:
+            NEURALNAV_BENCHMARK_SOURCE: "json"
+            API_HOST: "0.0.0.0"
+            API_PORT: "8000"
+            CORS_ORIGINS: "http://localhost:8501"
+          ---
+          apiVersion: apps/v1
+          kind: Deployment
+          metadata:
+            name: backend
+            labels:
+              app: backend
+          spec:
+            replicas: 1
+            selector:
+              matchLabels:
+                app: backend
+            template:
+              metadata:
+                labels:
+                  app: backend
+              spec:
+                containers:
+                - name: backend
+                  image: ${{ env.BACKEND_IMAGE }}:${IMAGE_TAG}
+                  imagePullPolicy: Always
+                  ports:
+                  - containerPort: 8000
+                    name: http
+                  envFrom:
+                  - configMapRef:
+                      name: backend-demo-config
+                  resources:
+                    requests:
+                      memory: "512Mi"
+                      cpu: "250m"
+                    limits:
+                      memory: "1Gi"
+                      cpu: "500m"
+                  livenessProbe:
+                    httpGet:
+                      path: /health
+                      port: 8000
+                    initialDelaySeconds: 30
+                    periodSeconds: 10
+                  readinessProbe:
+                    httpGet:
+                      path: /health
+                      port: 8000
+                    initialDelaySeconds: 10
+                    periodSeconds: 5
+          ---
+          apiVersion: v1
+          kind: Service
+          metadata:
+            name: backend
+          spec:
+            selector:
+              app: backend
+            ports:
+            - protocol: TCP
+              port: 8000
+              targetPort: 8000
+          EOF
+
+          # Deploy UI
+          cat <<EOF | oc apply -n $NAMESPACE -f -
+          ---
+          apiVersion: apps/v1
+          kind: Deployment
+          metadata:
+            name: ui
+            labels:
+              app: ui
+          spec:
+            replicas: 1
+            selector:
+              matchLabels:
+                app: ui
+            template:
+              metadata:
+                labels:
+                  app: ui
+              spec:
+                containers:
+                - name: ui
+                  image: ${{ env.UI_IMAGE }}:${IMAGE_TAG}
+                  imagePullPolicy: Always
+                  ports:
+                  - containerPort: 8501
+                    name: http
+                  env:
+                  - name: API_BASE_URL
+                    value: "http://backend:8000"
+                  - name: STREAMLIT_SERVER_PORT
+                    value: "8501"
+                  - name: STREAMLIT_SERVER_ADDRESS
+                    value: "0.0.0.0"
+                  resources:
+                    requests:
+                      memory: "256Mi"
+                      cpu: "100m"
+                    limits:
+                      memory: "512Mi"
+                      cpu: "250m"
+                  livenessProbe:
+                    httpGet:
+                      path: /_stcore/health
+                      port: 8501
+                    initialDelaySeconds: 30
+                    periodSeconds: 10
+                  readinessProbe:
+                    httpGet:
+                      path: /_stcore/health
+                      port: 8501
+                    initialDelaySeconds: 10
+                    periodSeconds: 5
+          ---
+          apiVersion: v1
+          kind: Service
+          metadata:
+            name: ui
+          spec:
+            selector:
+              app: ui
+            ports:
+            - protocol: TCP
+              port: 8501
+              targetPort: 8501
+          EOF
+
+          # Create OpenShift Route
+          cat <<EOF | oc apply -n $NAMESPACE -f - || echo "⚠️  Route creation skipped"
+          apiVersion: route.openshift.io/v1
+          kind: Route
+          metadata:
+            name: llm-planner-demo
+            labels:
+              app: ui
+          spec:
+            to:
+              kind: Service
+              name: ui
+            port:
+              targetPort: 8501
+            tls:
+              termination: edge
+              insecureEdgeTerminationPolicy: Redirect
+          EOF
+
+          echo "⏳ Waiting for deployments..."
+          oc wait --for=condition=available --timeout=180s deployment/backend -n $NAMESPACE || true
+          oc wait --for=condition=available --timeout=180s deployment/ui -n $NAMESPACE || true
+
+          echo ""
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          echo "✅ Demo deployment complete!"
+          echo ""
+          echo "🌐 Access your demo at:"
+          ROUTE_URL=$(oc get route llm-planner-demo -n $NAMESPACE -o jsonpath='{.spec.host}' 2>/dev/null || echo "")
+          if [ -n "$ROUTE_URL" ]; then
+            echo "   https://${ROUTE_URL}"
+            echo ""
+            echo "📋 Share this URL with teammates!"
+            echo "DEMO_URL=https://${ROUTE_URL}" >> $GITHUB_ENV
+          else
+            echo "   Service deployed. Route not available."
+          fi
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+
+      - name: Comment on PR (if applicable)
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const namespace = '${{ steps.namespace.outputs.name }}';
+            const url = process.env.DEMO_URL || 'Deployment in progress...';
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `🚀 **Demo Deployment Ready**\n\n🌐 **URL:** ${url}\n\n📦 **Namespace:** \`${namespace}\``
+            })
