@@ -14,8 +14,6 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  BACKEND_IMAGE: ghcr.io/${{ github.repository }}/backend
-  UI_IMAGE: ghcr.io/${{ github.repository }}/ui
 
 jobs:
   build-and-push:
@@ -27,6 +25,8 @@ jobs:
 
     outputs:
       image_tag: ${{ steps.meta.outputs.tag }}
+      backend_image: ${{ steps.meta.outputs.backend_image }}
+      ui_image: ${{ steps.meta.outputs.ui_image }}
 
     steps:
       - name: Checkout code
@@ -42,13 +42,24 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Generate image tag
+      - name: Generate image metadata
         id: meta
         run: |
-          BRANCH_NAME=$(echo "${{ github.ref_name }}" | sed 's/[^a-zA-Z0-9._-]/-/g')
+          # Convert repository to lowercase for Docker
+          REPO_LOWER=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
+
+          # Generate branch name and tag
+          BRANCH_NAME=$(echo "${{ github.ref_name }}" | sed 's/[^a-zA-Z0-9._-]/-/g' | tr '[:upper:]' '[:lower:]')
           TAG="${BRANCH_NAME}-${{ github.sha }}"
+
+          # Set image names
+          BACKEND_IMAGE="ghcr.io/${REPO_LOWER}/backend"
+          UI_IMAGE="ghcr.io/${REPO_LOWER}/ui"
+
           echo "tag=${TAG}" >> $GITHUB_OUTPUT
           echo "branch=${BRANCH_NAME}" >> $GITHUB_OUTPUT
+          echo "backend_image=${BACKEND_IMAGE}" >> $GITHUB_OUTPUT
+          echo "ui_image=${UI_IMAGE}" >> $GITHUB_OUTPUT
 
       - name: Build and push Backend image
         uses: docker/build-push-action@v5
@@ -57,8 +68,8 @@ jobs:
           file: ./Dockerfile
           push: true
           tags: |
-            ${{ env.BACKEND_IMAGE }}:${{ steps.meta.outputs.tag }}
-            ${{ env.BACKEND_IMAGE }}:${{ steps.meta.outputs.branch }}-latest
+            ${{ steps.meta.outputs.backend_image }}:${{ steps.meta.outputs.tag }}
+            ${{ steps.meta.outputs.backend_image }}:${{ steps.meta.outputs.branch }}-latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
           platforms: linux/amd64
@@ -70,8 +81,8 @@ jobs:
           file: ./ui/Dockerfile
           push: true
           tags: |
-            ${{ env.UI_IMAGE }}:${{ steps.meta.outputs.tag }}
-            ${{ env.UI_IMAGE }}:${{ steps.meta.outputs.branch }}-latest
+            ${{ steps.meta.outputs.ui_image }}:${{ steps.meta.outputs.tag }}
+            ${{ steps.meta.outputs.ui_image }}:${{ steps.meta.outputs.branch }}-latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
           platforms: linux/amd64
@@ -105,6 +116,8 @@ jobs:
           KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}
           NAMESPACE: ${{ steps.namespace.outputs.name }}
           IMAGE_TAG: ${{ needs.build-and-push.outputs.image_tag }}
+          BACKEND_IMAGE: ${{ needs.build-and-push.outputs.backend_image }}
+          UI_IMAGE: ${{ needs.build-and-push.outputs.ui_image }}
         run: |
           if [ -z "$KUBE_CONFIG" ]; then
             echo "⚠️  KUBE_CONFIG secret not set."
@@ -117,8 +130,8 @@ jobs:
           export KUBECONFIG=/tmp/kubeconfig
 
           echo "🚀 Deploying to namespace: $NAMESPACE"
-          echo "📦 Backend: ${{ env.BACKEND_IMAGE }}:${IMAGE_TAG}"
-          echo "📦 UI: ${{ env.UI_IMAGE }}:${IMAGE_TAG}"
+          echo "📦 Backend: ${BACKEND_IMAGE}:${IMAGE_TAG}"
+          echo "📦 UI: ${UI_IMAGE}:${IMAGE_TAG}"
 
           # Create namespace
           oc create namespace $NAMESPACE --dry-run=client -o yaml | oc apply -f -
@@ -155,7 +168,7 @@ jobs:
               spec:
                 containers:
                 - name: backend
-                  image: ${{ env.BACKEND_IMAGE }}:${IMAGE_TAG}
+                  image: ${BACKEND_IMAGE}:${IMAGE_TAG}
                   imagePullPolicy: Always
                   ports:
                   - containerPort: 8000
@@ -217,7 +230,7 @@ jobs:
               spec:
                 containers:
                 - name: ui
-                  image: ${{ env.UI_IMAGE }}:${IMAGE_TAG}
+                  image: ${UI_IMAGE}:${IMAGE_TAG}
                   imagePullPolicy: Always
                   ports:
                   - containerPort: 8501
