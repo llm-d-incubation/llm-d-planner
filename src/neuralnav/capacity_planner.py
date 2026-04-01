@@ -132,7 +132,9 @@ class KVCacheDetail:
         self.num_attention_heads = text_config.num_attention_heads
         self.num_key_value_heads = text_config.num_key_value_heads
         head_dim = getattr(text_config, "head_dim", None)
-        self.head_dimension = head_dim if head_dim is not None else int(self.hidden_size / self.num_attention_heads)
+        self.head_dimension = (
+            head_dim if head_dim is not None else int(self.hidden_size / self.num_attention_heads)
+        )
         # Determine attention type
         if use_mla(self.model_architecture):
             self.attention_type = AttentionType.MLA
@@ -792,12 +794,14 @@ def find_possible_tp(model_config: AutoConfig) -> list[int]:
     text_config = get_text_config(model_config)
     num_attention_heads = text_config.num_attention_heads
 
-    factors_list: list[int] = sorted({
-        x
-        for i in range(1, int(num_attention_heads**0.5) + 1)
-        if num_attention_heads % i == 0
-        for x in [i, num_attention_heads // i]
-    })
+    factors_list: list[int] = sorted(
+        {
+            x
+            for i in range(1, int(num_attention_heads**0.5) + 1)
+            if num_attention_heads % i == 0
+            for x in [i, num_attention_heads // i]
+        }
+    )
     return factors_list
 
 
