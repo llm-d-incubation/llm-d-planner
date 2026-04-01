@@ -106,10 +106,10 @@ async def deploy_model(
             yaml_validator.validate_all(result["files"])
             logger.info(f"All YAML files validated for deployment: {result['deployment_id']}")
         except Exception as e:
-            logger.error(f"YAML validation failed: {e}")
+            logger.error(f"YAML validation failed: {e}", exc_info=True)
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail=f"Generated YAML validation failed: {str(e)}",
+                detail="Generated YAML validation failed",
             ) from e
 
         return DeploymentResponse(
@@ -120,11 +120,13 @@ async def deploy_model(
             message=f"Deployment files generated successfully for {result['deployment_id']}",
         )
 
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Failed to generate deployment: {e}", exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to generate deployment: {str(e)}",
+            detail="Failed to generate deployment",
         ) from e
 
 
@@ -254,10 +256,10 @@ async def deploy_to_cluster(
             yaml_validator.validate_all(files)
             logger.info(f"YAML validation passed for: {deployment_id}")
         except Exception as e:
-            logger.error(f"YAML validation failed: {e}")
+            logger.error(f"YAML validation failed: {e}", exc_info=True)
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail=f"Generated YAML validation failed: {str(e)}",
+                detail="Generated YAML validation failed",
             ) from e
 
         # Step 3: Deploy to cluster
@@ -269,7 +271,7 @@ async def deploy_to_cluster(
             logger.error(f"Deployment failed: {deployment_result['errors']}")
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail=f"Deployment failed: {deployment_result['errors']}",
+                detail="Deployment to cluster failed",
             )
 
         logger.info(f"Successfully deployed {deployment_id} to cluster")
@@ -289,7 +291,7 @@ async def deploy_to_cluster(
         logger.error(f"Failed to deploy to cluster: {e}", exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to deploy to cluster: {str(e)}",
+            detail="Failed to deploy to cluster",
         ) from e
 
 
@@ -317,7 +319,7 @@ async def get_cluster_status(http_request: Request, namespace: str = "default"):
         return {"accessible": False, "error": e.detail}
     except Exception as e:
         logger.error(f"Failed to query cluster status: {e}")
-        return {"accessible": False, "error": str(e)}
+        return {"accessible": False, "error": "Failed to connect to cluster"}
 
 
 @router.get("/deployments/{deployment_id}/k8s-status")
@@ -354,7 +356,7 @@ async def get_k8s_deployment_status(
         logger.error(f"Failed to get K8s deployment status: {e}", exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to get deployment status: {str(e)}",
+            detail="Failed to get deployment status",
         ) from e
 
 
@@ -398,7 +400,7 @@ async def get_deployment_yaml(
         logger.error(f"Failed to retrieve YAML files: {e}", exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to retrieve YAML files: {str(e)}",
+            detail="Failed to retrieve YAML files",
         ) from e
 
 
@@ -423,9 +425,10 @@ async def delete_deployment(deployment_id: str, http_request: Request, namespace
         result = await run_in_threadpool(manager.delete_inferenceservice, deployment_id)
 
         if not result["success"]:
+            logger.error(f"Failed to delete deployment: {result.get('error', 'Unknown error')}")
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail=f"Failed to delete deployment: {result.get('error', 'Unknown error')}",
+                detail="Failed to delete deployment",
             )
 
         return result
@@ -436,7 +439,7 @@ async def delete_deployment(deployment_id: str, http_request: Request, namespace
         logger.error(f"Failed to delete deployment: {e}", exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to delete deployment: {str(e)}",
+            detail="Failed to delete deployment",
         ) from e
 
 
@@ -477,5 +480,5 @@ async def list_all_deployments(http_request: Request, namespace: str = "default"
         logger.error(f"Failed to list deployments: {e}", exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to list deployments: {str(e)}",
+            detail="Failed to list deployments",
         ) from e
