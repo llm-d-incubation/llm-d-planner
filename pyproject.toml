@@ -47,7 +47,7 @@ dev = [
 ]
 
 [project.scripts]
-neuralnav-plan = "planner.cli.planner_cli:main"
+planner = "planner.cli.planner_cli:main"
 
 [build-system]
 requires = ["hatchling"]

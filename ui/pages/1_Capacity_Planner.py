@@ -7,10 +7,10 @@ from pathlib import Path
 from matplotlib import pyplot as plt
 import streamlit as st
 import util
-from neuralnav.capacity_planner import *
+from planner.capacity_planner import *
 from decimal import Decimal
 
-gpu_specs = json.loads((Path(__file__).parent.parent / "data" / "configuration" / "gpu_specs.json").read_text())
+gpu_specs = json.loads((Path(__file__).parent.parent.parent / "data" / "configuration" / "gpu_specs.json").read_text())
 
 def update_gpu_spec():
     """
@@ -267,7 +267,7 @@ def workload_specification():
         )
 
         if auto_max_model_len_checked:
-            from neuralnav.capacity_planner import auto_max_model_len as calc_auto_max_model_len
+            from planner.capacity_planner import auto_max_model_len as calc_auto_max_model_len
             auto_val = calc_auto_max_model_len(
                 user_scenario.model_name,
                 model_config,
@@ -410,7 +410,7 @@ Runtime per-request activation buffers (which DO scale with actual sequence leng
             tp = user_scenario.tp_size
 
             # Determine model type and activation memory source
-            from neuralnav.capacity_planner import (
+            from planner.capacity_planner import (
                 is_moe,
                 is_multimodal,
                 ACTIVATION_MEMORY_BASE_DENSE_GIB,

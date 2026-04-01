@@ -11,7 +11,7 @@ import pytest
 
 def run_cli(*args):
     """Run CLI command and return result"""
-    cmd = ["neuralnav-plan"] + list(args)
+    cmd = ["planner"] + list(args)
     result = subprocess.run(cmd, capture_output=True, text=True)
     return result
 
@@ -42,7 +42,7 @@ class TestHelp:
         """Test help command"""
         result = run_cli("--help")
         assert result.returncode == 0
-        assert "neuralnav-plan" in result.stdout.lower() or "neuralnav" in result.stdout.lower()
+        assert "planner" in result.stdout.lower()
 
     def test_plan_help(self):
         """Test plan help"""

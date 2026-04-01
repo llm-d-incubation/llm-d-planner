@@ -203,7 +203,7 @@ start-ui: ## Start Streamlit UI
 	@if [ -f $(UI_PID) ] && [ -s $(UI_PID) ] && kill -0 $$(cat $(UI_PID) 2>/dev/null) 2>/dev/null; then \
 		printf "$(YELLOW)UI already running (PID: $$(cat $(UI_PID)))$(NC)\n"; \
 	else \
-		uv run streamlit run $(UI_DIR)/app.py --server.headless true > $(LOG_DIR)/ui.log 2>&1 & echo $$! > $(UI_PID); \
+		uv run streamlit run $(UI_DIR)/main.py --server.headless true > $(LOG_DIR)/ui.log 2>&1 & echo $$! > $(UI_PID); \
 		sleep 2; \
 		printf "$(GREEN)✓ UI started (PID: $$(cat $(UI_PID)))$(NC)\n"; \
 	fi
@@ -220,12 +220,12 @@ stop: ## Stop Backend + UI (leaves Ollama and DB running)
 		rm -f $(BACKEND_PID); \
 	fi
 	@# Kill any remaining NeuralNav processes by pattern matching
-	@pkill -f "streamlit run ui/app.py" 2>/dev/null || true
+	@pkill -f "streamlit run ui/main.py" 2>/dev/null || true
 	@pkill -f "uvicorn planner.api.app:app" 2>/dev/null || true
 	@# Give processes time to exit gracefully
 	@sleep 1
 	@# Force kill if still running
-	@pkill -9 -f "streamlit run ui/app.py" 2>/dev/null || true
+	@pkill -9 -f "streamlit run ui/main.py" 2>/dev/null || true
 	@pkill -9 -f "uvicorn planner.api.app:app" 2>/dev/null || true
 	@printf "$(GREEN)✓ All NeuralNav services stopped$(NC)\n"
 	@# Don't stop Ollama or DB as they might be used by other apps/tools

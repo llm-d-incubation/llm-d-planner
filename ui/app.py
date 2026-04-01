@@ -49,17 +49,6 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 # =============================================================================
-# PAGE CONFIGURATION (must be first Streamlit call)
-# =============================================================================
-
-st.set_page_config(
-    page_title="NeuralNav",
-    page_icon="docs/neuralnav-logo-32.png",
-    layout="wide",
-    initial_sidebar_state="expanded",
-)
-
-# =============================================================================
 # MINIMAL CSS OVERRIDES
 # =============================================================================
 st.markdown(

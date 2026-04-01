@@ -221,7 +221,7 @@ make start-ui
 **Manual start:**
 ```bash
 source venv/bin/activate
-streamlit run ui/app.py
+streamlit run ui/main.py
 ```
 
 **Access:**

@@ -10,7 +10,7 @@ import plotly.graph_objects as go
 import plotly.express as px
 from plotly.subplots import make_subplots
 
-from neuralnav.gpu_recommender import GPURecommender, CostManager
+from planner.gpu_recommender import GPURecommender, CostManager
 from llm_optimizer.predefined.gpus import GPU_SPECS
 cost_manager_temp = CostManager()
 

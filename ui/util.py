@@ -4,7 +4,7 @@ Streamlit frontend utilities
 import streamlit as st
 from transformers import AutoConfig
 from dataclasses import dataclass
-from neuralnav.capacity_planner import *
+from planner.capacity_planner import *
 
 
 # Session state variables pertaining to user selected values

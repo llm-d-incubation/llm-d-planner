@@ -430,36 +430,36 @@ def main():
         epilog="""
 Examples:
   # Basic capacity planning (uses model's default max context length)
-  neuralnav-plan plan --model Qwen/Qwen3-32B
+  planner plan --model Qwen/Qwen3-32B
 
   # Plan with custom max model length
-  neuralnav-plan plan --model Qwen/Qwen3-32B --max-model-len 2048
+  planner plan --model Qwen/Qwen3-32B --max-model-len 2048
 
   # Plan with GPU memory
-  neuralnav-plan plan --model Qwen/Qwen3-32B --gpu-memory 80
+  planner plan --model Qwen/Qwen3-32B --gpu-memory 80
 
   # Plan with full parallelism configuration
-  neuralnav-plan plan --model Qwen/Qwen3-32B \\
+  planner plan --model Qwen/Qwen3-32B \\
     --gpu-memory 80 --max-model-len 8192 --batch-size 128 \\
     --tp 4 --pp 1 --dp 2 \\
     --output results.json
 
   # Show possible TP values for a model
-  neuralnav-plan plan --model Qwen/Qwen3-32B --show-possible-tp
+  planner plan --model Qwen/Qwen3-32B --show-possible-tp
 
   # GPU performance estimation and recommendation
-  neuralnav-plan estimate --model Qwen/Qwen3-32B --input-len 512 --output-len 128
+  planner estimate --model Qwen/Qwen3-32B --input-len 512 --output-len 128
 
   # Estimate with specific GPU list
-  neuralnav-plan estimate --model Qwen/Qwen3-32B --input-len 512 --output-len 128 \\
+  planner estimate --model Qwen/Qwen3-32B --input-len 512 --output-len 128 \\
     --gpu-list H100,A100,L40
 
   # Estimate with performance constraints
-  neuralnav-plan estimate --model Qwen/Qwen3-32B --input-len 512 --output-len 128 \\
+  planner estimate --model Qwen/Qwen3-32B --input-len 512 --output-len 128 \\
     --max-ttft 100 --max-itl 10 --max-latency 2.0
 
   # Estimate with GPU-specific limits
-  neuralnav-plan estimate --model Qwen/Qwen3-32B --input-len 512 --output-len 128 \\
+  planner estimate --model Qwen/Qwen3-32B --input-len 512 --output-len 128 \\
     --max-gpus 4 --max-gpus-per-type H100:8 --max-gpus-per-type A100:4 \\
     --output estimate_results.json
         """,
