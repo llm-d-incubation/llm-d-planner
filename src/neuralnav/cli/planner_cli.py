@@ -8,6 +8,7 @@ import os
 import sys
 import traceback
 from pathlib import Path
+from typing import Any
 
 from llm_optimizer.predefined.gpus import GPU_SPECS
 
@@ -39,7 +40,7 @@ def plan_capacity(args):
         model_config = get_model_config_from_hf(args.model, hf_token)
 
         # Prepare result dictionary
-        result = {
+        result: dict[str, Any] = {
             "input_parameters": {
                 "model": args.model,
             },
@@ -285,7 +286,7 @@ def estimate_performance(args):
         performance_summary = recommender.get_performance_summary(verbose=args.verbose)
 
         # Prepare result dictionary
-        result = {
+        result: dict[str, Any] = {
             "input_parameters": {
                 "model": args.model,
                 "input_len": args.input_len,
@@ -389,7 +390,7 @@ def estimate_performance(args):
                         print(f"   • {gpu_name}: {error}")
                 else:
                     # Non-verbose mode: group by error type
-                    error_groups = {}
+                    error_groups: dict[str, list[str]] = {}
                     for gpu_name, error in failed_gpus.items():
                         if error not in error_groups:
                             error_groups[error] = []

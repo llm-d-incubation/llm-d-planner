@@ -17,7 +17,8 @@ import math
 import re
 from dataclasses import dataclass
 from enum import StrEnum
-from functools import lru_cache, reduce
+from functools import lru_cache
+from typing import Any, cast
 
 from huggingface_hub import HfApi
 from huggingface_hub.hf_api import ModelInfo, SafetensorsRepoMetadata
@@ -82,7 +83,7 @@ class KVCacheDetail:
     model: str
     attention_type: AttentionType
     kv_data_type: str
-    precision_in_bytes: int
+    precision_in_bytes: float
     num_hidden_layers: int
     hidden_size: int
     num_attention_heads: int
@@ -120,23 +121,23 @@ class KVCacheDetail:
         self.model = model_name
         self.kv_data_type = inference_dtype(model_config)
         self.precision_in_bytes = inference_dtype_byte(model_config)
-        self.model_architecture = model_config.architectures[0]
+        architectures = getattr(model_config, "architectures", None)
+        self.model_architecture = architectures[0] if architectures else ""
 
         # kv_data_type is stored at the model_config level, so need to fetch text_config afterward
-        model_config = get_text_config(model_config)
+        text_config = get_text_config(model_config)
 
-        self.num_hidden_layers = model_config.num_hidden_layers
-        self.hidden_size = model_config.hidden_size
-        self.num_attention_heads = model_config.num_attention_heads
-        self.num_key_value_heads = model_config.num_key_value_heads
-        self.head_dimension = getattr(model_config, "head_dim", None)
-        if self.head_dimension is None:
-            self.head_dimension = int(self.hidden_size / self.num_attention_heads)
+        self.num_hidden_layers = text_config.num_hidden_layers
+        self.hidden_size = text_config.hidden_size
+        self.num_attention_heads = text_config.num_attention_heads
+        self.num_key_value_heads = text_config.num_key_value_heads
+        head_dim = getattr(text_config, "head_dim", None)
+        self.head_dimension = head_dim if head_dim is not None else int(self.hidden_size / self.num_attention_heads)
         # Determine attention type
         if use_mla(self.model_architecture):
             self.attention_type = AttentionType.MLA
-            self.kv_lora_rank = model_config.kv_lora_rank
-            self.qk_rope_head_dim = model_config.qk_rope_head_dim
+            self.kv_lora_rank = text_config.kv_lora_rank
+            self.qk_rope_head_dim = text_config.qk_rope_head_dim
         else:
             if self.num_key_value_heads == 1:
                 self.attention_type = AttentionType.MQA
@@ -187,7 +188,9 @@ class KVCacheDetail:
         - MLA: Compressed KV with low-rank projection
         """
         if self.attention_type == AttentionType.MLA:
-            self.per_token_memory_bytes = (
+            assert self.kv_lora_rank is not None
+            assert self.qk_rope_head_dim is not None
+            self.per_token_memory_bytes = int(
                 self.num_hidden_layers
                 * (self.kv_lora_rank + self.qk_rope_head_dim)
                 * self.precision_in_bytes
@@ -217,7 +220,7 @@ def get_model_info_from_hf(model_name: str, hf_token: str | None = None) -> Mode
     return model_info
 
 
-def get_model_config_from_hf(model_name: str, hf_token: str = None) -> AutoConfig:
+def get_model_config_from_hf(model_name: str, hf_token: str | None = None) -> Any:
     """
     Returns LLM model config
     """
@@ -277,10 +280,10 @@ def model_params_by_dtype(model_name: str, hf_token: str | None = None) -> dict[
         Dict mapping dtype string to parameter count
     """
     metadata = get_safetensors_metadata_from_hf(model_name, hf_token)
-    return dict(metadata.parameter_count)
+    return cast(dict[str, int], metadata.parameter_count)
 
 
-def get_text_config(model_config: AutoConfig) -> dict:
+def get_text_config(model_config: Any) -> Any:
     """
     Returns text config (for LLMs)
 
@@ -294,7 +297,7 @@ def get_text_config(model_config: AutoConfig) -> dict:
     return model_config
 
 
-def get_quantization_config(model_config: AutoConfig) -> dict:
+def get_quantization_config(model_config: Any) -> Any:
     """
     Returns the quantization config
     """
@@ -331,8 +334,8 @@ def max_context_len(model_config: AutoConfig) -> int:
     """
     Returns the max context length accepted by model
     """
-    model_config = get_text_config(model_config)
-    return model_config.max_position_embeddings
+    text_config = get_text_config(model_config)
+    return int(text_config.max_position_embeddings)
 
 
 def estimate_vllm_non_torch_memory(tp: int = 1) -> float:
@@ -482,7 +485,7 @@ def parameter_memory_req(parameter: int, precision: str) -> float:
     return bytes_to_gib(parameter * precision_byte)
 
 
-def parameter_precision_memory_req(parameter: int, precision_in_byte: int) -> float:
+def parameter_precision_memory_req(parameter: int, precision_in_byte: float) -> float:
     """
     Calculates the memory requirement (in GiB) for the number of parameters for the specified precision in bytes.
     """
@@ -499,7 +502,7 @@ def get_quant_method(model_config: AutoConfig) -> str:
         quantization_config = get_quantization_config(model_config)
 
         if "quant_method" in quantization_config:
-            return quantization_config["quant_method"]
+            return str(quantization_config["quant_method"])
 
     return ""
 
@@ -530,6 +533,8 @@ def get_quant_bytes(model_config: AutoConfig) -> float:
             ):
                 num_bits = quant_config["config_groups"]["group_0"]["weights"]["num_bits"]
                 return float(bits_to_bytes(num_bits))
+
+            return 0.0
     # Not quantized
     else:
         return 0.0
@@ -550,7 +555,7 @@ def model_memory_req(
         Memory requirement in GiB
     """
     model_params = model_params_by_dtype(model_name, hf_token)
-    memory = 0
+    memory: float = 0.0
 
     # Check if model is quantized
     quantization_byte = None
@@ -722,7 +727,7 @@ def total_kv_cache_blocks(
     )
 
     total_kv_blocks = gib_to_bytes(kv_cache_allocatable) // per_block_memory
-    return total_kv_blocks
+    return int(total_kv_blocks)
 
 
 def max_concurrent_requests(
@@ -784,23 +789,16 @@ def find_possible_tp(model_config: AutoConfig) -> list[int]:
     TP must be a divisor of num_attention_heads to ensure each TP rank has
     an integer number of heads. For example, 32 heads supports TP ∈ {1,2,4,8,16,32}.
     """
-    model_config = get_text_config(model_config)
-    num_attention_heads = model_config.num_attention_heads
+    text_config = get_text_config(model_config)
+    num_attention_heads = text_config.num_attention_heads
 
-    factors = set(
-        reduce(
-            list.__add__,
-            (
-                [i, num_attention_heads // i]
-                for i in range(1, int(num_attention_heads**0.5) + 1)
-                if num_attention_heads % i == 0
-            ),
-        )
-    )
-
-    factors = list(factors)
-    factors.sort()
-    return factors
+    factors_list: list[int] = sorted({
+        x
+        for i in range(1, int(num_attention_heads**0.5) + 1)
+        if num_attention_heads % i == 0
+        for x in [i, num_attention_heads // i]
+    })
+    return factors_list
 
 
 def available_gpu_memory(memory: int, gpu_utilization: float = 0.9) -> float:
@@ -1002,9 +1000,9 @@ def get_num_experts(model_config: AutoConfig) -> int | None:
     """
 
     if hasattr(model_config, "n_routed_experts"):
-        return model_config.n_routed_experts
+        return int(model_config.n_routed_experts)
     if hasattr(model_config, "num_experts"):
-        return model_config.num_experts
+        return int(model_config.num_experts)
     return None
 
 
@@ -1043,7 +1041,7 @@ def bits_to_bytes(bits: int) -> int:
     return int(bits / 8)
 
 
-def bytes_to_gib(num_bytes: int) -> float:
+def bytes_to_gib(num_bytes: float) -> float:
     """
     Convert bytes to gibibytes (GiB)
     """

@@ -3,6 +3,7 @@
 import json
 import os
 from pathlib import Path
+from typing import Any
 
 from llm_optimizer.performance import (
     PerformanceEstimationParams,
@@ -67,7 +68,7 @@ class CostManager:
 
         # Fall back to default costs
         if gpu_name in self.default_costs and "cost" in self.default_costs[gpu_name]:
-            return self.default_costs[gpu_name]["cost"] * num_gpus
+            return float(self.default_costs[gpu_name]["cost"]) * num_gpus
 
         return None
 
@@ -113,7 +114,7 @@ class CostManager:
         """
         return self.has_custom_costs
 
-    def _load_default_costs(self) -> dict[str, dict]:
+    def _load_default_costs(self) -> dict[str, Any]:
         """
         Load default costs from JSON file
 
@@ -127,7 +128,7 @@ class CostManager:
 
         if cost_file.exists():
             with open(cost_file) as f:
-                return json.load(f)
+                return dict(json.load(f))
 
         return {}
 
@@ -195,8 +196,8 @@ class GPURecommender:
         self.cost_manager = CostManager(custom_costs=custom_gpu_costs)
 
         # Store results after recommendation
-        self.gpu_results: dict[str, PerformanceEstimationResult] | None = None
-        self.failed_gpus: dict[str, str] | None = None
+        self.gpu_results: dict[str, PerformanceEstimationResult] = {}
+        self.failed_gpus: dict[str, str] = {}
 
     def get_gpu_results(self) -> tuple[dict[str, PerformanceEstimationResult], dict[str, str]]:
         """
@@ -471,7 +472,7 @@ class GPURecommender:
         if not self.gpu_results:
             self.get_gpu_results()
 
-        summary = {
+        summary: dict[str, Any] = {
             "estimated_best_performance": {},
             "gpu_results": {},
         }
@@ -522,7 +523,7 @@ class GPURecommender:
                     self.failed_gpus[gpu_name] = "No valid performance configuration found"
                 continue
 
-            gpu_data = {}
+            gpu_data: dict[str, Any] = {}
 
             # Extract best_latency config (concurrency = 1)
             best_latency = (

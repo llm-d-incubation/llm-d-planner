@@ -200,7 +200,7 @@ def test_model_memory_req():
     assert model_memory_req(gpt_oss, model_config) == 12.816176533699036
 
     # No param info for facebook/opt-125m (no safetensors)
-    with pytest.raises(Exception):
+    with pytest.raises(Exception):  # noqa: B017
         hf_model = "facebook/opt-125m"
         model_config = get_model_config_from_hf(hf_model)
         model_memory_req(hf_model, model_config)
