@@ -1,4 +1,4 @@
-"""Extraction display components for the NeuralNav UI.
+"""Extraction display components for the Planner UI.
 
 Extraction result display, approval workflow, and edit form.
 """

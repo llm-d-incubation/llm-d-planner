@@ -1,4 +1,4 @@
-# UI Dockerfile for NeuralNav Streamlit Frontend
+# UI Dockerfile for Planner Streamlit Frontend
 FROM python:3.11-slim
 
 # Set working directory

@@ -126,7 +126,7 @@ class BenchmarkRepository:
             database_url: PostgreSQL connection string (defaults to DATABASE_URL env var)
         """
         self.database_url = database_url or os.getenv(
-            "DATABASE_URL", "postgresql://postgres:neuralnav@localhost:5432/neuralnav"
+            "DATABASE_URL", "postgresql://postgres:planner@localhost:5432/planner"
         )
         self._test_connection()
 

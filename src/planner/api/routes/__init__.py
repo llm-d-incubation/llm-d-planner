@@ -1,4 +1,4 @@
-"""API route modules for NeuralNav."""
+"""API route modules for Planner."""
 
 from .configuration import router as configuration_router
 from .database import router as database_router

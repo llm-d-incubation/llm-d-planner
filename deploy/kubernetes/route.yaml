@@ -1,11 +1,11 @@
 apiVersion: route.openshift.io/v1
 kind: Route
 metadata:
-  name: neuralnav
-  namespace: neuralnav
+  name: planner
+  namespace: planner
   labels:
     app.kubernetes.io/name: ui
-    app.kubernetes.io/part-of: neuralnav
+    app.kubernetes.io/part-of: planner
 spec:
   to:
     kind: Service
@@ -19,11 +19,11 @@ spec:
 apiVersion: route.openshift.io/v1
 kind: Route
 metadata:
-  name: neuralnav-backend
-  namespace: neuralnav
+  name: planner-backend
+  namespace: planner
   labels:
     app.kubernetes.io/name: backend
-    app.kubernetes.io/part-of: neuralnav
+    app.kubernetes.io/part-of: planner
 spec:
   to:
     kind: Service

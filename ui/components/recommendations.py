@@ -1,4 +1,4 @@
-"""Recommendation display components for the NeuralNav UI.
+"""Recommendation display components for the Planner UI.
 
 Category cards, top-5 table, options list, and recommendation results.
 """

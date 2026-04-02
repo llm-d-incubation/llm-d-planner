@@ -2,7 +2,7 @@
 
 Provides endpoints for uploading benchmark data, checking DB status,
 and resetting the benchmark database. These endpoints enable remote
-management of NeuralNav deployments (e.g., on Kubernetes) without
+management of Planner deployments (e.g., on Kubernetes) without
 needing shell access.
 """
 
@@ -21,7 +21,7 @@ router = APIRouter(prefix="/api/v1", tags=["database"])
 
 _DATABASE_URL = os.getenv(
     "DATABASE_URL",
-    "postgresql://postgres:neuralnav@localhost:5432/neuralnav",
+    "postgresql://postgres:planner@localhost:5432/planner",
 )
 
 

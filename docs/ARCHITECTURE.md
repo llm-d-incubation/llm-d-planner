@@ -1,4 +1,4 @@
-# NeuralNav Architecture
+# Planner Architecture
 
 > **Note**: This document replaces the original
 > [ARCHITECTUREv1.md](archive/ARCHITECTUREv1.md) document that captured our
@@ -36,7 +36,7 @@ Deploying LLMs in production environments remains complex and error-prone:
 
 ### Solution Approach
 
-NeuralNav streamlines the path from concept to production-ready LLM deployments
+Planner streamlines the path from concept to production-ready LLM deployments
 through:
 
 1. **Conversational requirements gathering** - Natural language input eliminates
@@ -52,7 +52,7 @@ through:
 
 ## Architecture
 
-NeuralNav consists of **five major components**:
+Planner consists of **five major components**:
 
 ```
 ┌───────────────────────────────────────────────────────────────────────────┐
@@ -152,7 +152,7 @@ integrated views:
 - Reset the benchmark database (removes all benchmark data, preserves schema)
 - View database statistics: total benchmarks, distinct models, hardware types,
   traffic profile distribution
-- Enables remote management of NeuralNav deployments (e.g., on Kubernetes)
+- Enables remote management of Planner deployments (e.g., on Kubernetes)
   without requiring shell access
 
 ---
@@ -623,7 +623,7 @@ recommendation and deployment workflows.
 
 ## Extensibility
 
-NeuralNav is designed to support pluggable components, allowing customization
+Planner is designed to support pluggable components, allowing customization
 for different environments and requirements.
 
 ### Pluggable LLM Providers
@@ -690,7 +690,7 @@ for different environments and requirements.
 
 ## Notes
 
-This architecture document describes the **production vision** for NeuralNav.
+This architecture document describes the **production vision** for Planner.
 The current POC implementation has successfully validated the core workflow and
 demonstrates the viability of the conversational approach to LLM deployment
 planning.
@@ -713,7 +713,7 @@ future iterations:
 - **Security** - Authentication, authorization, and data privacy considerations
 - **Error Handling** - Failure modes and recovery strategies (e.g., LLM
   extraction failures, no matching configurations)
-- **NeuralNav Deployment** - How NeuralNav itself is deployed and scaled
+- **Planner Deployment** - How Planner itself is deployed and scaled
 - **Multi-Tenancy** - User/organization isolation and separate knowledge bases
 - **Data Versioning** - Strategy for updating model catalogs, benchmarks, and
   SLO templates over time

@@ -1,4 +1,4 @@
-"""FastAPI application factory for NeuralNav API."""
+"""FastAPI application factory for Planner API."""
 
 import asyncio
 import logging
@@ -19,7 +19,7 @@ from planner.api.routes import (
 )
 
 # Configure logging
-debug_mode = os.getenv("NEURALNAV_DEBUG", "false").lower() == "true"
+debug_mode = os.getenv("PLANNER_DEBUG", "false").lower() == "true"
 log_level = logging.DEBUG if debug_mode else logging.INFO
 logging.basicConfig(
     level=log_level,
@@ -49,7 +49,7 @@ async def lifespan(app: FastAPI):
 def create_app() -> FastAPI:
     """Create and configure the FastAPI application."""
     app = FastAPI(
-        title="NeuralNav API",
+        title="Planner API",
         description="API for LLM deployment recommendations",
         version="0.1.0",
         lifespan=lifespan,
@@ -73,7 +73,7 @@ def create_app() -> FastAPI:
     app.include_router(reference_data_router)
     app.include_router(database_router)
 
-    logger.info(f"NeuralNav API starting with log level: {logging.getLevelName(log_level)}")
+    logger.info(f"Planner API starting with log level: {logging.getLevelName(log_level)}")
 
     return app
 

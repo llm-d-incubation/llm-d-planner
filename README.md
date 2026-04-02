@@ -1,6 +1,6 @@
-# <img src="docs/neuralnav-logo.ico" alt="NeuralNav" width="32" style="vertical-align: middle;"/> NeuralNav
+# <img src="docs/planner-logo.ico" alt="Planner" width="32" style="vertical-align: middle;"/> llm-d Planner
 
-[![CI](https://github.com/redhat-et/neuralnav/actions/workflows/ci.yml/badge.svg)](https://github.com/redhat-et/neuralnav/actions/workflows/ci.yml)
+[![CI](https://github.com/llm-d-incubation/llm-d-planner/actions/workflows/ci.yml/badge.svg)](https://github.com/llm-d-incubation/llm-d-planner/actions/workflows/ci.yml)
 [![Python 3.11+](https://img.shields.io/badge/Python-3.11+-blue.svg)](https://www.python.org)
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
 
@@ -12,9 +12,9 @@
 
 The system addresses a critical challenge: **how do you translate business requirements into the right model and infrastructure choices without expensive trial-and-error?**
 
-NeuralNav guides you from concept to production LLM deployments through SLO-driven capacity planning. Conversationally define your requirements—NeuralNav translates them into traffic profiles, performance targets, and cost constraints. Get intelligent model and GPU recommendations based on real benchmarks. Explore alternatives, compare tradeoffs, deploy with one click, and monitor actual performance—staying on course as your needs evolve.
+llm-d Planner guides you from concept to production LLM deployments through SLO-driven capacity planning. Conversationally define your requirements — Planner translates them into traffic profiles, performance targets, and cost constraints. Get intelligent model and GPU recommendations based on real benchmarks. Explore alternatives, compare tradeoffs, deploy with one click, and monitor actual performance—staying on course as your needs evolve.
 
-The code in this repository implements the **NeuralNav Phase 2 MVP** with production-grade data management. Phase 1 (POC) demonstrated the end-to-end workflow with synthetic data. Phase 2 adds PostgreSQL for benchmark storage, a traffic profile framework aligned with GuideLLM standards, experience-driven SLO mapping, and p95 percentile targets for conservative guarantees.
+The code in this repository implements the **Planner Phase 2 MVP** with production-grade data management. Phase 1 (POC) demonstrated the end-to-end workflow with synthetic data. Phase 2 adds PostgreSQL for benchmark storage, a traffic profile framework aligned with GuideLLM standards, experience-driven SLO mapping, and p95 percentile targets for conservative guarantees.
 
 ### Key Features
 
@@ -62,7 +62,7 @@ make cluster-start  # Optional: Create local KIND cluster with vLLM simulator fo
 
 Then open [http://localhost:8501](http://localhost:8501) in your browser.
 
-**Note**: PostgreSQL runs as a Docker container (`neuralnav-postgres`) with benchmark data. All `db-load-*` commands append to existing data. Use `make db-reset` first for a clean database. Benchmark data can also be uploaded and managed via the UI's **Configuration** tab or the REST API (`/api/v1/db/upload-benchmarks`).
+**Note**: PostgreSQL runs as a Docker container (`planner-postgres`) with benchmark data. All `db-load-*` commands append to existing data. Use `make db-reset` first for a clean database. Benchmark data can also be uploaded and managed via the UI's **Configuration** tab or the REST API (`/api/v1/db/upload-benchmarks`).
 
 **Stop everything:**
 ```bash
@@ -71,7 +71,7 @@ make stop-all       # Stop all services including Ollama and DB
 make cluster-stop   # Delete cluster (optional)
 ```
 
-### Using NeuralNav
+### Using Planner
 
 1. **Describe your use case** in the chat interface
    - Example: "I need a customer service chatbot for 5000 users with low latency"
@@ -148,7 +148,7 @@ make clean                   # Remove generated files
 
 ## vLLM Simulator Mode
 
-NeuralNav includes a **GPU-free simulator** for local development:
+Planner includes a **GPU-free simulator** for local development:
 
 - **No GPU required** - Run deployments on any laptop
 - **OpenAI-compatible API** - `/v1/completions` and `/v1/chat/completions`

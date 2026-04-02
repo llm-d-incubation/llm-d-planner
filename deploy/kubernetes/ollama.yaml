@@ -2,10 +2,10 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: ollama
-  namespace: neuralnav
+  namespace: planner
   labels:
     app.kubernetes.io/name: ollama
-    app.kubernetes.io/part-of: neuralnav
+    app.kubernetes.io/part-of: planner
 spec:
   replicas: 1
   strategy:
@@ -17,7 +17,7 @@ spec:
     metadata:
       labels:
         app.kubernetes.io/name: ollama
-        app.kubernetes.io/part-of: neuralnav
+        app.kubernetes.io/part-of: planner
     spec:
       containers:
         - name: ollama
@@ -76,10 +76,10 @@ apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   name: ollama-pvc
-  namespace: neuralnav
+  namespace: planner
   labels:
     app.kubernetes.io/name: ollama
-    app.kubernetes.io/part-of: neuralnav
+    app.kubernetes.io/part-of: planner
 spec:
   accessModes:
     - ReadWriteOnce
@@ -91,10 +91,10 @@ apiVersion: v1
 kind: Service
 metadata:
   name: ollama
-  namespace: neuralnav
+  namespace: planner
   labels:
     app.kubernetes.io/name: ollama
-    app.kubernetes.io/part-of: neuralnav
+    app.kubernetes.io/part-of: planner
 spec:
   selector:
     app.kubernetes.io/name: ollama

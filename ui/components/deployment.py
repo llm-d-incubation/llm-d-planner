@@ -1,4 +1,4 @@
-"""Deployment tab component for the NeuralNav UI.
+"""Deployment tab component for the Planner UI.
 
 YAML generation, file display, and download.
 """

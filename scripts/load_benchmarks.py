@@ -21,7 +21,7 @@ from planner.knowledge_base.loader import insert_benchmarks
 
 def get_db_connection():
     """Create a connection to the PostgreSQL database."""
-    db_url = os.getenv("DATABASE_URL", "postgresql://postgres:neuralnav@localhost:5432/neuralnav")
+    db_url = os.getenv("DATABASE_URL", "postgresql://postgres:planner@localhost:5432/planner")
 
     try:
         conn = psycopg2.connect(db_url)

@@ -1,7 +1,7 @@
 """Pytest configuration and shared fixtures.
 
-Sets up a dedicated neuralnav_test database for database-marked tests,
-loading a small static fixture dataset. The user's production neuralnav
+Sets up a dedicated planner_test database for database-marked tests,
+loading a small static fixture dataset. The user's production planner
 database is never touched.
 """
 
@@ -21,9 +21,9 @@ logger = logging.getLogger(__name__)
 PG_HOST = "localhost"
 PG_PORT = 5432
 PG_USER = "postgres"
-PG_PASSWORD = "neuralnav"
+PG_PASSWORD = "planner"
 
-TEST_DB_NAME = "neuralnav_test"
+TEST_DB_NAME = "planner_test"
 TEST_DB_URL = f"postgresql://{PG_USER}:{PG_PASSWORD}@{PG_HOST}:{PG_PORT}/{TEST_DB_NAME}"
 
 FIXTURES_DIR = Path(__file__).parent / "fixtures"
@@ -31,7 +31,7 @@ SCHEMA_PATH = Path(__file__).parent.parent / "scripts" / "schema.sql"
 
 
 def _create_test_database():
-    """Create the neuralnav_test database."""
+    """Create the planner_test database."""
     conn = psycopg2.connect(
         host=PG_HOST, port=PG_PORT, user=PG_USER, password=PG_PASSWORD, dbname="postgres"
     )
@@ -47,7 +47,7 @@ def _create_test_database():
 
 
 def _drop_test_database():
-    """Drop the neuralnav_test database, terminating any active connections first."""
+    """Drop the planner_test database, terminating any active connections first."""
     conn = psycopg2.connect(
         host=PG_HOST, port=PG_PORT, user=PG_USER, password=PG_PASSWORD, dbname="postgres"
     )

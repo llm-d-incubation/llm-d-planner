@@ -2,7 +2,7 @@
     "_metadata": {
         "description": "Static test benchmark data for deterministic database tests",
         "version": "1.0-test",
-        "note": "This data is loaded into neuralnav_test DB by conftest.py"
+        "note": "This data is loaded into planner_test DB by conftest.py"
     },
     "benchmarks": [
         {

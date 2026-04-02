@@ -1,11 +1,11 @@
 #!/bin/bash
 
-# Start the NeuralNav FastAPI backend
+# Start the Planner FastAPI backend
 # This script installs dependencies with uv and starts the API server
 
 set -e
 
-echo "🚀 Starting NeuralNav API..."
+echo "🚀 Starting Planner API..."
 echo ""
 
 # Check if uv is installed

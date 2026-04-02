@@ -2,10 +2,10 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: postgres
-  namespace: neuralnav
+  namespace: planner
   labels:
     app.kubernetes.io/name: postgres
-    app.kubernetes.io/part-of: neuralnav
+    app.kubernetes.io/part-of: planner
 spec:
   replicas: 1
   strategy:
@@ -17,7 +17,7 @@ spec:
     metadata:
       labels:
         app.kubernetes.io/name: postgres
-        app.kubernetes.io/part-of: neuralnav
+        app.kubernetes.io/part-of: planner
     spec:
       containers:
         - name: postgres
@@ -26,25 +26,25 @@ spec:
             - containerPort: 5432
           env:
             - name: POSTGRESQL_DATABASE
-              value: neuralnav
+              value: planner
             - name: POSTGRESQL_USER
-              value: neuralnav
+              value: planner
             - name: POSTGRESQL_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: neuralnav-secrets
+                  name: planner-secrets
                   key: postgres-password
           volumeMounts:
             - name: data
               mountPath: /var/lib/pgsql/data
           readinessProbe:
             exec:
-              command: ["pg_isready", "-U", "neuralnav"]
+              command: ["pg_isready", "-U", "planner"]
             initialDelaySeconds: 5
             periodSeconds: 10
           livenessProbe:
             exec:
-              command: ["pg_isready", "-U", "neuralnav"]
+              command: ["pg_isready", "-U", "planner"]
             initialDelaySeconds: 15
             periodSeconds: 20
           resources:
@@ -63,10 +63,10 @@ apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   name: postgres-pvc
-  namespace: neuralnav
+  namespace: planner
   labels:
     app.kubernetes.io/name: postgres
-    app.kubernetes.io/part-of: neuralnav
+    app.kubernetes.io/part-of: planner
 spec:
   accessModes:
     - ReadWriteOnce
@@ -78,10 +78,10 @@ apiVersion: v1
 kind: Service
 metadata:
   name: postgres
-  namespace: neuralnav
+  namespace: planner
   labels:
     app.kubernetes.io/name: postgres
-    app.kubernetes.io/part-of: neuralnav
+    app.kubernetes.io/part-of: planner
 spec:
   selector:
     app.kubernetes.io/name: postgres

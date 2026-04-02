@@ -1,4 +1,4 @@
-# Backend Dockerfile for NeuralNav
+# Backend Dockerfile for Planner
 FROM --platform=linux/amd64 python:3.11-slim
 
 # Set working directory
@@ -8,6 +8,7 @@ WORKDIR /app
 RUN apt-get update && apt-get install -y \
     curl \
     gcc \
+    git \
     postgresql-client \
     && rm -rf /var/lib/apt/lists/*
 
@@ -55,4 +56,4 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
   CMD python -c "import requests; requests.get('http://localhost:8000/health').raise_for_status()" || exit 1
 
 # Run the backend API server
-CMD ["uvicorn", "neuralnav.api.app:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "2"]
+CMD ["uvicorn", "planner.api.app:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "2"]

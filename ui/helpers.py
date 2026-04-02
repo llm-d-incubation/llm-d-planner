@@ -1,4 +1,4 @@
-"""Pure utility functions for the NeuralNav UI.
+"""Pure utility functions for the Planner UI.
 
 No Streamlit dependency — safe to import anywhere.
 """

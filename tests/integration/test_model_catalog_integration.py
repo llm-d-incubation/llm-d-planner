@@ -5,7 +5,7 @@ Run manually with:
     MODEL_CATALOG_URL=https://localhost:9443 \
     MODEL_CATALOG_TOKEN=$(oc whoami -t) \
     MODEL_CATALOG_VERIFY_SSL=false \
-    DATABASE_URL=postgresql://postgres:neuralnav@localhost:5432/neuralnav \
+    DATABASE_URL=postgresql://postgres:planner@localhost:5432/planner \
     uv run pytest tests/integration/test_model_catalog_integration.py -v
 """
 

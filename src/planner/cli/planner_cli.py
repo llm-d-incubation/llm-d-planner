@@ -1,5 +1,5 @@
 """
-CLI interface for NeuralNav planner
+CLI interface for Planner planner
 """
 
 import argparse
@@ -425,7 +425,7 @@ def estimate_performance(args):
 def main():
     """Main CLI entry point"""
     parser = argparse.ArgumentParser(
-        description="NeuralNav CLI - Capacity planning and configuration tools for LLM deployment",
+        description="Planner CLI - Capacity planning and configuration tools for LLM deployment",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:

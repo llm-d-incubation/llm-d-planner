@@ -9,9 +9,8 @@ Run this example by executing the following command in your terminal:
 $ python config_explorer/examples/gpu_recommender_example.py
 """
 
-import json
-import os
 import traceback
+
 from config_explorer.recommender import GPURecommender
 
 
@@ -64,7 +63,7 @@ def example_specific_gpus():
 
     gpu_results, failed_gpus = recommender.get_gpu_results()
 
-    print(f"\nRequested GPUs: {", ".join(gpu_list)}")
+    print(f"\nRequested GPUs: {', '.join(gpu_list)}")
     print(f"Successful: {len(gpu_results)}")
     print(f"Failed: {len(failed_gpus)}")
 
@@ -86,17 +85,17 @@ def example_with_constraints():
         output_len=128,
         max_gpus=2,
         gpu_list=["H100", "A100", "L40", "L4"],
-        max_ttft=100.0,      # Maximum TTFT: 100ms
-        max_itl=10.0,        # Maximum ITL: 10ms
-        max_latency=2.0,     # Maximum E2E latency: 2s
+        max_ttft=100.0,  # Maximum TTFT: 100ms
+        max_itl=10.0,  # Maximum ITL: 10ms
+        max_latency=2.0,  # Maximum E2E latency: 2s
     )
 
     gpu_results, failed_gpus = recommender.get_gpu_results()
 
     print("\nConstraints:")
-    print(f"  Max TTFT: 100ms")
-    print(f"  Max ITL: 10ms")
-    print(f"  Max E2E Latency: 2s")
+    print("  Max TTFT: 100ms")
+    print("  Max ITL: 10ms")
+    print("  Max E2E Latency: 2s")
 
     print(f"\nGPUs meeting constraints: {len(gpu_results)}")
     print(f"GPUs not meeting constraints: {len(failed_gpus)}")
@@ -121,7 +120,7 @@ def example_multi_gpu_configs():
         max_gpus_per_type={
             "H100": 8,  # Allow up to 8 H100 GPUs
             "A100": 4,  # Allow up to 4 A100 GPUs
-            "L40": 2,   # Allow up to 2 L40 GPUs
+            "L40": 2,  # Allow up to 2 L40 GPUs
         },
         gpu_list=["H100", "A100", "L40"],
     )
@@ -206,28 +205,28 @@ def example_restrictive_constraints():
     # Use extremely restrictive constraints that no GPU can meet
     recommender = GPURecommender(
         model_id="Qwen/Qwen3-32B",  # Large model
-        input_len=2048,              # Long input
-        output_len=512,              # Long output
-        max_gpus=1,                  # Only 1 GPU allowed
+        input_len=2048,  # Long input
+        output_len=512,  # Long output
+        max_gpus=1,  # Only 1 GPU allowed
         gpu_list=["L4", "L40", "A100", "H100"],
-        max_ttft=1.0,                # Extremely low: 1ms TTFT
-        max_itl=0.5,                 # Extremely low: 0.5ms ITL
-        max_latency=0.1,             # Extremely low: 0.1s total latency
+        max_ttft=1.0,  # Extremely low: 1ms TTFT
+        max_itl=0.5,  # Extremely low: 0.5ms ITL
+        max_latency=0.1,  # Extremely low: 0.1s total latency
     )
 
     print("\nTesting with VERY restrictive constraints:")
-    print(f"  Model: Qwen/Qwen3-32B (large model)")
-    print(f"  Input length: 2048 tokens")
-    print(f"  Output length: 512 tokens")
-    print(f"  Max GPUs: 1")
-    print(f"  Max TTFT: 1ms (extremely restrictive)")
-    print(f"  Max ITL: 0.5ms (extremely restrictive)")
-    print(f"  Max E2E Latency: 0.1s (extremely restrictive)")
+    print("  Model: Qwen/Qwen3-32B (large model)")
+    print("  Input length: 2048 tokens")
+    print("  Output length: 512 tokens")
+    print("  Max GPUs: 1")
+    print("  Max TTFT: 1ms (extremely restrictive)")
+    print("  Max ITL: 0.5ms (extremely restrictive)")
+    print("  Max E2E Latency: 0.1s (extremely restrictive)")
 
     gpu_results, failed_gpus = recommender.get_gpu_results()
 
     print(f"\n{'='*60}")
-    print(f"Results:")
+    print("Results:")
     print(f"{'='*60}")
     print(f"GPUs that met constraints: {len(gpu_results)}")
     print(f"GPUs that failed constraints: {len(failed_gpus)}")
@@ -301,7 +300,11 @@ def example_comparison():
         print(f"\n{model}:")
         print(f"  Compatible GPUs: {data['successful_gpus']}/{len(gpu_list)}")
         print(f"  Best GPU: {data['best_gpu']}")
-        print(f"  Best Throughput: {data['best_throughput']:.2f} tokens/s" if data['best_throughput'] else "  Best Throughput: N/A")
+        print(
+            f"  Best Throughput: {data['best_throughput']:.2f} tokens/s"
+            if data["best_throughput"]
+            else "  Best Throughput: N/A"
+        )
 
 
 def example_cost_display():

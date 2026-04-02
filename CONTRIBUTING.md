@@ -1,6 +1,6 @@
-# Contributing to NeuralNav
+# Contributing to Planner
 
-Thank you for your interest in contributing to NeuralNav! This document provides
+Thank you for your interest in contributing to Planner! This document provides
 guidelines for contributing to the project.
 
 ## Table of Contents
@@ -31,8 +31,8 @@ request.
 **2. Clone your fork locally:**
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/neuralnav.git
-cd neuralnav
+git clone https://github.com/YOUR_USERNAME/llm-d-planner.git
+cd llm-d-planner
 ```
 
 **3. Set up remotes:**
@@ -40,17 +40,17 @@ cd neuralnav
 ```bash
 # Your fork is already set as 'origin' by the clone
 # Add the main repository as 'upstream'
-git remote add upstream https://github.com/redhat-et/neuralnav.git
+git remote add upstream https://github.com/llm-d-incubation/llm-d-planner.git
 ```
 
 Verify your remotes:
 
 ```bash
 git remote -v
-# origin    https://github.com/YOUR_USERNAME/neuralnav.git (fetch)
-# origin    https://github.com/YOUR_USERNAME/neuralnav.git (push)
-# upstream  https://github.com/redhat-et/neuralnav.git (fetch)
-# upstream  https://github.com/redhat-et/neuralnav.git (push)
+# origin    https://github.com/YOUR_USERNAME/llm-d-planner.git (fetch)
+# origin    https://github.com/YOUR_USERNAME/llm-d-planner.git (push)
+# upstream  https://github.com/llm-d-incubation/llm-d-planner.git (fetch)
+# upstream  https://github.com/llm-d-incubation/llm-d-planner.git (push)
 ```
 
 **4. Set up your development environment** by following the [Quick Start
@@ -364,7 +364,7 @@ Signed-off-by: Your Name <your.email@example.com>
   - Located in `tests/`
   - Run with `make test-unit`
 - **Database tests**: For PostgreSQL benchmark queries
-  - Uses isolated `neuralnav_test` database with static fixture data
+  - Uses isolated `planner_test` database with static fixture data
   - Run with `make test-db` (requires PostgreSQL)
 - **Integration tests**: For end-to-end recommendation workflows
   - Run with `make test-integration` (requires Ollama and PostgreSQL)
@@ -435,7 +435,7 @@ make format
 
 ## License
 
-By contributing to NeuralNav, you agree that your contributions will be licensed
+By contributing to Planner, you agree that your contributions will be licensed
 under the same license as the project (see [LICENSE](LICENSE)).
 
 ## Questions?
@@ -445,4 +445,4 @@ If you have questions not covered here, please:
 2. Open a new issue with the "question" label
 3. Reach out to maintainers
 
-Thank you for contributing to NeuralNav!
+Thank you for contributing to Planner!

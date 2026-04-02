@@ -73,8 +73,5 @@ data/benchmarks/performance/benchmarks_GuideLLM.json
 # Presentation images (large files, regeneratable)
 data/archive/presentation/
 
-# Old branding (replaced by neuralnav-*)
-docs/ai_assistant_*
-
 # macOS system files (all directories)
 **/.DS_Store

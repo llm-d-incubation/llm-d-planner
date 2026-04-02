@@ -1,1 +1,1 @@
-"""Backend source package for NeuralNav."""
+"""Backend source package for Planner."""

@@ -1,6 +1,6 @@
 """Tests for PostgreSQL benchmark repository and SLO templates.
 
-Database tests use a dedicated neuralnav_test database with static fixture
+Database tests use a dedicated planner_test database with static fixture
 data (see conftest.py), so they work regardless of what production data
 is loaded.
 

@@ -2,25 +2,25 @@ services:
   # PostgreSQL database for benchmarks and deployment outcomes
   postgres:
     image: postgres:latest
-    container_name: neuralnav-postgres
+    container_name: planner-postgres
     environment:
-      POSTGRES_DB: neuralnav
-      POSTGRES_USER: neuralnav
-      POSTGRES_PASSWORD: neuralnav_dev_password
+      POSTGRES_DB: planner
+      POSTGRES_USER: planner
+      POSTGRES_PASSWORD: planner_dev_password
     volumes:
       - postgres_data:/var/lib/postgresql      
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U neuralnav"]
+      test: ["CMD-SHELL", "pg_isready -U planner"]
       interval: 10s
       timeout: 5s
       retries: 5
     networks:
-      - neuralnav-network
+      - planner-network
 
   # Ollama for LLM-powered intent extraction
   ollama:
     image: ollama/ollama:latest
-    container_name: neuralnav-ollama
+    container_name: planner-ollama
     volumes:
       - ollama_data:/root/.ollama
     ports:
@@ -31,7 +31,7 @@ services:
       timeout: 10s
       retries: 5
     networks:
-      - neuralnav-network
+      - planner-network
     # Pull the model on startup
     entrypoint: ["/bin/sh", "-c"]
     command:
@@ -44,13 +44,14 @@ services:
   # Backend API (FastAPI)
   backend:
     platform: linux/amd64
+    image: llm-d-planner-backend:latest
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: neuralnav-backend
+    container_name: planner-backend
     environment:
       # Database configuration
-      DATABASE_URL: postgresql://neuralnav:neuralnav_dev_password@postgres:5432/neuralnav
+      DATABASE_URL: postgresql://planner:planner_dev_password@postgres:5432/planner
 
       # Ollama configuration
       OLLAMA_HOST: http://ollama:11434
@@ -61,9 +62,9 @@ services:
       API_PORT: 8000
 
       # Benchmark data source: "postgresql" (default) or "model_catalog" (RHOAI)
-      NEURALNAV_BENCHMARK_SOURCE: ${NEURALNAV_BENCHMARK_SOURCE:-postgresql}
+      PLANNER_BENCHMARK_SOURCE: ${PLANNER_BENCHMARK_SOURCE:-postgresql}
 
-      # Model Catalog connection (only used when NEURALNAV_BENCHMARK_SOURCE=model_catalog)
+      # Model Catalog connection (only used when PLANNER_BENCHMARK_SOURCE=model_catalog)
       MODEL_CATALOG_URL: ${MODEL_CATALOG_URL:-}
       MODEL_CATALOG_TOKEN: ${MODEL_CATALOG_TOKEN:-}
       MODEL_CATALOG_SOURCE_ID: ${MODEL_CATALOG_SOURCE_ID:-redhat_ai_validated_models}
@@ -92,16 +93,17 @@ services:
       retries: 5
       start_period: 40s
     networks:
-      - neuralnav-network
+      - planner-network
     restart: unless-stopped
 
   # UI (Streamlit)
   ui:
     platform: linux/amd64
+    image: llm-d-planner-ui:latest
     build:
       context: .
       dockerfile: ui/Dockerfile
-    container_name: neuralnav-ui
+    container_name: planner-ui
     environment:
       # Backend API URL
       API_BASE_URL: http://backend:8000
@@ -127,7 +129,7 @@ services:
       retries: 5
       start_period: 40s
     networks:
-      - neuralnav-network
+      - planner-network
     restart: unless-stopped
 
   # vLLM Simulator (optional - for GPU-free development)
@@ -135,7 +137,7 @@ services:
     build:
       context: ./simulator
       dockerfile: Dockerfile
-    container_name: neuralnav-simulator
+    container_name: planner-simulator
     environment:
       MODEL_NAME: meta-llama/Llama-3.1-8B-Instruct
       TENSOR_PARALLEL_SIZE: "1"
@@ -150,7 +152,7 @@ services:
       retries: 3
       start_period: 40s
     networks:
-      - neuralnav-network
+      - planner-network
     profiles:
       - simulator
     restart: unless-stopped
@@ -162,5 +164,5 @@ volumes:
     driver: local
 
 networks:
-  neuralnav-network:
+  planner-network:
     driver: bridge

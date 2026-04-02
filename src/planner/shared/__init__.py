@@ -1,1 +1,1 @@
-"""Shared modules for NeuralNav backend."""
+"""Shared modules for Planner backend."""

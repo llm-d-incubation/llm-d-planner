@@ -3,9 +3,9 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: neuralnav-service-ca
-  namespace: neuralnav
+  name: planner-service-ca
+  namespace: planner
   labels:
-    app.kubernetes.io/part-of: neuralnav
+    app.kubernetes.io/part-of: planner
   annotations:
     service.beta.openshift.io/inject-cabundle: "true"

@@ -1,11 +1,11 @@
 #!/bin/bash
 
-# Start the NeuralNav UI
+# Start the Planner UI
 # This script installs dependencies with uv and starts the Streamlit UI
 
 set -e
 
-echo "🤖 Starting NeuralNav UI..."
+echo "🤖 Starting Planner UI..."
 echo ""
 
 # Check if uv is installed

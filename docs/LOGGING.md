@@ -1,10 +1,10 @@
-# NeuralNav Logging Guide
+# Planner Logging Guide
 
-This document describes the logging features in NeuralNav and how to use them for debugging and monitoring.
+This document describes the logging features in Planner and how to use them for debugging and monitoring.
 
 ## Overview
 
-NeuralNav implements comprehensive logging at every stage of the recommendation workflow:
+Planner implements comprehensive logging at every stage of the recommendation workflow:
 
 1. **User Request Logging** - Captures every user message
 2. **LLM Interaction Logging** - Logs prompts sent to the LLM and responses received
@@ -32,22 +32,22 @@ Detailed logging for troubleshooting that adds:
 ## Enabling Debug Mode
 
 ### Option 1: Environment Variable (Recommended)
-Set the `NEURALNAV_DEBUG` environment variable before starting the backend:
+Set the `PLANNER_DEBUG` environment variable before starting the backend:
 
 ```bash
 # Enable debug logging
-export NEURALNAV_DEBUG=true
+export PLANNER_DEBUG=true
 make start-backend
 
 # Or inline:
-NEURALNAV_DEBUG=true make start-backend
+PLANNER_DEBUG=true make start-backend
 ```
 
 ### Option 2: Script Modification
 Edit `scripts/run_api.sh` and add:
 
 ```bash
-export NEURALNAV_DEBUG=true
+export PLANNER_DEBUG=true
 ```
 
 ## Log Output Locations
@@ -58,7 +58,7 @@ All logs are written to stdout/stderr and captured by uvicorn.
 ### Log Files
 Logs are also written to:
 - `logs/backend.log` - Main application logs (when using make commands)
-- `logs/neuralnav.log` - Structured logs with full details
+- `logs/planner.log` - Structured logs with full details
 
 ## Log Format
 
@@ -152,10 +152,10 @@ To prevent log files from growing indefinitely, consider setting up log rotation
 
 ### Using logrotate (Linux)
 
-Create `/etc/logrotate.d/neuralnav`:
+Create `/etc/logrotate.d/planner`:
 
 ```
-/path/to/neuralnav/logs/*.log {
+/path/to/planner/logs/*.log {
     daily
     rotate 7
     compress
@@ -179,21 +179,21 @@ make restart
 ## Troubleshooting Tips
 
 ### Not seeing DEBUG logs?
-1. Check `NEURALNAV_DEBUG` is set: `echo $NEURALNAV_DEBUG`
+1. Check `PLANNER_DEBUG` is set: `echo $PLANNER_DEBUG`
 2. Restart the backend after setting the variable
-3. Verify log level in startup message: `NeuralNav API starting with log level: DEBUG`
+3. Verify log level in startup message: `Planner API starting with log level: DEBUG`
 
 ### Logs too verbose?
-1. Unset `NEURALNAV_DEBUG`: `unset NEURALNAV_DEBUG`
+1. Unset `PLANNER_DEBUG`: `unset PLANNER_DEBUG`
 2. Restart backend: `make restart`
 
 ### Need to see full prompts temporarily?
 ```bash
 # Enable debug for one request
-NEURALNAV_DEBUG=true make restart
+PLANNER_DEBUG=true make restart
 # Make your request
 # Then disable
-unset NEURALNAV_DEBUG && make restart
+unset PLANNER_DEBUG && make restart
 ```
 
 ## Privacy and Security Considerations

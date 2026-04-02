@@ -11,10 +11,10 @@ metadata:
     serving.kserve.io/deploymentMode: RawDeployment
     description: "{{ use_case }} deployment - {{ reasoning | truncate(100) }}"
     {% if simulator_mode %}
-    neuralnav/simulator-mode: "true"
+    planner/simulator-mode: "true"
     {% endif %}
     {% if model_uri %}
-    neuralnav/model-uri: "{{ model_uri }}"
+    planner/model-uri: "{{ model_uri }}"
     {% endif %}
 spec:
   predictor:

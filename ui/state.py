@@ -1,4 +1,4 @@
-"""Session state defaults and initialization for the NeuralNav UI."""
+"""Session state defaults and initialization for the Planner UI."""
 
 from typing import Any
 

@@ -1,14 +1,14 @@
 #!/bin/bash
 
-# NeuralNav - Kubernetes Cluster Management Script
+# Planner - Kubernetes Cluster Management Script
 #
-# This script manages the KIND cluster lifecycle for NeuralNav.
+# This script manages the KIND cluster lifecycle for Planner.
 # It handles cluster creation, KServe installation, and cluster teardown.
 
 set -e  # Exit on error
 
 # Configuration
-CLUSTER_NAME="neuralnav"
+CLUSTER_NAME="planner"
 KSERVE_VERSION="v0.14.0"
 CERT_MANAGER_VERSION="v1.14.4"
 CLUSTER_CONFIG="config/kind-cluster.yaml"
@@ -87,7 +87,7 @@ cluster_exists() {
 
 # Start cluster
 start_cluster() {
-    print_header "Starting NeuralNav Kubernetes Cluster"
+    print_header "Starting Planner Kubernetes Cluster"
 
     check_prerequisites
 
@@ -173,7 +173,7 @@ start_cluster() {
 
 # Stop/delete cluster
 stop_cluster() {
-    print_header "Stopping NeuralNav Kubernetes Cluster"
+    print_header "Stopping Planner Kubernetes Cluster"
 
     if ! cluster_exists; then
         print_warning "Cluster '${CLUSTER_NAME}' does not exist"
@@ -191,7 +191,7 @@ stop_cluster() {
 
 # Restart cluster (delete and recreate)
 restart_cluster() {
-    print_header "Restarting NeuralNav Kubernetes Cluster"
+    print_header "Restarting Planner Kubernetes Cluster"
 
     if cluster_exists; then
         print_step "Deleting existing cluster..."
@@ -209,7 +209,7 @@ restart_cluster() {
 
 # Show cluster status
 show_status() {
-    print_header "NeuralNav Kubernetes Cluster Status"
+    print_header "Planner Kubernetes Cluster Status"
 
     echo ""
     echo "Cluster Name: ${CLUSTER_NAME}"
@@ -279,7 +279,7 @@ show_status() {
 # Show usage
 show_usage() {
     cat << EOF
-NeuralNav - Cluster Management
+Planner - Cluster Management
 
 Usage: scripts/kind-cluster.sh <command>
 

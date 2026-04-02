@@ -11,38 +11,38 @@ import planner.api.dependencies as deps
 @pytest.mark.unit
 @patch.dict("os.environ", {}, clear=False)
 def test_default_source_is_postgresql():
-    """When NEURALNAV_BENCHMARK_SOURCE is not set, default to postgresql."""
+    """When PLANNER_BENCHMARK_SOURCE is not set, default to postgresql."""
     import os
 
-    os.environ.pop("NEURALNAV_BENCHMARK_SOURCE", None)
+    os.environ.pop("PLANNER_BENCHMARK_SOURCE", None)
     assert deps._get_benchmark_source_type() == "postgresql"
 
 
 @pytest.mark.unit
-@patch.dict("os.environ", {"NEURALNAV_BENCHMARK_SOURCE": "postgresql"}, clear=False)
+@patch.dict("os.environ", {"PLANNER_BENCHMARK_SOURCE": "postgresql"}, clear=False)
 def test_explicit_postgresql_source():
-    """When NEURALNAV_BENCHMARK_SOURCE=postgresql, return postgresql."""
+    """When PLANNER_BENCHMARK_SOURCE=postgresql, return postgresql."""
     assert deps._get_benchmark_source_type() == "postgresql"
 
 
 @pytest.mark.unit
-@patch.dict("os.environ", {"NEURALNAV_BENCHMARK_SOURCE": "model_catalog"}, clear=False)
+@patch.dict("os.environ", {"PLANNER_BENCHMARK_SOURCE": "model_catalog"}, clear=False)
 def test_model_catalog_source():
-    """When NEURALNAV_BENCHMARK_SOURCE=model_catalog, return model_catalog."""
+    """When PLANNER_BENCHMARK_SOURCE=model_catalog, return model_catalog."""
     assert deps._get_benchmark_source_type() == "model_catalog"
 
 
 @pytest.mark.unit
-@patch.dict("os.environ", {"NEURALNAV_BENCHMARK_SOURCE": " Model_Catalog "}, clear=False)
+@patch.dict("os.environ", {"PLANNER_BENCHMARK_SOURCE": " Model_Catalog "}, clear=False)
 def test_benchmark_source_normalization():
-    """Whitespace and case in NEURALNAV_BENCHMARK_SOURCE are normalized."""
+    """Whitespace and case in PLANNER_BENCHMARK_SOURCE are normalized."""
     assert deps._get_benchmark_source_type() == "model_catalog"
 
 
 @pytest.mark.unit
-@patch.dict("os.environ", {"NEURALNAV_BENCHMARK_SOURCE": "invalid_source"}, clear=False)
+@patch.dict("os.environ", {"PLANNER_BENCHMARK_SOURCE": "invalid_source"}, clear=False)
 def test_unknown_benchmark_source_defaults_to_postgresql():
-    """Unknown NEURALNAV_BENCHMARK_SOURCE values default to postgresql."""
+    """Unknown PLANNER_BENCHMARK_SOURCE values default to postgresql."""
     assert deps._get_benchmark_source_type() == "postgresql"
 
 
@@ -54,7 +54,7 @@ def _make_mock_app():
 
 
 @pytest.mark.unit
-@patch.dict("os.environ", {"NEURALNAV_BENCHMARK_SOURCE": "model_catalog"}, clear=False)
+@patch.dict("os.environ", {"PLANNER_BENCHMARK_SOURCE": "model_catalog"}, clear=False)
 def test_model_catalog_mode_creates_client_and_syncs():
     """When source is model_catalog, init_app_state() creates client and starts sync."""
     app = _make_mock_app()
@@ -88,7 +88,7 @@ def test_model_catalog_mode_creates_client_and_syncs():
 
 
 @pytest.mark.unit
-@patch.dict("os.environ", {"NEURALNAV_BENCHMARK_SOURCE": "postgresql"}, clear=False)
+@patch.dict("os.environ", {"PLANNER_BENCHMARK_SOURCE": "postgresql"}, clear=False)
 def test_postgresql_workflow_uses_defaults():
     """When source is postgresql, init_app_state() creates default RecommendationWorkflow."""
     app = _make_mock_app()
@@ -106,7 +106,7 @@ def test_postgresql_workflow_uses_defaults():
 
 
 @pytest.mark.unit
-@patch.dict("os.environ", {"NEURALNAV_BENCHMARK_SOURCE": "postgresql"}, clear=False)
+@patch.dict("os.environ", {"PLANNER_BENCHMARK_SOURCE": "postgresql"}, clear=False)
 def test_init_app_state_sets_all_singletons():
     """init_app_state() populates all expected attributes on app.state."""
     app = _make_mock_app()

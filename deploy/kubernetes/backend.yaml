@@ -2,10 +2,10 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: backend
-  namespace: neuralnav
+  namespace: planner
   labels:
     app.kubernetes.io/name: backend
-    app.kubernetes.io/part-of: neuralnav
+    app.kubernetes.io/part-of: planner
 spec:
   replicas: 1
   selector:
@@ -15,16 +15,16 @@ spec:
     metadata:
       labels:
         app.kubernetes.io/name: backend
-        app.kubernetes.io/part-of: neuralnav
+        app.kubernetes.io/part-of: planner
     spec:
       securityContext:
         runAsNonRoot: true
         seccompProfile:
           type: RuntimeDefault
-      serviceAccountName: neuralnav-backend
+      serviceAccountName: planner-backend
       containers:
         - name: backend
-          image: quay.io/neuralnav/neuralnav-backend:latest
+          image: quay.io/llm-d-planner/llm-d-planner-backend:latest
           securityContext:
             allowPrivilegeEscalation: false
             capabilities:
@@ -34,19 +34,19 @@ spec:
             - containerPort: 8000
           envFrom:
             - configMapRef:
-                name: neuralnav-config
+                name: planner-config
           env:
             - name: POSTGRES_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: neuralnav-secrets
+                  name: planner-secrets
                   key: postgres-password
             - name: DATABASE_URL
-              value: postgresql://neuralnav:$(POSTGRES_PASSWORD)@postgres:5432/neuralnav
+              value: postgresql://planner:$(POSTGRES_PASSWORD)@postgres:5432/planner
             - name: MODEL_CATALOG_TOKEN
               valueFrom:
                 secretKeyRef:
-                  name: neuralnav-secrets
+                  name: planner-secrets
                   key: model-catalog-token
                   optional: true
             - name: OLLAMA_HOST
@@ -87,17 +87,17 @@ spec:
       volumes:
         - name: service-ca
           configMap:
-            name: neuralnav-service-ca
+            name: planner-service-ca
             optional: true
 ---
 apiVersion: v1
 kind: Service
 metadata:
   name: backend
-  namespace: neuralnav
+  namespace: planner
   labels:
     app.kubernetes.io/name: backend
-    app.kubernetes.io/part-of: neuralnav
+    app.kubernetes.io/part-of: planner
 spec:
   selector:
     app.kubernetes.io/name: backend

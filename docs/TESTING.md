@@ -33,7 +33,7 @@ This will test:
 source venv/bin/activate
 
 python -c "
-from neuralnav.intent_extraction import IntentExtractor
+from planner.intent_extraction import IntentExtractor
 
 extractor = IntentExtractor()
 intent = extractor.extract_intent(
@@ -52,8 +52,8 @@ print(f'  Cost Priority: {intent.cost_priority}')
 
 ```bash
 python -c "
-from neuralnav.shared.schemas import DeploymentIntent
-from neuralnav.specification import TrafficProfileGenerator
+from planner.shared.schemas import DeploymentIntent
+from planner.specification import TrafficProfileGenerator
 
 intent = DeploymentIntent(
     use_case='chatbot_conversational',
@@ -82,8 +82,8 @@ print(f'  E2E p90: {slo.e2e_p90_target_ms}ms')
 
 ```bash
 python -c "
-from neuralnav.shared.schemas import DeploymentIntent
-from neuralnav.recommendation.model_evaluator import ModelEvaluator
+from planner.shared.schemas import DeploymentIntent
+from planner.recommendation.model_evaluator import ModelEvaluator
 
 intent = DeploymentIntent(
     use_case='code_generation_detailed',
@@ -121,7 +121,7 @@ for i, (model, score) in enumerate(top_models, 1):
 
 ```bash
 python -c "
-from neuralnav.orchestration.workflow import RecommendationWorkflow
+from planner.orchestration.workflow import RecommendationWorkflow
 
 workflow = RecommendationWorkflow()
 
@@ -145,7 +145,7 @@ Start the API server:
 
 ```bash
 source venv/bin/activate
-python -m neuralnav.api.routes
+python -m planner.api.routes
 ```
 
 In another terminal, test the API:
@@ -178,9 +178,9 @@ curl http://localhost:8000/api/v1/use-cases
 
 ```bash
 python -c "
-from neuralnav.knowledge_base.benchmarks import BenchmarkRepository
-from neuralnav.knowledge_base.model_catalog import ModelCatalog
-from neuralnav.knowledge_base.slo_templates import SLOTemplateRepository
+from planner.knowledge_base.benchmarks import BenchmarkRepository
+from planner.knowledge_base.model_catalog import ModelCatalog
+from planner.knowledge_base.slo_templates import SLOTemplateRepository
 
 # Test benchmarks
 bench_repo = BenchmarkRepository()

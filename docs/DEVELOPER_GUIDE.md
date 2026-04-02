@@ -1,6 +1,6 @@
 # Developer Guide
 
-This guide provides step-by-step instructions for developing and testing NeuralNav.
+This guide provides step-by-step instructions for developing and testing Planner.
 
 ## Table of Contents
 
@@ -41,7 +41,7 @@ This checks for:
 
 ### Container Runtime Support
 
-NeuralNav supports both **Docker** and **Podman** as container runtimes.
+Planner supports both **Docker** and **Podman** as container runtimes.
 
 #### Compatibility Matrix
 
@@ -118,10 +118,10 @@ Error: listen tcp :5432: bind: address already in use
 1. Stop and remove the container in the other runtime:
    ```bash
    # If switching TO Podman, clean up Docker first:
-   docker stop neuralnav-postgres && docker rm neuralnav-postgres
+   docker stop planner-postgres && docker rm planner-postgres
 
    # If switching TO Docker, clean up Podman first:
-   podman stop neuralnav-postgres && podman rm neuralnav-postgres
+   podman stop planner-postgres && podman rm planner-postgres
    ```
 
 2. If the port is still in use, check what's holding it:
@@ -196,7 +196,7 @@ make start-backend
 **Manual start:**
 ```bash
 source venv/bin/activate
-uvicorn neuralnav.api.main:app --reload --host 0.0.0.0 --port 8000
+uvicorn planner.api.main:app --reload --host 0.0.0.0 --port 8000
 ```
 
 **Verify:**
@@ -372,7 +372,7 @@ make test-unit
 
 ### Database Tests
 
-Test PostgreSQL benchmark queries using an isolated `neuralnav_test` database
+Test PostgreSQL benchmark queries using an isolated `planner_test` database
 with static fixture data (your production database is never touched):
 
 ```bash
@@ -403,18 +403,18 @@ Runs all three tiers: unit, database, and integration.
 
 ### Logging
 
-NeuralNav implements comprehensive logging to help you debug and monitor the system. For complete logging documentation, see [docs/LOGGING.md](LOGGING.md).
+Planner implements comprehensive logging to help you debug and monitor the system. For complete logging documentation, see [docs/LOGGING.md](LOGGING.md).
 
 **Quick Start:**
 
 Enable debug logging to see full LLM prompts and responses:
 ```bash
 # Enable debug mode
-export NEURALNAV_DEBUG=true
+export PLANNER_DEBUG=true
 make start-backend
 
 # Or inline:
-NEURALNAV_DEBUG=true make start-backend
+PLANNER_DEBUG=true make start-backend
 ```
 
 **Log Levels:**
@@ -424,7 +424,7 @@ NEURALNAV_DEBUG=true make start-backend
 **Log Locations:**
 - Console output (stdout/stderr)
 - `logs/backend.log` - Main application logs
-- `logs/neuralnav.log` - Structured detailed logs
+- `logs/planner.log` - Structured detailed logs
 
 **Common Log Searches:**
 ```bash
@@ -495,8 +495,8 @@ Test LLM client directly:
 ```bash
 source venv/bin/activate
 python -c "
-from neuralnav.llm.ollama_client import OllamaClient
-from neuralnav.intent_extraction.extractor import IntentExtractor
+from planner.llm.ollama_client import OllamaClient
+from planner.intent_extraction.extractor import IntentExtractor
 
 client = OllamaClient()
 extractor = IntentExtractor(client)
@@ -514,7 +514,7 @@ Test recommendation engine:
 ```bash
 source venv/bin/activate
 python -c "
-from neuralnav.orchestration.workflow import RecommendationWorkflow
+from planner.orchestration.workflow import RecommendationWorkflow
 
 workflow = RecommendationWorkflow()
 rec = workflow.generate_recommendation('I need a chatbot for 1000 users')
@@ -673,7 +673,7 @@ make cluster-stop
 
 ### Linting and Formatting
 
-NeuralNav uses [Ruff](https://docs.astral.sh/ruff/) for linting and code formatting.
+Planner uses [Ruff](https://docs.astral.sh/ruff/) for linting and code formatting.
 
 **Run linter:**
 ```bash
@@ -769,7 +769,7 @@ ollama list  # Should show qwen2.5:7b
 
 ### Option 1: Run Full Stack with UI (Recommended)
 
-The easiest way to use NeuralNav:
+The easiest way to use Planner:
 
 ```bash
 # Terminal 1 - Start Ollama (if not already running)
@@ -828,7 +828,7 @@ Test the LLM client:
 ```bash
 source venv/bin/activate
 python -c "
-from neuralnav.llm.ollama_client import OllamaClient
+from planner.llm.ollama_client import OllamaClient
 client = OllamaClient(model='llama3.2:3b')
 print('Ollama available:', client.is_available())
 print('Pulling model...')

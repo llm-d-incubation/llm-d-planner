@@ -1,3 +1,4 @@
+<?xml version="1.0"?>
 <svg
     xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
     xmlns="http://www.w3.org/2000/svg"
@@ -16,8 +17,6 @@
     y="0px"
     x="0px"
   >
-<rect width="100%" height="100%" fill="#8FAFC4"/>
-
 <g
       id="g4"
       transform="matrix(.92388 -.38268 .38268 .92388 49.426 280.9)"
@@ -825,13 +824,13 @@
             ></cc:Agent
           ></dc:publisher
         ><dc:title
-          >wind rose / neuralnav rose 2</dc:title
+          >wind rose / planner rose 2</dc:title
         ><dc:date
           >2013-04-16T03:40:36</dc:date
         ><dc:description
           >Like version 1, but with better peaks</dc:description
         ><dc:source
-          >https://openclipart.org/detail/177085/wind-rose--neuralnav-rose-2-by-urwald-177085</dc:source
+          >https://openclipart.org/detail/177085/wind-rose--planner-rose-2-by-urwald-177085</dc:source
         ><dc:creator
           ><cc:Agent
             ><dc:title
@@ -843,7 +842,7 @@
             ><rdf:li
               >wind</rdf:li
             ><rdf:li
-              >neuralnav</rdf:li
+              >planner</rdf:li
             ><rdf:li
               >rose</rdf:li
             ></rdf:Bag

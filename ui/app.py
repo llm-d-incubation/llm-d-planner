@@ -1,5 +1,5 @@
 """
-NeuralNav - E2E LLM Deployment Recommendation System
+Planner - E2E LLM Deployment Recommendation System
 
 A Streamlit application for AI-powered LLM deployment recommendations.
 
@@ -78,9 +78,9 @@ def render_hero():
     """Render compact hero section with logo."""
     logo_col, title_col = st.columns([1, 11], vertical_alignment="center")
     with logo_col:
-        st.image("ui/static/neuralnav-logo.png", width=48)
+        st.image("ui/static/planner-logo.png", width=48)
     with title_col:
-        st.title("NeuralNav")
+        st.title("Planner")
     st.caption(
         "AI-Powered LLM Deployment Recommendations — From Natural Language to Production in Seconds"
     )

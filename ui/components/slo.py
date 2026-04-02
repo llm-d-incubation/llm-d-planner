@@ -1,4 +1,4 @@
-"""SLO specification components for the NeuralNav UI.
+"""SLO specification components for the Planner UI.
 
 SLO targets, workload profile, accuracy benchmarks, priorities, and approval.
 """

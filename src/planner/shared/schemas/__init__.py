@@ -1,4 +1,4 @@
-"""Shared Pydantic schemas for NeuralNav backend.
+"""Shared Pydantic schemas for Planner backend.
 
 This module provides all data schemas used across the application,
 organized by domain:

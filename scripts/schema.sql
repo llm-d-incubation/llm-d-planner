@@ -1,4 +1,4 @@
--- PostgreSQL schema for NeuralNav benchmark data
+-- PostgreSQL schema for Planner benchmark data
 -- This schema matches the real benchmark data structure from integ-oct-29.sql
 -- Both synthetic and real data use this exact schema
 

@@ -21,7 +21,7 @@ from planner.knowledge_base.slo_templates import SLOTemplateRepository
 from planner.orchestration.workflow import RecommendationWorkflow
 
 # Configure logging
-debug_mode = os.getenv("NEURALNAV_DEBUG", "false").lower() == "true"
+debug_mode = os.getenv("PLANNER_DEBUG", "false").lower() == "true"
 log_level = logging.DEBUG if debug_mode else logging.INFO
 logging.basicConfig(
     level=log_level,
@@ -35,10 +35,10 @@ _VALID_BENCHMARK_SOURCES = {"postgresql", "model_catalog"}
 
 def _get_benchmark_source_type() -> str:
     """Get configured benchmark source type."""
-    source = os.getenv("NEURALNAV_BENCHMARK_SOURCE", "postgresql").strip().lower()
+    source = os.getenv("PLANNER_BENCHMARK_SOURCE", "postgresql").strip().lower()
     if source not in _VALID_BENCHMARK_SOURCES:
         logger.warning(
-            "Unknown NEURALNAV_BENCHMARK_SOURCE='%s'; defaulting to 'postgresql'",
+            "Unknown PLANNER_BENCHMARK_SOURCE='%s'; defaulting to 'postgresql'",
             source,
         )
         return "postgresql"
@@ -119,7 +119,7 @@ def init_app_state(app: FastAPI) -> None:
 
         database_url = os.getenv(
             "DATABASE_URL",
-            "postgresql://postgres:neuralnav@localhost:5432/neuralnav",
+            "postgresql://postgres:planner@localhost:5432/planner",
         )
 
         logger.info("Using Model Catalog as benchmark source (syncing to PostgreSQL)")

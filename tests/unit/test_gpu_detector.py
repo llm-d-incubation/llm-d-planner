@@ -55,7 +55,7 @@ class TestDetectClusterGPUs:
         result = detect_cluster_gpus()
         assert result == []
 
-    @patch.dict(os.environ, {"NEURALNAV_DETECT_CLUSTER_GPUS": "false"})
+    @patch.dict(os.environ, {"PLANNER_DETECT_CLUSTER_GPUS": "false"})
     def test_returns_empty_when_disabled_via_env(self):
         from planner.cluster.gpu_detector import detect_cluster_gpus
 

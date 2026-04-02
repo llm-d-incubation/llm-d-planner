@@ -1,4 +1,4 @@
-"""Deployment Management tab component for the NeuralNav UI.
+"""Deployment Management tab component for the Planner UI.
 
 Lists cluster deployments, shows K8s status, provides delete and inference testing.
 """

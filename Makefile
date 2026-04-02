@@ -1,6 +1,6 @@
-# NeuralNav - Makefile
+# Planner - Makefile
 #
-# This Makefile provides common development tasks for NeuralNav.
+# This Makefile provides common development tasks for Planner.
 # Supports macOS and Linux.
 
 .PHONY: help
@@ -40,17 +40,22 @@ CONTAINER_TOOL ?= $(shell \
 
 # Configuration
 REGISTRY ?= quay.io
-REGISTRY_ORG ?= neuralnav
-BACKEND_IMAGE ?= neuralnav-backend
+REGISTRY_ORG ?= llm-d-planner
+
+BACKEND_IMAGE ?= llm-d-planner-backend
 BACKEND_TAG ?= latest
 BACKEND_FULL_IMAGE := $(REGISTRY)/$(REGISTRY_ORG)/$(BACKEND_IMAGE):$(BACKEND_TAG)
+
+UI_IMAGE ?= llm-d-planner-ui
+UI_TAG ?= latest
+UI_FULL_IMAGE := $(REGISTRY)/$(REGISTRY_ORG)/$(UI_IMAGE):$(UI_TAG)
 
 SIMULATOR_IMAGE ?= vllm-simulator
 SIMULATOR_TAG ?= latest
 SIMULATOR_FULL_IMAGE := $(REGISTRY)/$(REGISTRY_ORG)/$(SIMULATOR_IMAGE):$(SIMULATOR_TAG)
 
 OLLAMA_MODEL ?= qwen2.5:7b
-KIND_CLUSTER_NAME ?= neuralnav
+KIND_CLUSTER_NAME ?= planner
 
 PGDUMP_INPUT ?= data/benchmarks/performance/integ-oct-29.sql
 PGDUMP_OUTPUT ?= data/benchmarks/performance/benchmarks_GuideLLM.json
@@ -167,7 +172,7 @@ start: db-start setup-ollama ## Start all services (DB + Ollama + Backend + UI)
 	@printf "  UI:      http://localhost:8501\n"
 	@printf "  Backend: http://localhost:8000\n"
 	@printf "  Ollama:  http://localhost:11434\n"
-	@printf "  DB:      postgresql://postgres:neuralnav@localhost:5432/neuralnav\n"
+	@printf "  DB:      postgresql://postgres:planner@localhost:5432/planner\n"
 	@printf "\n"
 	@printf "$(BLUE)Logs:$(NC)\n"
 	@printf "  make logs-backend\n"
@@ -219,7 +224,7 @@ stop: ## Stop Backend + UI (leaves Ollama and DB running)
 		kill $$(cat $(BACKEND_PID)) 2>/dev/null || true; \
 		rm -f $(BACKEND_PID); \
 	fi
-	@# Kill any remaining NeuralNav processes by pattern matching
+	@# Kill any remaining Planner processes by pattern matching
 	@pkill -f "streamlit run ui/main.py" 2>/dev/null || true
 	@pkill -f "uvicorn planner.api.app:app" 2>/dev/null || true
 	@# Give processes time to exit gracefully
@@ -227,7 +232,7 @@ stop: ## Stop Backend + UI (leaves Ollama and DB running)
 	@# Force kill if still running
 	@pkill -9 -f "streamlit run ui/main.py" 2>/dev/null || true
 	@pkill -9 -f "uvicorn planner.api.app:app" 2>/dev/null || true
-	@printf "$(GREEN)✓ All NeuralNav services stopped$(NC)\n"
+	@printf "$(GREEN)✓ All Planner services stopped$(NC)\n"
 	@# Don't stop Ollama or DB as they might be used by other apps/tools
 	@if [ "$(MAKECMDGOALS)" != "stop-all" ]; then \
 		printf "$(YELLOW)Note: Ollama and PostgreSQL left running (use 'make stop-all' to stop everything)$(NC)\n"; \
@@ -318,10 +323,10 @@ docker-build: ## Build all Docker images
 
 docker-push: ## Push backend and UI images to $(REGISTRY)/$(REGISTRY_ORG)
 	@printf "$(BLUE)Tagging and pushing images to $(REGISTRY)/$(REGISTRY_ORG)...$(NC)\n"
-	$(CONTAINER_TOOL) tag neuralnav-backend $(REGISTRY)/$(REGISTRY_ORG)/neuralnav-backend:latest
-	$(CONTAINER_TOOL) tag neuralnav-ui $(REGISTRY)/$(REGISTRY_ORG)/neuralnav-ui:latest
-	$(CONTAINER_TOOL) push $(REGISTRY)/$(REGISTRY_ORG)/neuralnav-backend:latest
-	$(CONTAINER_TOOL) push $(REGISTRY)/$(REGISTRY_ORG)/neuralnav-ui:latest
+	$(CONTAINER_TOOL) tag $(BACKEND_IMAGE):$(BACKEND_TAG) $(BACKEND_FULL_IMAGE)
+	$(CONTAINER_TOOL) tag $(UI_IMAGE):$(UI_TAG) $(UI_FULL_IMAGE)
+	$(CONTAINER_TOOL) push $(BACKEND_FULL_IMAGE)
+	$(CONTAINER_TOOL) push $(UI_FULL_IMAGE)
 	@printf "$(GREEN)✓ Images pushed to $(REGISTRY)/$(REGISTRY_ORG)$(NC)\n"
 
 docker-up: ## Start all services with Docker Compose
@@ -387,7 +392,7 @@ docker-shell-ui: ## Open shell in UI container
 	@docker-compose exec ui /bin/bash
 
 docker-shell-postgres: ## Open PostgreSQL shell in container
-	@docker-compose exec postgres psql -U neuralnav -d neuralnav
+	@docker-compose exec postgres psql -U planner -d planner
 
 ##@ Kubernetes Cluster
 
@@ -423,43 +428,43 @@ clean-deployments: ## Delete all InferenceServices from cluster
 
 db-start: ## Start PostgreSQL (initializes schema on first run)
 	@printf "$(BLUE)Starting PostgreSQL...$(NC)\n"
-	@if $(CONTAINER_TOOL) ps -a --format '{{.Names}}' | grep -q '^neuralnav-postgres$$'; then \
-		if $(CONTAINER_TOOL) ps --format '{{.Names}}' | grep -q '^neuralnav-postgres$$'; then \
+	@if $(CONTAINER_TOOL) ps -a --format '{{.Names}}' | grep -q '^planner-postgres$$'; then \
+		if $(CONTAINER_TOOL) ps --format '{{.Names}}' | grep -q '^planner-postgres$$'; then \
 			printf "$(YELLOW)PostgreSQL already running$(NC)\n"; \
 		else \
-			$(CONTAINER_TOOL) start neuralnav-postgres; \
+			$(CONTAINER_TOOL) start planner-postgres; \
 			sleep 2; \
 			printf "$(GREEN)✓ PostgreSQL started$(NC)\n"; \
 		fi \
 	else \
-		$(CONTAINER_TOOL) run --name neuralnav-postgres -d \
-			-e POSTGRES_PASSWORD=neuralnav \
-			-e POSTGRES_DB=neuralnav \
+		$(CONTAINER_TOOL) run --name planner-postgres -d \
+			-e POSTGRES_PASSWORD=planner \
+			-e POSTGRES_DB=planner \
 			-p 5432:5432 \
 			postgres:16; \
 		sleep 3; \
 		printf "$(GREEN)✓ PostgreSQL started on port 5432$(NC)\n"; \
 		printf "$(BLUE)Initializing database schema...$(NC)\n"; \
-		$(CONTAINER_TOOL) exec -i neuralnav-postgres psql -U postgres -d neuralnav < scripts/schema.sql; \
+		$(CONTAINER_TOOL) exec -i planner-postgres psql -U postgres -d planner < scripts/schema.sql; \
 		printf "$(GREEN)✓ Schema initialized$(NC)\n"; \
 	fi
-	@BENCH_COUNT=$$($(CONTAINER_TOOL) exec -i neuralnav-postgres psql -U postgres -d neuralnav -t -c "SELECT COUNT(*) FROM exported_summaries;" 2>/dev/null | tr -d ' \n'); \
+	@BENCH_COUNT=$$($(CONTAINER_TOOL) exec -i planner-postgres psql -U postgres -d planner -t -c "SELECT COUNT(*) FROM exported_summaries;" 2>/dev/null | tr -d ' \n'); \
 	if [ "$$BENCH_COUNT" = "0" ] || [ -z "$$BENCH_COUNT" ]; then \
 		printf "$(YELLOW)Note: Database is empty. Load benchmark data with one of:$(NC)\n"; \
 		printf "  make db-load-blis          # BLIS benchmark data\n"; \
 		printf "  make db-load-estimated     # Estimated performance data\n"; \
 		printf "  make db-load-interpolated  # Interpolated benchmark data\n"; \
 	fi
-	@printf "$(BLUE)Database URL:$(NC) postgresql://postgres:neuralnav@localhost:5432/neuralnav\n"
+	@printf "$(BLUE)Database URL:$(NC) postgresql://postgres:planner@localhost:5432/planner\n"
 
 db-stop: ## Stop PostgreSQL container
 	@printf "$(BLUE)Stopping PostgreSQL...$(NC)\n"
-	@$(CONTAINER_TOOL) stop neuralnav-postgres 2>/dev/null || true
+	@$(CONTAINER_TOOL) stop planner-postgres 2>/dev/null || true
 	@printf "$(GREEN)✓ PostgreSQL stopped$(NC)\n"
 
 db-remove: db-stop ## Stop and remove PostgreSQL container
 	@printf "$(BLUE)Removing PostgreSQL container...$(NC)\n"
-	@$(CONTAINER_TOOL) rm neuralnav-postgres 2>/dev/null || true
+	@$(CONTAINER_TOOL) rm planner-postgres 2>/dev/null || true
 	@printf "$(GREEN)✓ PostgreSQL container removed$(NC)\n"
 
 db-load-blis: db-start ## Load BLIS benchmark data (appends)
@@ -497,11 +502,11 @@ db-convert-pgdump: db-start ## Convert PostgreSQL dump to JSON format
 	@printf "$(GREEN)✓ Created $(PGDUMP_OUTPUT)$(NC)\n"
 
 db-shell: ## Open PostgreSQL shell
-	@$(CONTAINER_TOOL) exec -it neuralnav-postgres psql -U postgres -d neuralnav
+	@$(CONTAINER_TOOL) exec -it planner-postgres psql -U postgres -d planner
 
 db-query-traffic: ## Query unique traffic patterns from database
 	@printf "$(BLUE)Querying unique traffic patterns...$(NC)\n"
-	@$(CONTAINER_TOOL) exec -i neuralnav-postgres psql -U postgres -d neuralnav -c \
+	@$(CONTAINER_TOOL) exec -i planner-postgres psql -U postgres -d planner -c \
 		"SELECT prompt_tokens, output_tokens, COUNT(*) as num_benchmarks \
 		FROM exported_summaries \
 		GROUP BY prompt_tokens, output_tokens \
@@ -509,7 +514,7 @@ db-query-traffic: ## Query unique traffic patterns from database
 
 db-query-models: ## Query available models in database
 	@printf "$(BLUE)Querying available models...$(NC)\n"
-	@$(CONTAINER_TOOL) exec -i neuralnav-postgres psql -U postgres -d neuralnav -c \
+	@$(CONTAINER_TOOL) exec -i planner-postgres psql -U postgres -d planner -c \
 		"SELECT DISTINCT model_hf_repo, hardware, hardware_count, COUNT(*) as num_benchmarks \
 		FROM exported_summaries \
 		GROUP BY model_hf_repo, hardware, hardware_count \
@@ -541,6 +546,11 @@ lint: ## Run linters
 	@printf "$(BLUE)Running linters...$(NC)\n"
 	@if uv run ruff --version >/dev/null 2>&1; then uv run ruff check $(SRC_DIR)/ $(TEST_DIR)/ $(UI_DIR)/; else printf "$(YELLOW)ruff not installed, skipping$(NC)\n"; fi
 	@printf "$(GREEN)✓ Linting complete$(NC)\n"
+
+lint-fix: ## Run linters with auto-fix
+	@printf "$(BLUE)Running linters with auto-fix...$(NC)\n"
+	@if uv run ruff --version >/dev/null 2>&1; then uv run ruff check --fix $(SRC_DIR)/ $(TEST_DIR)/ $(UI_DIR)/; else printf "$(YELLOW)ruff not installed, skipping$(NC)\n"; fi
+	@printf "$(GREEN)✓ Lint fix complete$(NC)\n"
 
 format: ## Auto-format code
 	@printf "$(BLUE)Formatting code...$(NC)\n"

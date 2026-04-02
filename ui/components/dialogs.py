@@ -1,4 +1,4 @@
-"""Dialog components for the NeuralNav UI.
+"""Dialog components for the Planner UI.
 
 Winner details, category exploration, and full table dialogs.
 """

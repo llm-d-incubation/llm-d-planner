@@ -2,34 +2,34 @@ apiVersion: batch/v1
 kind: Job
 metadata:
   name: db-init
-  namespace: neuralnav
+  namespace: planner
   labels:
     app.kubernetes.io/name: db-init
-    app.kubernetes.io/part-of: neuralnav
+    app.kubernetes.io/part-of: planner
 spec:
   backoffLimit: 3
   template:
     metadata:
       labels:
         app.kubernetes.io/name: db-init
-        app.kubernetes.io/part-of: neuralnav
+        app.kubernetes.io/part-of: planner
     spec:
       restartPolicy: OnFailure
       containers:
         - name: db-init
-          image: quay.io/neuralnav/neuralnav-backend:latest
+          image: quay.io/llm-d-planner/llm-d-planner-backend:latest
           env:
             - name: POSTGRES_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: neuralnav-secrets
+                  name: planner-secrets
                   key: postgres-password
             - name: DATABASE_URL
-              value: postgresql://neuralnav:$(POSTGRES_PASSWORD)@postgres:5432/neuralnav
+              value: postgresql://planner:$(POSTGRES_PASSWORD)@postgres:5432/planner
             - name: PGPASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: neuralnav-secrets
+                  name: planner-secrets
                   key: postgres-password
           command: ["/bin/sh", "-c"]
           args:
@@ -38,7 +38,7 @@ spec:
               echo "Waiting for PostgreSQL to be ready..."
               retries=0
               max_retries=30
-              until pg_isready -h postgres -U neuralnav -d neuralnav; do
+              until pg_isready -h postgres -U planner -d planner; do
                 retries=$((retries + 1))
                 if [ "$retries" -ge "$max_retries" ]; then
                   echo "ERROR: PostgreSQL not ready after $max_retries attempts, giving up."
@@ -53,7 +53,7 @@ spec:
               echo "============================================================"
               echo "Initializing schema..."
               echo "============================================================"
-              psql -h postgres -U neuralnav -d neuralnav < /app/scripts/schema.sql
+              psql -h postgres -U planner -d planner < /app/scripts/schema.sql
               echo "Schema initialized."
 
               echo ""

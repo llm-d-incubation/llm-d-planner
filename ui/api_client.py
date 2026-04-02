@@ -1,4 +1,4 @@
-"""Backend API client for the NeuralNav UI.
+"""Backend API client for the Planner UI.
 
 All HTTP communication with the backend lives here.
 """

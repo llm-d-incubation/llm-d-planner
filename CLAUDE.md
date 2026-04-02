@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-This repository contains the architecture design for **NeuralNav**, an open-source system that guides users from concept to production-ready LLM deployments through a conversational AI and intelligent capacity planning.
+This repository contains the architecture design for **Planner**, an open-source system that guides users from concept to production-ready LLM deployments through a conversational AI and intelligent capacity planning.
 
 **Key Principle**: The core functionality is complete and working end-to-end. The project is preparing for release.
 
@@ -109,7 +109,7 @@ The system translates high-level user intent into technical specifications:
 
 ### Architecture Overview
 
-NeuralNav is structured as a layered architecture:
+Planner is structured as a layered architecture:
 
 **UI Layer** (Horizontal - Presentation):
 - **Conversational Interface, Specification Editor, Recommendation Visualizer, Monitoring Dashboard**
@@ -209,7 +209,7 @@ make stop-all           # Stop everything
 make health             # Check all service health
 ```
 
-Service URLs: UI `http://localhost:8501`, Backend `http://localhost:8000` (Swagger at `/docs`), Ollama `http://localhost:11434`, DB `postgresql://postgres:neuralnav@localhost:5432/neuralnav`
+Service URLs: UI `http://localhost:8501`, Backend `http://localhost:8000` (Swagger at `/docs`), Ollama `http://localhost:11434`, DB `postgresql://postgres:planner@localhost:5432/planner`
 
 ### Testing
 
@@ -309,7 +309,7 @@ Container runtime auto-detects Docker or Podman. Override with `CONTAINER_TOOL=p
 
 ### Terminology Consistency
 
-- Use "**NeuralNav**" as the project name
+- Use "**Planner**" as the project name
 - Use "**TTFT**" for Time to First Token (not "time-to-first-token")
 - Use "**ITL**" for Inter-Token Latency (Phase 2 terminology, replaces TPOT)
 - Use "**SLO**" for Service Level Objective

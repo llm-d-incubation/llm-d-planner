@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Test suite for neuralnav CLI
+Test suite for planner CLI
 """
 
 import json

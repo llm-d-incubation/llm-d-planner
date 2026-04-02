@@ -1,5 +1,5 @@
 """
-Main entry point for NeuralNav CLI
+Main entry point for Planner CLI
 """
 
 from planner.cli.planner_cli import main

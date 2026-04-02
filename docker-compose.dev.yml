@@ -4,7 +4,7 @@
 services:
   backend:
     # Override command to enable auto-reload
-    command: ["uvicorn", "neuralnav.api.app:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+    command: ["uvicorn", "planner.api.app:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
     environment:
       # Development-specific environment variables
       DEBUG: "true"

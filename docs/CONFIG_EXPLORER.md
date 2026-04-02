@@ -1,6 +1,6 @@
 # Configuration Explorer
 
-The configuration explorer provides capacity planning and GPU recommendation tools for LLM inference. It is integrated into the NeuralNav UI as dedicated pages, and also available as a CLI.
+The configuration explorer provides capacity planning and GPU recommendation tools for LLM inference. It is integrated into the Planner UI as dedicated pages, and also available as a CLI.
 
 Features include:
 
@@ -15,7 +15,7 @@ Features include:
 
 ## CLI
 
-After installing NeuralNav (`uv sync --extra dev`), the `planner` command is available:
+After installing Planner (`uv sync --extra dev`), the `planner` command is available:
 
 ```bash
 # Run capacity planning
@@ -43,7 +43,7 @@ planner --help
 
 ## Web Application
 
-The configuration explorer is available as two pages in the NeuralNav Streamlit UI (`make start`):
+The configuration explorer is available as two pages in the Planner Streamlit UI (`make start`):
 
 ### Pages
 

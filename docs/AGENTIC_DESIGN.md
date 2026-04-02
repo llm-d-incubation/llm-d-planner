@@ -1,10 +1,10 @@
-# NeuralNav Agentic Design
+# Planner Agentic Design
 
 ## Problem Statement
 
 ### The Current Challenge
 
-Deploying a single LLM in production is already complex—users must navigate model selection, GPU sizing, SLO targets, and Kubernetes configuration. NeuralNav addresses this through SLO-driven capacity planning and automated deployment.
+Deploying a single LLM in production is already complex—users must navigate model selection, GPU sizing, SLO targets, and Kubernetes configuration. Planner addresses this through SLO-driven capacity planning and automated deployment.
 
 **AI Agents multiply this complexity.** An agent orchestrates multiple LLM calls, often with different requirements for each call type. A single agent might need:
 
@@ -72,7 +72,7 @@ A key insight: **each query type can be optimized independently** for model sele
 
 ### Core Concept
 
-Extend NeuralNav to understand agents as **workflows with multiple query profiles**, then apply the existing recommendation engine to each query type.
+Extend Planner to understand agents as **workflows with multiple query profiles**, then apply the existing recommendation engine to each query type.
 
 The output: a complete deployment specification covering all models the agent needs, with appropriate GPU configurations for each.
 
@@ -110,7 +110,7 @@ Entry points are shown left-to-right in order of implementation complexity:
                               │
                               ▼
 ┌──────────────────────────────────────────────────────────────────┐
-│                    NeuralNav Core Engine                         │
+│                    Planner Core Engine                         │
 │                    (Extended for Agents)                         │
 │                                                                  │
 │  For each query type:                                            │
@@ -142,7 +142,7 @@ Entry points are shown left-to-right in order of implementation complexity:
 
 ### 1. Agent Framework Support
 
-Which frameworks should NeuralNav support for agent analysis and/or generation?
+Which frameworks should Planner support for agent analysis and/or generation?
 
 **Top frameworks (2026)**:
 
@@ -164,13 +164,13 @@ Which frameworks should NeuralNav support for agent analysis and/or generation?
 
 ### 2. Agent Catalog Scope
 
-How should NeuralNav help users find existing agents?
+How should Planner help users find existing agents?
 
 **Options**:
 
 | Approach | Description | Pros | Cons |
 |----------|-------------|------|------|
-| **Curated catalog** | NeuralNav maintains its own catalog of vetted agents | Quality control, consistent metadata | Maintenance burden, limited selection |
+| **Curated catalog** | Planner maintains its own catalog of vetted agents | Quality control, consistent metadata | Maintenance burden, limited selection |
 | **External integration** | Connect to existing sources (LangChain Hub, GitHub, etc.) | Larger selection, community-maintained | Variable quality, metadata inconsistency |
 | **Hybrid** | Curated "featured" agents + external integration | Balance of quality and breadth | More complex to build |
 | **None (BYOA only)** | Users bring their own agents, no discovery | Simplest to build | Less helpful for users without existing agents |
@@ -183,7 +183,7 @@ How should NeuralNav help users find existing agents?
 
 ### 3. Agent Builder Ambition
 
-Should NeuralNav help users create new agents?
+Should Planner help users create new agents?
 
 **Complexity spectrum**:
 
@@ -206,19 +206,19 @@ Building a good agent builder is a significant undertaking—essentially buildin
 - Debugging capabilities
 - Keeping up with rapidly evolving frameworks
 
-**Question**: Is agent building within scope for NeuralNav, or should NeuralNav focus on its core strength (infrastructure recommendations) and let users build agents with existing tools?
+**Question**: Is agent building within scope for Planner, or should Planner focus on its core strength (infrastructure recommendations) and let users build agents with existing tools?
 
 **Recommendation: Agent Builder should be a separate application.**
 
 Rationale:
 
-- NeuralNav's core value is **deployment optimization**, not agent development
+- Planner's core value is **deployment optimization**, not agent development
 - Agent building is a distinct problem domain with different user workflows
-- The complexity of a good agent builder will likely exceed NeuralNav itself
+- The complexity of a good agent builder will likely exceed Planner itself
 - Separation allows each application to evolve independently with focused scope
-- A separate Agent Builder could integrate with NeuralNav via API for deployment recommendations
+- A separate Agent Builder could integrate with Planner via API for deployment recommendations
 
-Users who need help building agents can use framework-native tools, dedicated agent builders, or other products. NeuralNav adds value once the agent exists (or is selected via Agent Discovery).
+Users who need help building agents can use framework-native tools, dedicated agent builders, or other products. Planner adds value once the agent exists (or is selected via Agent Discovery).
 
 ### 4. Phase 1 Scope
 
@@ -228,7 +228,7 @@ What should the initial implementation focus on?
 
 | Scope | Description | Complexity |
 |-------|-------------|------------|
-| **Bring Your Own Agent (BYOA)** | User describes their agent's query types and requirements; NeuralNav recommends infrastructure | Lowest—extends current workflow |
+| **Bring Your Own Agent (BYOA)** | User describes their agent's query types and requirements; Planner recommends infrastructure | Lowest—extends current workflow |
 | **BYOA + Framework Analysis** | Parse agent configs from supported frameworks to auto-extract requirements | Medium—requires framework-specific parsers |
 | **BYOA + Agent Discovery** | Add browsing/selection of agents from external sources | Medium—requires catalog integration |
 | **Full Agent Builder** | Include agent creation capabilities | High—significant new functionality |
@@ -236,7 +236,7 @@ What should the initial implementation focus on?
 **Recommendation**: Start with **Bring Your Own Agent (BYOA)** analysis.
 
 Rationale:
-- Directly extends NeuralNav's current capability
+- Directly extends Planner's current capability
 - Validates the core concept (multi-query-type optimization)
 - Useful immediately for users who have agent code
 - Lower implementation complexity
@@ -327,6 +327,6 @@ System recommends:
 ## Next Steps
 
 1. **Validate BYOA concept**: Design the agent profile schema and user interaction flow
-2. **Prototype**: Extend current NeuralNav to accept multi-query-type inputs
+2. **Prototype**: Extend current Planner to accept multi-query-type inputs
 3. **Test**: Try with real agent examples (LangChain agents, CrewAI crews)
 4. **Evaluate**: Decide whether to add Discovery or Builder modules based on learnings
