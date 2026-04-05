@@ -523,6 +523,7 @@ def test_experts_per_gpu():
     for model in moe_models:
         model_config = get_model_config_from_hf(model)
         experts = get_num_experts(model_config)
+        assert experts is not None
 
         for tp in range(1, 16):
             for dp in range(1, 16):
@@ -828,7 +829,7 @@ def test_estimate_vllm_activation_memory_multimodal_fallback():
     class FakeMultimodalConfig:
         architectures = ["LlavaForConditionalGeneration"]
 
-    activation = estimate_vllm_activation_memory(FakeMultimodalConfig(), tp=1)
+    activation = estimate_vllm_activation_memory(FakeMultimodalConfig(), tp=1)  # type: ignore[arg-type]
     assert (
         activation == ACTIVATION_MEMORY_BASE_MULTIMODAL_GIB
     ), f"Unknown multimodal should return {ACTIVATION_MEMORY_BASE_MULTIMODAL_GIB} GiB, got {activation} GiB"
@@ -841,7 +842,7 @@ def test_estimate_vllm_activation_memory_unknown_dense_fallback():
     class FakeDenseConfig:
         architectures = ["SomeNewModelForCausalLM"]
 
-    activation = estimate_vllm_activation_memory(FakeDenseConfig(), tp=1)
+    activation = estimate_vllm_activation_memory(FakeDenseConfig(), tp=1)  # type: ignore[arg-type]
     assert (
         activation == ACTIVATION_MEMORY_BASE_DENSE_GIB
     ), f"Unknown dense model should return {ACTIVATION_MEMORY_BASE_DENSE_GIB} GiB, got {activation} GiB"

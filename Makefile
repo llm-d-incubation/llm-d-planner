@@ -559,7 +559,7 @@ format: ## Auto-format code
 
 typecheck:  ## Run typecheck
 	@printf "$(BLUE)Running typecheck...$(NC)\n"
-	@if uv run mypy --version >/dev/null 2>&1; then uv run mypy $(SRC_DIR)/ $(UI_DIR)/; else printf "$(YELLOW)mypy not installed, skipping$(NC)\n"; fi
+	@if uv run mypy --version >/dev/null 2>&1; then uv run mypy $(SRC_DIR)/ $(UI_DIR)/ $(TEST_DIR)/; else printf "$(YELLOW)mypy not installed, skipping$(NC)\n"; fi
 	@printf "$(GREEN)✓ Typecheck complete$(NC)\n"
 
 ##@ Cleanup

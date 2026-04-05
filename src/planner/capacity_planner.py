@@ -190,8 +190,10 @@ class KVCacheDetail:
         - MLA: Compressed KV with low-rank projection
         """
         if self.attention_type == AttentionType.MLA:
-            assert self.kv_lora_rank is not None
-            assert self.qk_rope_head_dim is not None
+            if self.kv_lora_rank is None:
+                raise ValueError("kv_lora_rank is required for MLA attention")
+            if self.qk_rope_head_dim is None:
+                raise ValueError("qk_rope_head_dim is required for MLA attention")
             self.per_token_memory_bytes = int(
                 self.num_hidden_layers
                 * (self.kv_lora_rank + self.qk_rope_head_dim)

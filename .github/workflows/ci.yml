@@ -22,9 +22,9 @@ jobs:
           python-version: "3.12"
       - run: uv sync --extra dev
       - name: Ruff check
-        run: uv run ruff check src/ tests/
+        run: uv run ruff check src/ ui/ tests/
       - name: Ruff format check
-        run: uv run ruff format --check src/ tests/
+        run: uv run ruff format --check src/ ui/ tests/
 
   typecheck:
     runs-on: ubuntu-latest
@@ -36,7 +36,7 @@ jobs:
           python-version: "3.12"
       - run: uv sync --extra dev
       - name: Mypy type check
-        run: uv run mypy src/
+        run: uv run mypy src/ ui/ tests/
 
   test:
     runs-on: ubuntu-latest

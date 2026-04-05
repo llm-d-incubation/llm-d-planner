@@ -29,6 +29,7 @@ def test_cost_manager():
     # Test multi-GPU cost
     h100_2gpu = cm.get_cost("H100", num_gpus=2)
     print(f"✅ H100 (2 GPUs) cost: ${h100_2gpu}")
+    assert h100_cost is not None
     assert h100_2gpu == h100_cost * 2, "Multi-GPU cost calculation failed"
 
     # Test custom costs

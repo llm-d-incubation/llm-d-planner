@@ -1,14 +1,17 @@
 """
 Main Page
 """
+# mypy: disable-error-code="call-overload,assignment,index,misc,arg-type"
 
+import contextlib
 import json
 from pathlib import Path
 
-from matplotlib import pyplot as plt
 import streamlit as st
 import util
 from api_client import fetch_gpu_types
+from matplotlib import pyplot as plt
+
 from planner.capacity_planner import *
 
 
@@ -38,10 +41,9 @@ def register_new_accelerator():
     acc_name = st.text_input("Name", placeholder="NVIDIA-A100-40GB")
     acc_mem = st.number_input("Memory (GB)", min_value=1, step=1)
 
-    if st.button("Register", use_container_width=True):
-        if acc_name:
-            gpu_specs[acc_name] = {"name": acc_name, "memory": acc_mem}
-            st.rerun()
+    if st.button("Register", use_container_width=True) and acc_name:
+        gpu_specs[acc_name] = {"name": acc_name, "memory": acc_mem}
+        st.rerun()
 
 
 def get_model_size_df(model_name: str, model_config: AutoConfig) -> dict:
@@ -72,10 +74,8 @@ def get_model_size_df(model_name: str, model_config: AutoConfig) -> dict:
     model_params = model_params_by_dtype(model_name)
     for d_type, param in model_params.items():
         param_bytes = 0
-        try:
+        with contextlib.suppress(ValueError):
             param_bytes = precision_to_byte(d_type)
-        except Exception:
-            pass
 
         # Update info
         data_types.append(d_type)
@@ -258,7 +258,7 @@ Tensor parallelism splits expert weights across GPUs. Expert parallelism splits 
                     "Since some EP groups will get 0 expert, this is an under-utilization of GPU resources. We recommend decreasing TP or DP for better use of your accelerators."
                 )
 
-            if Decimal(experts_per_ep) % 1 != 0:
+            if experts_per_ep % 1 != 0:
                 col2.caption(
                     "The total number of experts is not divisible by EP size you selected. However, vLLM handles uneven split of experts (see this [PR](https://github.com/vllm-project/vllm/pull/21497)), so some EP groups will have fewer experts than others."
                 )
@@ -455,8 +455,6 @@ The "peak activation memory" represents FIXED overhead from vLLM's initializatio
 Runtime per-request activation buffers (which DO scale with actual sequence length) are dynamically allocated from the KV cache memory pool, not counted in this fixed overhead.
 """)
 
-            tp = user_scenario.tp_size
-
             # Determine model type and activation memory source
             from planner.capacity_planner import (
                 ACTIVATION_MEMORY_BASE_DENSE_GIB,
@@ -552,9 +550,7 @@ def hardware_specification():
 
     user_scenario = st.session_state[util.USER_SCENARIO_KEY]
     model_config = user_scenario.model_config
-    text_config = user_scenario.text_config
 
-    concurrency = user_scenario.concurrency
     tp = user_scenario.tp_size
     pp = user_scenario.pp_size
     dp = user_scenario.dp_size
@@ -573,7 +569,7 @@ def hardware_specification():
         col1, col2 = st.columns([0.6, 0.4])
 
         index = 0
-        if user_scenario.gpu_name in gpu_specs.keys():
+        if user_scenario.gpu_name in gpu_specs:
             index = list(gpu_specs.keys()).index(user_scenario.gpu_name)
 
         col1.number_input(
@@ -639,7 +635,6 @@ def hardware_specification():
             total_available_gpu_mem = available_gpu_mem * available_gpu_count
             reserved = total_memory - total_available_gpu_mem
             total_model_size = model_size * dp
-            kv_cache_available_per_gpu = available_gpu_mem - model_size_per_gpu
 
             # Calculate activation and overhead components for accurate free memory calculation
             # Note: estimate_vllm_activation_memory() returns constant memory per model type
@@ -749,7 +744,6 @@ def memory_util_chart(st_context):
     user_scenario = st.session_state[util.USER_SCENARIO_KEY]
     model_name = user_scenario.model_name
     model_config = user_scenario.model_config
-    text_config = user_scenario.text_config
     gpu_memory = user_scenario.get_gpu_memory(gpu_specs)
     gpu_memory_util = user_scenario.gpu_mem_util
     concurrency = user_scenario.concurrency
@@ -826,11 +820,11 @@ def memory_util_chart(st_context):
 
     # Create donut chart
     fig, ax = plt.subplots(figsize=(4, 4))
-    wedges, texts = ax.pie(
+    wedges, texts = ax.pie(  # type: ignore[misc]
         sizes,
         colors=colors,
         startangle=90,  # Start at top
-        wedgeprops=dict(width=0.4),  # <-- Makes it a donut,
+        wedgeprops={"width": 0.4},  # <-- Makes it a donut,
         labeldistance=1.1,  # Push labels outward
         pctdistance=0.7,  # Adjust percentage position
     )

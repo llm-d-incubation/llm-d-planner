@@ -136,11 +136,13 @@ class TestGPURecommenderCost:
         single_cost = recommender.cost_manager.get_cost("H100", num_gpus=1)
         double_cost = recommender.cost_manager.get_cost("H100", num_gpus=2)
 
+        assert single_cost is not None
+        assert double_cost is not None
         assert double_cost == single_cost * 2
 
     def test_cost_manager_handles_none_values(self):
         """Test that cost manager properly handles None values in custom costs"""
-        custom_costs = {
+        custom_costs: dict[str, float | None] = {
             "H100": None,  # Explicitly set to None
             "A100": 20.0,
         }
@@ -150,7 +152,7 @@ class TestGPURecommenderCost:
             output_len=128,
             max_gpus=1,
             gpu_list=["H100", "A100"],
-            custom_gpu_costs=custom_costs,
+            custom_gpu_costs=custom_costs,  # type: ignore[arg-type]
         )
 
         # H100 with None should fall back to default

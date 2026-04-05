@@ -120,7 +120,8 @@ class DeploymentGenerator:
         traffic = recommendation.traffic_profile
         slo = recommendation.slo_targets
 
-        assert gpu_config is not None, "gpu_config is required for template context"
+        if gpu_config is None:
+            raise ValueError("gpu_config is required for template context")
 
         # Look up GPU info from ModelCatalog
         gpu_info = self._catalog.get_gpu_type(gpu_config.gpu_type)

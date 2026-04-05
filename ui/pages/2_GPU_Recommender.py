@@ -2,6 +2,7 @@
 GPU Recommender Page - Streamlit UI for GPU recommendation engine
 This page helps users find the optimal GPU for running LLM inference.
 """
+# mypy: disable-error-code="assignment"
 
 import json
 
@@ -29,9 +30,9 @@ def result_to_dict(result) -> dict:
         """Recursively convert a value to JSON-serializable format."""
         if val is None:
             return None
-        elif isinstance(val, (int, float, str, bool)):
+        elif isinstance(val, int | float | str | bool):
             return val
-        elif isinstance(val, (list, tuple)):
+        elif isinstance(val, list | tuple):
             return [convert_value(item) for item in val]
         elif isinstance(val, dict):
             return {k: convert_value(v) for k, v in val.items()}
@@ -46,7 +47,7 @@ def result_to_dict(result) -> dict:
             # For other types, convert to string
             return str(val)
 
-    return convert_value(result)
+    return convert_value(result)  # type: ignore[no-any-return]
 
 
 # Initialize session state
@@ -141,7 +142,7 @@ if enable_latency:
 
 # GPU Selection
 st.sidebar.subheader("GPU Selection (Optional)")
-available_gpus = sorted(list(GPU_SPECS.keys()))
+available_gpus = sorted(GPU_SPECS.keys())
 selected_gpus = st.sidebar.multiselect(
     "Select GPUs to analyze",
     options=available_gpus,
@@ -803,7 +804,7 @@ if st.session_state.recommendation_results is not None:
                             )
                             fig_cost_perf.update_traces(
                                 textposition="top center",
-                                marker=dict(sizemode="diameter", sizeref=2),
+                                marker={"sizemode": "diameter", "sizeref": 2},
                             )
                             fig_cost_perf.update_layout(
                                 xaxis_title="Throughput (tokens/s)",
@@ -1100,7 +1101,7 @@ if st.session_state.recommendation_results is not None:
                                             ):
                                                 commands = framework_data["commands"]
                                                 if isinstance(commands, list):
-                                                    for idx, cmd in enumerate(commands, 1):
+                                                    for _idx, cmd in enumerate(commands, 1):
                                                         st.code(cmd, language="bash")
                     else:
                         with st.expander(f"**{gpu_name}**"):
@@ -1338,38 +1339,35 @@ else:
     for i in range(0, len(gpu_list), num_cols):
         cols = st.columns(num_cols)
         for col_idx, gpu_name in enumerate(gpu_list[i : i + num_cols]):
-            with cols[col_idx]:
-                with st.expander(f"**{gpu_name}**"):
-                    gpu_spec = GPU_SPECS[gpu_name]
+            with cols[col_idx], st.expander(f"**{gpu_name}**"):
+                gpu_spec = GPU_SPECS[gpu_name]
 
-                    # Display GPU specifications
-                    if isinstance(gpu_spec, dict):
-                        # Memory
-                        if "VRAM_GB" in gpu_spec:
-                            st.metric("Memory", f"{gpu_spec['VRAM_GB']} GB")
+                # Display GPU specifications
+                if isinstance(gpu_spec, dict):
+                    # Memory
+                    if "VRAM_GB" in gpu_spec:
+                        st.metric("Memory", f"{gpu_spec['VRAM_GB']} GB")
 
-                        # Memory Type
-                        if "Memory_Type" in gpu_spec:
-                            st.write(f"**Memory Type:** {gpu_spec['Memory_Type']}")
+                    # Memory Type
+                    if "Memory_Type" in gpu_spec:
+                        st.write(f"**Memory Type:** {gpu_spec['Memory_Type']}")
 
-                        # Memory bandwidth
-                        if "Memory_Bandwidth_GBs" in gpu_spec:
-                            st.write(
-                                f"**Memory Bandwidth:** {gpu_spec['Memory_Bandwidth_GBs']} GB/s"
-                            )
+                    # Memory bandwidth
+                    if "Memory_Bandwidth_GBs" in gpu_spec:
+                        st.write(f"**Memory Bandwidth:** {gpu_spec['Memory_Bandwidth_GBs']} GB/s")
 
-                        # FP16/FP8 TFLOPS
-                        if "FP16_TFLOPS" in gpu_spec:
-                            st.write(f"**FP16 TFLOPS:** {gpu_spec['FP16_TFLOPS']:.1f}")
-                        if "FP8_TFLOPS" in gpu_spec and gpu_spec["FP8_TFLOPS"] is not None:
-                            st.write(f"**FP8 TFLOPS:** {gpu_spec['FP8_TFLOPS']:.1f}")
+                    # FP16/FP8 TFLOPS
+                    if "FP16_TFLOPS" in gpu_spec:
+                        st.write(f"**FP16 TFLOPS:** {gpu_spec['FP16_TFLOPS']:.1f}")
+                    if "FP8_TFLOPS" in gpu_spec and gpu_spec["FP8_TFLOPS"] is not None:
+                        st.write(f"**FP8 TFLOPS:** {gpu_spec['FP8_TFLOPS']:.1f}")
 
-                        # Architecture
-                        if "Architecture" in gpu_spec:
-                            st.write(f"**Architecture:** {gpu_spec['Architecture']}")
-                    else:
-                        # Fallback if GPU_SPECS has a different structure
-                        st.write(gpu_spec)
+                    # Architecture
+                    if "Architecture" in gpu_spec:
+                        st.write(f"**Architecture:** {gpu_spec['Architecture']}")
+                else:
+                    # Fallback if GPU_SPECS has a different structure
+                    st.write(gpu_spec)
 
     # Show example use cases
     st.divider()

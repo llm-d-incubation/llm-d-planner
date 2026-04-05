@@ -49,9 +49,10 @@ def _make_bench(
 
 def _make_intent(use_case: str = "chatbot_conversational") -> DeploymentIntent:
     return DeploymentIntent(
-        use_case=use_case,
+        use_case=use_case,  # type: ignore[arg-type]
         user_count=100,
         experience_class="conversational",
+        additional_context=None,
     )
 
 
@@ -132,6 +133,7 @@ def test_injected_scorer_used_in_plan_all_capacities():
 
     # Verify we got results with accuracy score from the injected scorer
     assert len(results) >= 1
+    assert results[0].scores is not None
     assert results[0].scores.accuracy_score >= 82  # 82.5 truncated to int
 
 
@@ -164,6 +166,7 @@ def test_default_scorer_used_when_none_injected():
 
         mock_default.assert_called()
         assert len(results) >= 1
+        assert results[0].scores is not None
         assert results[0].scores.accuracy_score >= 60
 
 
@@ -202,4 +205,5 @@ def test_injected_scorer_fallback_on_zero():
     # The scorer should have been called twice: once with display name, once with hf repo
     assert mock_scorer.get_quality_score.call_count == 2
     assert len(results) >= 1
+    assert results[0].scores is not None
     assert results[0].scores.accuracy_score >= 70

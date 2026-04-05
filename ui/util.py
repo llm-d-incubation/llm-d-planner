@@ -56,14 +56,14 @@ class Scenario:
             self.model_name = "Qwen/Qwen2.5-7B-Instruct"
         return self.model_name
 
-    def get_gpu_spec(self, gpu_specs_db: dict) -> dict:
-        return gpu_specs_db[self.gpu_name]
+    def get_gpu_spec(self, gpu_specs_db: dict) -> dict:  # type: ignore[type-arg]
+        return gpu_specs_db[self.gpu_name]  # type: ignore[no-any-return]
 
-    def get_gpu_memory(self, gpu_specs_db: dict) -> int:
-        return self.get_gpu_spec(gpu_specs_db)["memory_gb"]
+    def get_gpu_memory(self, gpu_specs_db: dict) -> int:  # type: ignore[type-arg]
+        return self.get_gpu_spec(gpu_specs_db)["memory_gb"]  # type: ignore[no-any-return]
 
     def can_show_mem_util_chart(self, min_gpu_req: int):
-        if (
+        return bool(
             self.model_name
             and self.model_config
             and self.max_model_len
@@ -71,9 +71,7 @@ class Scenario:
             and self.gpu_name
             and self.gpu_count_avail
             and self.gpu_count_avail >= min_gpu_req
-        ):
-            return True
-        return False
+        )
 
     def reset(self) -> None:
         """

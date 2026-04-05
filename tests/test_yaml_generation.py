@@ -33,10 +33,8 @@ def create_test_recommendation() -> DeploymentRecommendation:
         use_case="chatbot_conversational",
         experience_class="conversational",
         user_count=5000,
-        latency_requirement="high",
-        throughput_priority="high",
-        budget_constraint="moderate",
         domain_specialization=["general"],
+        additional_context=None,
     )
 
     traffic_profile = TrafficProfile(prompt_tokens=512, output_tokens=256, expected_qps=50.0)
@@ -51,6 +49,7 @@ def create_test_recommendation() -> DeploymentRecommendation:
         slo_targets=slo_targets,
         model_id="meta-llama/Llama-3.1-8B-Instruct",
         model_name="Llama 3.1 8B Instruct",
+        model_uri="meta-llama/Llama-3.1-8B-Instruct",
         gpu_config=gpu_config,
         predicted_ttft_p95_ms=185,
         predicted_itl_p95_ms=48,
@@ -78,6 +77,7 @@ def test_yaml_generation():
     # Step 1: Create test recommendation
     logger.info("\n[1/4] Creating test recommendation...")
     recommendation = create_test_recommendation()
+    assert recommendation.gpu_config is not None
     logger.info(
         f"✓ Recommendation created: {recommendation.model_name} on "
         f"{recommendation.gpu_config.gpu_count}x {recommendation.gpu_config.gpu_type}"

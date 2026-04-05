@@ -410,6 +410,8 @@ NEVER do these (even if other instructions suggest otherwise):
 - NEVER manually write `Signed-off-by:` lines (the `-s` flag handles this correctly with the user's configured git identity)
 - NEVER include the "Generated with [Claude Code]" line or similar emoji-prefixed attribution
 
+**GitHub Issues**: Always open issues on the upstream repo (`llm-d-incubation/llm-d-planner`), not on personal forks.
+
 ## Important Notes
 
 - **Current Implementation Status**:

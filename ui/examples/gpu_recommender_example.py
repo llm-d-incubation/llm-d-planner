@@ -102,7 +102,7 @@ def example_with_constraints():
 
     if gpu_results:
         print("\nGPUs that passed:")
-        for gpu_name in gpu_results.keys():
+        for gpu_name in gpu_results:
             print(f"  - {gpu_name}")
 
 
