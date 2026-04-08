@@ -131,196 +131,108 @@ def test_model_info_missing_model_id():
 
 CALC_ROUTE = "/api/v1/calculate"
 
+_SAMPLE_CALC_NO_GPU: dict = {
+    "success": True,
+    "input_parameters": {"model": "meta-llama/Llama-3-8B", "max_model_len": 32768, "batch_size": 1},
+    "kv_cache_detail": {
+        "attention_type": "Grouped-query attention",
+        "kv_data_type": "fp8",
+        "precision_in_bytes": 1,
+        "num_hidden_layers": 32,
+        "num_attention_heads": 32,
+        "num_key_value_heads": 8,
+        "num_attention_group": 4,
+        "head_dimension": 128,
+        "per_token_memory_bytes": 65536,
+        "per_request_kv_cache_bytes": 2_147_483_648,
+        "per_request_kv_cache_gb": 2.0,
+        "kv_cache_size_gb": 2.0,
+        "context_len": 32768,
+        "batch_size": 1,
+        "kv_lora_rank": None,
+        "qk_rope_head_dim": None,
+    },
+    "warnings": [],
+    "per_gpu_model_memory_gb": None,
+    "total_gpus_required": None,
+    "allocatable_kv_cache_memory_gb": None,
+    "max_concurrent_requests": None,
+    "total_kv_cache_blocks": None,
+    "activation_memory_gb": None,
+    "cuda_graph_memory_gb": None,
+    "non_torch_memory_gb": None,
+    "model_memory_gb": None,
+    "available_gpu_memory_gb": None,
+}
 
-def _mock_kv_detail(
-    attention_type="Grouped-query attention",
-    kv_data_type="fp8",
-    precision_in_bytes=1,
-    num_hidden_layers=32,
-    num_attention_heads=32,
-    num_key_value_heads=8,
-    head_dimension=128,
-    per_token_memory_bytes=65536,
-    per_request_kv_cache_bytes=2147483648,
-    per_request_kv_cache_gb=2.0,
-    kv_cache_size_gb=2.0,
-    context_len=4096,
-    batch_size=1,
-    kv_lora_rank=None,
-    qk_rope_head_dim=None,
-):
-    kv = MagicMock()
-    kv.attention_type = attention_type
-    kv.kv_data_type = kv_data_type
-    kv.precision_in_bytes = precision_in_bytes
-    kv.num_hidden_layers = num_hidden_layers
-    kv.num_attention_heads = num_attention_heads
-    kv.num_key_value_heads = num_key_value_heads
-    kv.num_attention_group = num_attention_heads // num_key_value_heads
-    kv.head_dimension = head_dimension
-    kv.per_token_memory_bytes = per_token_memory_bytes
-    kv.per_request_kv_cache_bytes = per_request_kv_cache_bytes
-    kv.per_request_kv_cache_gb = per_request_kv_cache_gb
-    kv.kv_cache_size_gb = kv_cache_size_gb
-    kv.context_len = context_len
-    kv.batch_size = batch_size
-    kv.kv_lora_rank = kv_lora_rank
-    kv.qk_rope_head_dim = qk_rope_head_dim
-    return kv
+_SAMPLE_CALC_WITH_GPU: dict = {
+    **_SAMPLE_CALC_NO_GPU,
+    "per_gpu_model_memory_gb": 14.0,
+    "total_gpus_required": 1,
+    "allocatable_kv_cache_memory_gb": 10.5,
+    "max_concurrent_requests": 4,
+    "total_kv_cache_blocks": 512,
+    "activation_memory_gb": 5.5,
+    "cuda_graph_memory_gb": 0.5,
+    "non_torch_memory_gb": 0.15,
+    "model_memory_gb": 14.0,
+    "available_gpu_memory_gb": 72.0,
+}
 
 
 @pytest.mark.unit
-@patch(f"{MOCK_PATH}.KVCacheDetail", return_value=_mock_kv_detail())
-@patch(f"{MOCK_PATH}.find_possible_tp", return_value=[1, 2, 4])
-@patch(f"{MOCK_PATH}.max_context_len", return_value=32768)
-@patch(f"{MOCK_PATH}.get_text_config", side_effect=lambda cfg: cfg)
-@patch(f"{MOCK_PATH}.get_model_config_from_hf")
-def test_calculate_basic_no_gpu(mock_config, mock_text, mock_ctx, mock_tp, mock_kv):
-    mock_config.return_value = _mock_model_config()
+@patch("planner.capacity_planner.calculate_capacity", return_value=_SAMPLE_CALC_NO_GPU)
+def test_calculate_basic_no_gpu(mock_calc):
     resp = client.post(CALC_ROUTE, json={"model_id": "meta-llama/Llama-3-8B"})
     assert resp.status_code == 200
     data = resp.json()
     assert data["success"] is True
-    assert "kv_cache_detail" in data
-    assert data["kv_cache_detail"]["precision_in_bytes"] == 1
-    assert data["kv_cache_detail"]["num_attention_group"] == 4
-    assert "per_request_kv_cache_bytes" in data["kv_cache_detail"]
     assert data["per_gpu_model_memory_gb"] is None
     assert data["warnings"] == []
 
 
 @pytest.mark.unit
-@patch(f"{MOCK_PATH}.available_gpu_memory", return_value=72.0)
-@patch(f"{MOCK_PATH}.model_memory_req", return_value=14.0)
-@patch(f"{MOCK_PATH}.estimate_vllm_non_torch_memory", return_value=0.15)
-@patch(f"{MOCK_PATH}.estimate_vllm_cuda_graph_memory", return_value=0.5)
-@patch(f"{MOCK_PATH}.estimate_vllm_activation_memory", return_value=5.5)
-@patch(f"{MOCK_PATH}.total_kv_cache_blocks", return_value=512)
-@patch(f"{MOCK_PATH}.max_concurrent_requests", return_value=4)
-@patch(f"{MOCK_PATH}.allocatable_kv_cache_memory", return_value=10.5)
-@patch(f"{MOCK_PATH}.gpus_required", return_value=1)
-@patch(f"{MOCK_PATH}.per_gpu_model_memory_required", return_value=14.0)
-@patch(f"{MOCK_PATH}.KVCacheDetail", return_value=_mock_kv_detail())
-@patch(f"{MOCK_PATH}.find_possible_tp", return_value=[1, 2, 4])
-@patch(f"{MOCK_PATH}.max_context_len", return_value=32768)
-@patch(f"{MOCK_PATH}.get_text_config", side_effect=lambda cfg: cfg)
-@patch(f"{MOCK_PATH}.get_model_config_from_hf")
-def test_calculate_with_gpu_memory(
-    mock_config,
-    mock_text,
-    mock_ctx,
-    mock_tp,
-    mock_kv,
-    mock_per_gpu,
-    mock_gpus,
-    mock_alloc,
-    mock_conc,
-    mock_blocks,
-    mock_act,
-    mock_cuda,
-    mock_non_torch,
-    mock_model_mem,
-    mock_avail,
-):
-    mock_config.return_value = _mock_model_config()
-    resp = client.post(
-        CALC_ROUTE,
-        json={
-            "model_id": "meta-llama/Llama-3-8B",
-            "gpu_memory": 80,
-        },
-    )
+@patch("planner.capacity_planner.calculate_capacity", return_value=_SAMPLE_CALC_WITH_GPU)
+def test_calculate_with_gpu_memory(mock_calc):
+    resp = client.post(CALC_ROUTE, json={"model_id": "meta-llama/Llama-3-8B", "gpu_memory": 80})
     assert resp.status_code == 200
     data = resp.json()
     assert data["per_gpu_model_memory_gb"] == 14.0
-    assert data["total_gpus_required"] == 1
-    assert data["allocatable_kv_cache_memory_gb"] == 10.5
-    assert data["max_concurrent_requests"] == 4
-    assert data["total_kv_cache_blocks"] == 512
     assert data["activation_memory_gb"] == 5.5
-    assert data["cuda_graph_memory_gb"] == 0.5
-    assert data["non_torch_memory_gb"] == 0.15
-    assert data["model_memory_gb"] == 14.0
-    assert data["available_gpu_memory_gb"] == 72.0
 
 
 @pytest.mark.unit
-@patch(f"{MOCK_PATH}.get_model_config_from_hf")
-def test_calculate_auto_max_model_len_requires_gpu_memory(mock_config):
-    mock_config.return_value = _mock_model_config()
-    resp = client.post(
-        CALC_ROUTE,
-        json={
-            "model_id": "meta-llama/Llama-3-8B",
-            "max_model_len": -1,
-            # no gpu_memory
-        },
-    )
+@patch(
+    "planner.capacity_planner.calculate_capacity",
+    side_effect=ValueError("max_model_len=-1 requires gpu_memory"),
+)
+def test_calculate_auto_max_model_len_requires_gpu_memory(mock_calc):
+    resp = client.post(CALC_ROUTE, json={"model_id": "meta-llama/Llama-3-8B", "max_model_len": -1})
     assert resp.status_code == 400
     assert "gpu_memory" in resp.json()["detail"]
 
 
 @pytest.mark.unit
-@patch(f"{MOCK_PATH}.find_possible_tp", return_value=[1, 2, 4])
-@patch(f"{MOCK_PATH}.max_context_len", return_value=32768)
-@patch(f"{MOCK_PATH}.get_text_config", side_effect=lambda cfg: cfg)
-@patch(f"{MOCK_PATH}.get_model_config_from_hf")
-def test_calculate_invalid_tp(mock_config, mock_text, mock_ctx, mock_tp):
-    mock_config.return_value = _mock_model_config()
-    resp = client.post(
-        CALC_ROUTE,
-        json={
-            "model_id": "meta-llama/Llama-3-8B",
-            "tp": 3,  # invalid: not in [1, 2, 4]
-        },
-    )
+@patch(
+    "planner.capacity_planner.calculate_capacity",
+    side_effect=ValueError("Invalid tp value 3. Valid values for this model: [1, 2, 4]"),
+)
+def test_calculate_invalid_tp(mock_calc):
+    resp = client.post(CALC_ROUTE, json={"model_id": "meta-llama/Llama-3-8B", "tp": 3})
     assert resp.status_code == 400
     assert "tp" in resp.json()["detail"].lower()
 
 
 @pytest.mark.unit
-@patch(f"{MOCK_PATH}.available_gpu_memory", return_value=72.0)
-@patch(f"{MOCK_PATH}.model_memory_req", return_value=14.0)
-@patch(f"{MOCK_PATH}.estimate_vllm_non_torch_memory", return_value=0.15)
-@patch(f"{MOCK_PATH}.estimate_vllm_cuda_graph_memory", return_value=0.5)
-@patch(f"{MOCK_PATH}.estimate_vllm_activation_memory", return_value=5.5)
-@patch(f"{MOCK_PATH}.total_kv_cache_blocks", return_value=512)
-@patch(f"{MOCK_PATH}.max_concurrent_requests", return_value=4)
-@patch(f"{MOCK_PATH}.allocatable_kv_cache_memory", return_value=10.5)
-@patch(f"{MOCK_PATH}.gpus_required", return_value=1)
-@patch(f"{MOCK_PATH}.per_gpu_model_memory_required", return_value=14.0)
-@patch(f"{MOCK_PATH}.auto_max_model_len", return_value=64)  # < 128 → warning
-@patch(f"{MOCK_PATH}.KVCacheDetail", return_value=_mock_kv_detail())
-@patch(f"{MOCK_PATH}.find_possible_tp", return_value=[1])
-@patch(f"{MOCK_PATH}.get_text_config", side_effect=lambda cfg: cfg)
-@patch(f"{MOCK_PATH}.get_model_config_from_hf")
-def test_calculate_auto_max_model_len_small_warning(
-    mock_config,
-    mock_text,
-    mock_tp,
-    mock_kv,
-    mock_auto,
-    mock_per_gpu,
-    mock_gpus,
-    mock_alloc,
-    mock_conc,
-    mock_blocks,
-    mock_act,
-    mock_cuda,
-    mock_non_torch,
-    mock_model_mem,
-    mock_avail,
-):
-    mock_config.return_value = _mock_model_config()
+@patch(
+    "planner.capacity_planner.calculate_capacity",
+    return_value={**_SAMPLE_CALC_NO_GPU, "warnings": ["Auto-calculated max_model_len is 64 tokens, which may be too small for practical use."]},
+)
+def test_calculate_auto_max_model_len_small_warning(mock_calc):
     resp = client.post(
         CALC_ROUTE,
-        json={
-            "model_id": "meta-llama/Llama-3-8B",
-            "max_model_len": -1,
-            "gpu_memory": 80,
-        },
+        json={"model_id": "meta-llama/Llama-3-8B", "max_model_len": -1, "gpu_memory": 80},
     )
     assert resp.status_code == 200
-    data = resp.json()
-    assert len(data["warnings"]) > 0
-    assert "64" in data["warnings"][0]
+    assert len(resp.json()["warnings"]) > 0
+    assert "64" in resp.json()["warnings"][0]

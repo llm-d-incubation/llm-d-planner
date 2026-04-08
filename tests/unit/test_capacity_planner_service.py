@@ -95,3 +95,117 @@ def test_get_model_info_summary_hf_error_propagates(mock_config):
 
     with pytest.raises(Exception, match="gated repo"):
         get_model_info_summary("meta-llama/gated-model")
+
+
+# ---------------------------------------------------------------------------
+# calculate_capacity tests
+# ---------------------------------------------------------------------------
+
+def _mock_kv():
+    kv = MagicMock()
+    kv.attention_type = "Grouped-query attention"
+    kv.kv_data_type = "fp8"
+    kv.precision_in_bytes = 1
+    kv.num_hidden_layers = 32
+    kv.num_attention_heads = 32
+    kv.num_key_value_heads = 8
+    kv.num_attention_group = 4
+    kv.head_dimension = 128
+    kv.per_token_memory_bytes = 65536
+    kv.per_request_kv_cache_bytes = 2_147_483_648
+    kv.per_request_kv_cache_gb = 2.0
+    kv.kv_cache_size_gb = 2.0
+    kv.context_len = 4096
+    kv.batch_size = 1
+    kv.kv_lora_rank = None
+    kv.qk_rope_head_dim = None
+    return kv
+
+
+@pytest.mark.unit
+@patch(f"{MOCK_PATH}.KVCacheDetail", return_value=_mock_kv())
+@patch(f"{MOCK_PATH}.find_possible_tp", return_value=[1, 2, 4])
+@patch(f"{MOCK_PATH}.max_context_len", return_value=32768)
+@patch(f"{MOCK_PATH}.get_text_config", side_effect=lambda cfg: cfg)
+@patch(f"{MOCK_PATH}.get_model_config_from_hf")
+def test_calculate_capacity_no_gpu(mock_config, mock_text, mock_ctx, mock_tp, mock_kv):
+    from planner.capacity_planner import calculate_capacity
+
+    mock_config.return_value = _mock_config()
+    result = calculate_capacity(
+        model_id="meta-llama/Llama-3-8B",
+        max_model_len=None,
+        batch_size=1,
+        gpu_memory=None,
+        tp=1,
+        pp=1,
+        dp=1,
+        gpu_mem_util=0.9,
+        block_size=16,
+    )
+    assert result["success"] is True
+    assert "kv_cache_detail" in result
+    assert result["per_gpu_model_memory_gb"] is None
+    assert result["warnings"] == []
+
+
+@pytest.mark.unit
+@patch(f"{MOCK_PATH}.get_model_config_from_hf")
+def test_calculate_capacity_auto_len_requires_gpu_memory(mock_config):
+    from planner.capacity_planner import calculate_capacity
+
+    mock_config.return_value = _mock_config()
+    with pytest.raises(ValueError, match="gpu_memory"):
+        calculate_capacity(
+            model_id="meta-llama/Llama-3-8B",
+            max_model_len=-1,
+            batch_size=1,
+            gpu_memory=None,  # missing!
+            tp=1,
+            pp=1,
+            dp=1,
+            gpu_mem_util=0.9,
+            block_size=16,
+        )
+
+
+@pytest.mark.unit
+@patch(f"{MOCK_PATH}.find_possible_tp", return_value=[1, 2, 4])
+@patch(f"{MOCK_PATH}.max_context_len", return_value=32768)
+@patch(f"{MOCK_PATH}.get_text_config", side_effect=lambda cfg: cfg)
+@patch(f"{MOCK_PATH}.get_model_config_from_hf")
+def test_calculate_capacity_invalid_tp(mock_config, mock_text, mock_ctx, mock_tp):
+    from planner.capacity_planner import calculate_capacity
+
+    mock_config.return_value = _mock_config()
+    with pytest.raises(ValueError, match="tp"):
+        calculate_capacity(
+            model_id="meta-llama/Llama-3-8B",
+            max_model_len=None,
+            batch_size=1,
+            gpu_memory=None,
+            tp=3,  # invalid: not in [1, 2, 4]
+            pp=1,
+            dp=1,
+            gpu_mem_util=0.9,
+            block_size=16,
+        )
+
+
+@pytest.mark.unit
+@patch(f"{MOCK_PATH}.get_model_config_from_hf", side_effect=Exception("gated repo"))
+def test_calculate_capacity_hf_error_propagates(mock_config):
+    from planner.capacity_planner import calculate_capacity
+
+    with pytest.raises(Exception, match="gated repo"):
+        calculate_capacity(
+            model_id="meta-llama/gated-model",
+            max_model_len=None,
+            batch_size=1,
+            gpu_memory=None,
+            tp=1,
+            pp=1,
+            dp=1,
+            gpu_mem_util=0.9,
+            block_size=16,
+        )

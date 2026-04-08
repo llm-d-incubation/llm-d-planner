@@ -166,161 +166,21 @@ class CalculateResponse(BaseModel):
 async def calculate(request: CalculateRequest) -> CalculateResponse:
     """Run capacity planning calculations for a given model and hardware config."""
     hf_token = _get_hf_token()
-    warnings_list: list[str] = []
-
     try:
-        model_config = cp.get_model_config_from_hf(request.model_id, hf_token)
+        result = cp.calculate_capacity(
+            model_id=request.model_id,
+            max_model_len=request.max_model_len,
+            batch_size=request.batch_size,
+            gpu_memory=request.gpu_memory,
+            tp=request.tp,
+            pp=request.pp,
+            dp=request.dp,
+            gpu_mem_util=request.gpu_mem_util,
+            block_size=request.block_size,
+            hf_token=hf_token,
+        )
+    except ValueError as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e)) from e
     except Exception as e:
         handle_hf_error(e)
-
-    text_config = cp.get_text_config(model_config)
-
-    # Resolve max_model_len
-    max_model_len_auto = False
-    if request.max_model_len == -1:
-        if request.gpu_memory is None:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="max_model_len=-1 requires gpu_memory to be specified for auto-calculation",
-            )
-        max_len = cp.auto_max_model_len(
-            request.model_id,
-            model_config,
-            gpu_memory=int(request.gpu_memory),
-            gpu_mem_util=request.gpu_mem_util,
-            tp=request.tp,
-            pp=request.pp,
-            dp=request.dp,
-            hf_token=hf_token,
-        )
-        if max_len == 0:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Model does not fit in available GPU memory. Increase gpu_memory, tp, or pp.",
-            )
-        if max_len < 128:
-            warnings_list.append(
-                f"Auto-calculated max_model_len is {max_len} tokens, which may be too small for practical use."
-            )
-        max_model_len_auto = True
-    elif request.max_model_len is not None:
-        max_len = request.max_model_len
-    else:
-        max_len = cp.max_context_len(text_config)
-
-    # Validate TP
-    possible_tp = cp.find_possible_tp(model_config)
-    if request.tp not in possible_tp:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Invalid tp value {request.tp}. Valid values for this model: {possible_tp}",
-        )
-
-    # KV cache detail
-    kv = cp.KVCacheDetail(request.model_id, model_config, max_len, request.batch_size)
-
-    input_params: dict[str, Any] = {
-        "model": request.model_id,
-        "max_model_len": max_len,
-        "batch_size": request.batch_size,
-    }
-    if max_model_len_auto:
-        input_params["max_model_len_auto"] = True
-
-    response = CalculateResponse(
-        success=True,
-        input_parameters=input_params,
-        kv_cache_detail=KVCacheDetailSchema(
-            attention_type=str(kv.attention_type),
-            kv_data_type=kv.kv_data_type,
-            precision_in_bytes=kv.precision_in_bytes,
-            num_hidden_layers=kv.num_hidden_layers,
-            num_attention_heads=kv.num_attention_heads,
-            num_key_value_heads=kv.num_key_value_heads,
-            num_attention_group=kv.num_attention_group,
-            head_dimension=kv.head_dimension,
-            per_token_memory_bytes=kv.per_token_memory_bytes,
-            per_request_kv_cache_bytes=kv.per_request_kv_cache_bytes,
-            per_request_kv_cache_gb=round(kv.per_request_kv_cache_gb, 4),
-            kv_cache_size_gb=round(kv.kv_cache_size_gb, 2),
-            context_len=kv.context_len,
-            batch_size=kv.batch_size,
-            kv_lora_rank=kv.kv_lora_rank,
-            qk_rope_head_dim=kv.qk_rope_head_dim,
-        ),
-        warnings=warnings_list,
-    )
-
-    if request.gpu_memory is not None:
-        gpu_memory_int = int(request.gpu_memory)
-        input_params.update(
-            {
-                "tp": request.tp,
-                "pp": request.pp,
-                "dp": request.dp,
-                "gpu_mem_util": request.gpu_mem_util,
-                "block_size": request.block_size,
-            }
-        )
-        response.per_gpu_model_memory_gb = round(
-            cp.per_gpu_model_memory_required(
-                request.model_id, model_config, request.tp, request.pp, hf_token
-            ),
-            2,
-        )
-        response.total_gpus_required = cp.gpus_required(request.tp, request.pp, request.dp)
-        response.allocatable_kv_cache_memory_gb = round(
-            cp.allocatable_kv_cache_memory(
-                request.model_id,
-                model_config,
-                gpu_memory_int,
-                request.gpu_mem_util,
-                request.tp,
-                request.pp,
-                request.dp,
-                max_model_len=max_len,
-                batch_size=request.batch_size,
-                hf_token=hf_token,
-            ),
-            2,
-        )
-        response.max_concurrent_requests = cp.max_concurrent_requests(
-            request.model_id,
-            model_config,
-            max_len,
-            gpu_memory_int,
-            request.gpu_mem_util,
-            batch_size=request.batch_size,
-            tp=request.tp,
-            pp=request.pp,
-            dp=request.dp,
-            hf_token=hf_token,
-        )
-        response.total_kv_cache_blocks = int(
-            cp.total_kv_cache_blocks(
-                request.model_id,
-                model_config,
-                max_len,
-                gpu_memory_int,
-                request.gpu_mem_util,
-                request.batch_size,
-                request.block_size,
-                request.tp,
-                request.pp,
-                request.dp,
-                hf_token=hf_token,
-            )
-        )
-        response.activation_memory_gb = round(
-            cp.estimate_vllm_activation_memory(model_config, tp=request.tp), 4
-        )
-        response.cuda_graph_memory_gb = round(cp.estimate_vllm_cuda_graph_memory(), 4)
-        response.non_torch_memory_gb = round(cp.estimate_vllm_non_torch_memory(request.tp), 4)
-        response.model_memory_gb = round(
-            cp.model_memory_req(request.model_id, model_config, hf_token), 2
-        )
-        response.available_gpu_memory_gb = round(
-            cp.available_gpu_memory(gpu_memory_int, request.gpu_mem_util), 2
-        )
-
-    return response
+    return CalculateResponse(**result)

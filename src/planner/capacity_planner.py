@@ -1192,3 +1192,193 @@ def get_model_info_summary(
         },
         "memory_breakdown": breakdown,
     }
+
+
+def calculate_capacity(
+    model_id: str,
+    max_model_len: int | None,
+    batch_size: int,
+    gpu_memory: float | None,
+    tp: int,
+    pp: int,
+    dp: int,
+    gpu_mem_util: float,
+    block_size: int,
+    hf_token: str | None = None,
+) -> dict[str, Any]:
+    """Run capacity planning calculations for a model and hardware configuration.
+
+    Args:
+        model_id: HuggingFace model ID
+        max_model_len: Token context length. -1 triggers auto-calculation
+            (requires gpu_memory). None defaults to the model's max.
+        batch_size: Max concurrent requests (KV cache batch dimension)
+        gpu_memory: Per-GPU memory in GB. Required when max_model_len=-1.
+        tp: Tensor parallelism degree
+        pp: Pipeline parallelism degree
+        dp: Data parallelism degree
+        gpu_mem_util: Fraction of GPU memory available to vLLM (e.g. 0.9)
+        block_size: KV cache block size in tokens
+        hf_token: Optional HF token for gated models
+
+    Returns:
+        Nested dict matching the CalculateResponse schema.
+
+    Raises:
+        ValueError: Invalid input combinations (missing gpu_memory, bad tp).
+        Any HF fetch exception — callers map these to HTTP errors.
+    """
+    model_config = get_model_config_from_hf(model_id, hf_token)
+    text_config = get_text_config(model_config)
+    warnings_list: list[str] = []
+
+    # Resolve max_model_len
+    max_model_len_auto = False
+    if max_model_len == -1:
+        if gpu_memory is None:
+            raise ValueError(
+                "max_model_len=-1 requires gpu_memory to be specified for auto-calculation"
+            )
+        max_len = auto_max_model_len(
+            model_id,
+            model_config,
+            gpu_memory=int(gpu_memory),
+            gpu_mem_util=gpu_mem_util,
+            tp=tp,
+            pp=pp,
+            dp=dp,
+            hf_token=hf_token,
+        )
+        if max_len == 0:
+            raise ValueError(
+                "Model does not fit in available GPU memory. Increase gpu_memory, tp, or pp."
+            )
+        if max_len < 128:
+            warnings_list.append(
+                f"Auto-calculated max_model_len is {max_len} tokens, which may be too small for practical use."
+            )
+        max_model_len_auto = True
+    elif max_model_len is not None:
+        max_len = max_model_len
+    else:
+        max_len = max_context_len(text_config)
+
+    # Validate TP
+    possible_tp = find_possible_tp(model_config)
+    if tp not in possible_tp:
+        raise ValueError(
+            f"Invalid tp value {tp}. Valid values for this model: {possible_tp}"
+        )
+
+    kv = KVCacheDetail(model_id, model_config, max_len, batch_size)
+
+    input_params: dict[str, Any] = {
+        "model": model_id,
+        "max_model_len": max_len,
+        "batch_size": batch_size,
+    }
+    if max_model_len_auto:
+        input_params["max_model_len_auto"] = True
+
+    result: dict[str, Any] = {
+        "success": True,
+        "input_parameters": input_params,
+        "kv_cache_detail": {
+            "attention_type": str(kv.attention_type),
+            "kv_data_type": kv.kv_data_type,
+            "precision_in_bytes": kv.precision_in_bytes,
+            "num_hidden_layers": kv.num_hidden_layers,
+            "num_attention_heads": kv.num_attention_heads,
+            "num_key_value_heads": kv.num_key_value_heads,
+            "num_attention_group": kv.num_attention_group,
+            "head_dimension": kv.head_dimension,
+            "per_token_memory_bytes": kv.per_token_memory_bytes,
+            "per_request_kv_cache_bytes": kv.per_request_kv_cache_bytes,
+            "per_request_kv_cache_gb": round(kv.per_request_kv_cache_gb, 4),
+            "kv_cache_size_gb": round(kv.kv_cache_size_gb, 2),
+            "context_len": kv.context_len,
+            "batch_size": kv.batch_size,
+            "kv_lora_rank": kv.kv_lora_rank,
+            "qk_rope_head_dim": kv.qk_rope_head_dim,
+        },
+        "warnings": warnings_list,
+        "per_gpu_model_memory_gb": None,
+        "total_gpus_required": None,
+        "allocatable_kv_cache_memory_gb": None,
+        "max_concurrent_requests": None,
+        "total_kv_cache_blocks": None,
+        "activation_memory_gb": None,
+        "cuda_graph_memory_gb": None,
+        "non_torch_memory_gb": None,
+        "model_memory_gb": None,
+        "available_gpu_memory_gb": None,
+    }
+
+    if gpu_memory is not None:
+        gpu_memory_int = int(gpu_memory)
+        input_params.update(
+            {
+                "tp": tp,
+                "pp": pp,
+                "dp": dp,
+                "gpu_mem_util": gpu_mem_util,
+                "block_size": block_size,
+            }
+        )
+        result["per_gpu_model_memory_gb"] = round(
+            per_gpu_model_memory_required(model_id, model_config, tp, pp, hf_token), 2
+        )
+        result["total_gpus_required"] = gpus_required(tp, pp, dp)
+        result["allocatable_kv_cache_memory_gb"] = round(
+            allocatable_kv_cache_memory(
+                model_id,
+                model_config,
+                gpu_memory_int,
+                gpu_mem_util,
+                tp,
+                pp,
+                dp,
+                max_model_len=max_len,
+                batch_size=batch_size,
+                hf_token=hf_token,
+            ),
+            2,
+        )
+        result["max_concurrent_requests"] = max_concurrent_requests(
+            model_id,
+            model_config,
+            max_len,
+            gpu_memory_int,
+            gpu_mem_util,
+            batch_size=batch_size,
+            tp=tp,
+            pp=pp,
+            dp=dp,
+            hf_token=hf_token,
+        )
+        result["total_kv_cache_blocks"] = int(
+            total_kv_cache_blocks(
+                model_id,
+                model_config,
+                max_len,
+                gpu_memory_int,
+                gpu_mem_util,
+                batch_size,
+                block_size,
+                tp,
+                pp,
+                dp,
+                hf_token=hf_token,
+            )
+        )
+        result["activation_memory_gb"] = round(
+            estimate_vllm_activation_memory(model_config, tp=tp), 4
+        )
+        result["cuda_graph_memory_gb"] = round(estimate_vllm_cuda_graph_memory(), 4)
+        result["non_torch_memory_gb"] = round(estimate_vllm_non_torch_memory(tp), 4)
+        result["model_memory_gb"] = round(model_memory_req(model_id, model_config, hf_token), 2)
+        result["available_gpu_memory_gb"] = round(
+            available_gpu_memory(gpu_memory_int, gpu_mem_util), 2
+        )
+
+    return result
