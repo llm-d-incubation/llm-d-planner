@@ -221,8 +221,7 @@ def generate_estimated_configs(
                 break
             if not valid_tps:
                 logger.info(
-                    f"  {gpu_info.gpu_type}: model does not fit "
-                    f"({gpu_info.memory_gb}GB) at any TP"
+                    f"  {gpu_info.gpu_type}: model does not fit ({gpu_info.memory_gb}GB) at any TP"
                 )
                 continue
 

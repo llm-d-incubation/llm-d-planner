@@ -238,8 +238,7 @@ class Analyzer:
         }
 
         logger.info(
-            f"Generated ranked lists: {len(filtered)} filtered configs, "
-            f"top {top_n} per criterion"
+            f"Generated ranked lists: {len(filtered)} filtered configs, top {top_n} per criterion"
         )
 
         return ranked_lists

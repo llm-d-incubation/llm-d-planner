@@ -290,8 +290,7 @@ class ConfigFinder:
             if estimated_configs:
                 matching_configs.extend(estimated_configs)
                 logger.info(
-                    f"Added {len(estimated_configs)} estimated configurations "
-                    f"from roofline model"
+                    f"Added {len(estimated_configs)} estimated configurations from roofline model"
                 )
 
         # When the user specified preferred models, filter results to only
