@@ -1,5 +1,5 @@
 # Backend Dockerfile for Planner
-FROM --platform=linux/amd64 python:3.11-slim
+FROM --platform=linux/amd64 python:3.14-slim
 
 # Set working directory
 WORKDIR /app
