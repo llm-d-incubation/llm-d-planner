@@ -1,7 +1,6 @@
 """
 Main Page
 """
-# mypy: disable-error-code="call-overload,assignment,index,misc,arg-type"
 
 import json
 from pathlib import Path

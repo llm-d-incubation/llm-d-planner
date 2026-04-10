@@ -123,9 +123,6 @@ line-ending = "auto"
 "tests/**/*.py" = ["E501", "F401"]
 "test_*.py" = ["E501", "F401"]
 
-# UI files use star imports from internal capacity_planner module
-"ui/**/*.py" = ["F403", "F405"]
-
 [tool.ruff.lint.isort]
 # Organize imports into sections
 known-first-party = ["planner"]

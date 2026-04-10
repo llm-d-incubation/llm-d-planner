@@ -2,7 +2,6 @@
 GPU Recommender Page - Streamlit UI for GPU recommendation engine
 This page helps users find the optimal GPU for running LLM inference.
 """
-# mypy: disable-error-code="assignment"
 
 import json
 
