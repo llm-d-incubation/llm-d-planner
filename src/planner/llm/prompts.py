@@ -27,6 +27,8 @@ Use case descriptions:
 - long_document_summarization: Long document summarization (very long prompts, medium summaries)
 - research_legal_analysis: Research/legal document analysis (very long prompts, detailed analysis)
 
+CRITICAL: The use_case value MUST be exactly one of the 9 values listed above. Do not invent variations like "text_summarization" or "chatbot" — use the exact strings shown.
+
 Experience class guidance:
 - instant: Sub-200ms response time - code completion, autocomplete
 - conversational: Real-time user interaction - chatbots, interactive tools

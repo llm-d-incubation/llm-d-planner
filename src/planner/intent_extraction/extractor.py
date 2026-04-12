@@ -1,8 +1,10 @@
 """Intent extraction from conversational input."""
 
+import difflib
 import logging
 from datetime import datetime
 from pathlib import Path
+from typing import get_args
 
 from planner.llm.ollama_client import OllamaClient
 from planner.llm.prompts import INTENT_EXTRACTION_SCHEMA, build_intent_extraction_prompt
@@ -13,6 +15,23 @@ logger = logging.getLogger(__name__)
 # Create prompts directory for easy copy-paste access
 PROMPTS_DIR = Path(__file__).parent.parent.parent.parent / "logs" / "prompts"
 PROMPTS_DIR.mkdir(parents=True, exist_ok=True)
+
+# Common LLM hallucinations mapped to valid use_case values
+_USE_CASE_ALIASES: dict[str, str] = {
+    "summarization": "summarization_short",
+    "text_summarization": "summarization_short",
+    "document_summarization": "long_document_summarization",
+    "chatbot": "chatbot_conversational",
+    "chat": "chatbot_conversational",
+    "code_gen": "code_generation_detailed",
+    "code_generation": "code_generation_detailed",
+    "rag": "document_analysis_rag",
+    "document_qa": "document_analysis_rag",
+    "legal_analysis": "research_legal_analysis",
+    "research_analysis": "research_legal_analysis",
+    "research": "research_legal_analysis",
+    "content": "content_generation",
+}
 
 
 class IntentExtractor:
@@ -140,6 +159,20 @@ class IntentExtractor:
             # LLM sometimes returns "chatbot|customer_service|..." instead of just "chatbot"
             # Take the first option
             cleaned["use_case"] = cleaned["use_case"].split("|")[0].strip()
+
+        # Normalize hallucinated use_case values
+        use_case = cleaned.get("use_case", "")
+        valid_use_cases = list(get_args(DeploymentIntent.model_fields["use_case"].annotation))
+        if use_case not in valid_use_cases:
+            mapped = _USE_CASE_ALIASES.get(use_case)
+            if mapped:
+                logger.info("Mapped hallucinated use_case '%s' -> '%s'", use_case, mapped)
+                cleaned["use_case"] = mapped
+            else:
+                close = difflib.get_close_matches(use_case, valid_use_cases, n=1, cutoff=0.6)
+                if close:
+                    logger.info("Fuzzy-matched use_case '%s' -> '%s'", use_case, close[0])
+                    cleaned["use_case"] = close[0]
 
         # Infer experience_class if not provided
         if "experience_class" not in cleaned or not cleaned.get("experience_class"):
