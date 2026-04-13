@@ -17,7 +17,6 @@ def _make_intent(
         experience_class="conversational",
         user_count=100,
         preferred_gpu_types=preferred_gpu_types or [],
-        additional_context=None,
     )
 
 

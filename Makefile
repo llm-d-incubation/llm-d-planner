@@ -530,7 +530,7 @@ test: test-unit test-db test-integration ## Run all tests (requires DB and Ollam
 
 test-unit: ## Run unit tests (no DB or Ollama required)
 	@printf "$(BLUE)Running unit tests...$(NC)\n"
-	cd $(SRC_DIR) && uv run pytest ../tests/ -v -m "not database and not integration"
+	cd $(SRC_DIR) && uv run pytest ../tests/ -v -m "not database and not integration and not intent_extraction"
 
 test-db: ## Run database tests (requires PostgreSQL with benchmark data)
 	@printf "$(BLUE)Running database tests...$(NC)\n"
@@ -539,6 +539,10 @@ test-db: ## Run database tests (requires PostgreSQL with benchmark data)
 test-integration: setup-ollama ## Run integration tests (requires Ollama and DB)
 	@printf "$(BLUE)Running integration tests...$(NC)\n"
 	cd $(SRC_DIR) && uv run pytest ../tests/ -v -m integration
+
+test-intent: setup-ollama ## Run intent extraction tests (requires Ollama)
+	@printf "$(BLUE)Running intent extraction tests...$(NC)\n"
+	cd $(SRC_DIR) && uv run pytest ../tests/ -v -m intent_extraction
 
 ##@ Code Quality
 
