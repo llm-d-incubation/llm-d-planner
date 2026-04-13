@@ -1,42 +1,5 @@
 """Prompt templates for LLM interactions."""
 
-INTENT_EXTRACTION_SCHEMA = """
-Expected JSON schema:
-{
-  "use_case": "chatbot_conversational|code_completion|code_generation_detailed|translation|content_generation|summarization_short|document_analysis_rag|long_document_summarization|research_legal_analysis",
-  "experience_class": "instant|conversational|interactive|deferred|batch",
-  "user_count": <integer>,
-  "domain_specialization": ["general"|"code"|"multilingual"|"enterprise"],
-  "preferred_gpu_types": ["<list of GPU types if mentioned, empty list if not specified>"],
-  "preferred_models": ["<list of model IDs in HuggingFace format if mentioned, empty list if not specified>"],
-  "accuracy_priority": "low|medium|high",
-  "cost_priority": "low|medium|high",
-  "latency_priority": "low|medium|high",
-  "complexity_priority": "low|medium|high",
-  "additional_context": "<any other relevant details mentioned>"
-}
-
-Use case descriptions:
-- chatbot_conversational: Real-time conversational chatbots (short prompts, short responses)
-- code_completion: Fast code completion/autocomplete (short prompts, short completions)
-- code_generation_detailed: Detailed code generation with explanations (medium prompts, long responses)
-- translation: Document translation (medium prompts, medium responses)
-- content_generation: Content creation, marketing copy (medium prompts, medium responses)
-- summarization_short: Short document summarization (medium prompts, short summaries)
-- document_analysis_rag: RAG-based document Q&A (long prompts with context, medium responses)
-- long_document_summarization: Long document summarization (very long prompts, medium summaries)
-- research_legal_analysis: Research/legal document analysis (very long prompts, detailed analysis)
-
-CRITICAL: The use_case value MUST be exactly one of the 9 values listed above. Do not invent variations like "text_summarization" or "chatbot" — use the exact strings shown.
-
-Experience class guidance:
-- instant: Sub-200ms response time - code completion, autocomplete
-- conversational: Real-time user interaction - chatbots, interactive tools
-- interactive: User waiting but tolerates slight delay - RAG Q&A, content generation
-- deferred: Quality over speed - long summarization, detailed analysis
-- batch: Background/async processing - research, legal analysis
-"""
-
 
 def build_intent_extraction_prompt(
     user_message: str, conversation_history: list | None = None
@@ -60,60 +23,83 @@ def build_intent_extraction_prompt(
             context += f"{role}: {content}\n"
         context += "\n"
 
-    prompt = f"""You are an expert AI assistant for Planner helping users deploy Large Language Models (LLMs) for production use cases.
+    prompt = f"""Extract deployment requirements from the user message.
 
-{context}Current user message: {user_message}
+Return JSON only. No explanation.
 
-Your task is to extract structured information about their deployment requirements. Analyze what they've said and infer:
+{context}User message: {user_message}
 
-1. **Use case**: What type of application (chatbot, customer service, code generation, summarization, etc.)
-2. **User count**: How many users or scale mentioned (estimate if not explicit)
-3. **Domain specialization**: Any specific domains mentioned (code, multilingual, enterprise, etc.)
-4. **Latency requirement**: How important is low latency? (very_high = sub-500ms, high = sub-2s, medium = 2-5s, low = >5s acceptable)
-5. **Throughput priority**: Is high request volume more important than low latency?
-6. **Budget constraint**: How price-sensitive are they?
-7. **Domain specialization**: Any specific domains mentioned (code, multilingual, enterprise, etc.)
-8. **Preferred GPU(s)**: If user mentions specific GPU types (H100, H200, A100, A100-80, A100-40, L4, B200), extract them as a list
+Schema:
+{{
+  "use_case": "chatbot_conversational|code_completion|code_generation_detailed|translation|content_generation|summarization_short|document_analysis_rag|long_document_summarization|research_legal_analysis",
+  "user_count": 0,
+  "domain_specialization": [],
+  "preferred_gpu_types": [],
+  "preferred_models": [],
+  "accuracy_mentioned": false,
+  "accuracy_priority": "medium",
+  "cost_mentioned": false,
+  "cost_priority": "medium",
+  "latency_mentioned": false,
+  "latency_priority": "medium"
+}}
 
-Be intelligent about inference:
-- "thousands of users" → estimate specific number
-- "document Q&A" or "knowledge base" or "document search" → use_case: document_analysis_rag
-- "RAG" or "retrieval" → use_case: document_analysis_rag
-- "chatbot" or "customer service" or "conversational" → use_case: chatbot_conversational
-- "content" or "marketing" or "blog" or "content generation" → use_case: content_generation
-- "summarize document" or "summarization" → use_case: summarization_short or long_document_summarization
+Rules:
 
-GPU extraction examples (canonical names: L4, A100-40, A100-80, H100, H200, B200):
-- "running on h200" or "h200" or "H200" → preferred_gpu_types: ["H200"]
-- "h100 or h200" → preferred_gpu_types: ["H100", "H200"]
-- "a100" or "A100" (unspecified variant) → preferred_gpu_types: ["A100-80", "A100-40"]
-- "a100-80" or "A100-80GB" → preferred_gpu_types: ["A100-80"]
-- "l4" or "L4" → preferred_gpu_types: ["L4"]
-- No GPU mentioned → preferred_gpu_types: []
+GENERAL:
 
-Model extraction examples (use HuggingFace format from model catalog):
-- "deploy Llama 3.3 70B" or "use llama 70b" → preferred_models: ["meta-llama/Llama-3.3-70B-Instruct"]
-- "I want to use Qwen3-32B" → preferred_models: ["Qwen/Qwen3-32B"]
-- "compare granite and llama for my use case" → preferred_models: ["ibm-granite/granite-3.1-8b-instruct", "meta-llama/Llama-3.1-8B-Instruct"]
-- "run mistral small" → preferred_models: ["mistralai/Mistral-Small-24B-Instruct-2501"]
-- No model mentioned → preferred_models: []
+* Output valid JSON only.
 
-Priority extraction (for scoring weights - use "medium" as baseline, adjust based on context):
-- accuracy_priority: "high" if user mentions accuracy matters, quality is important, accuracy is critical, best model, or top quality. "low" if user says good enough or accuracy less important.
-- cost_priority: "high" if user EXPLICITLY says cost-effective, cost-sensitive, budget constrained, minimize cost, cost is important, or budget is tight. "low" ONLY if user EXPLICITLY says "cost doesn't matter" or "budget is unlimited" or "money is no object". Default to "medium" if not mentioned. DO NOT infer from GPU choice.
-- latency_priority: "high" if user mentions low latency needed, fast response critical, speed is important, real-time performance required, or instant responses needed. "low" if user says latency less important or async/batch is acceptable. Default to "medium" if not mentioned.
-- complexity_priority: "high" if user wants simple deployment, easy setup. "low" if they're okay with complex setups.
-IMPORTANT - Priority Extraction Rules (FOLLOW STRICTLY):
-- Only extract priorities from EXPLICIT user statements about priorities, not from hardware choices or use case type
-- Hardware preference (H100, L4, etc.) does NOT imply cost_priority - user may have GPUs available or budget allocated
-- Use case type does NOT imply latency_priority - default to "medium" unless user explicitly mentions speed/latency concerns
-- When in doubt, use "medium" - only deviate when user EXPLICITLY states a priority
-Examples:
-- "chatbot with H100" → cost_priority: "medium" (H100 doesn't mean cost doesn't matter)
-- "low latency is important" → latency_priority: "high" (explicit statement)
-- "cost-effective solution" → cost_priority: "high" (explicit statement)
-- "chatbot for 300 users, low latency important, H100 gpus" → latency_priority: "high", cost_priority: "medium" (only latency explicitly mentioned)
+USE CASE:
 
-{INTENT_EXTRACTION_SCHEMA}
-"""
+* Apply the first matching rule from this list, top to bottom.
+* If the message mentions "legal", "law", "lawyers", "attorneys", "research", or "legal analysis" => research_legal_analysis
+* If the message mentions "code generation", "full code", or "implementing features" => code_generation_detailed
+* If the message mentions "code completion" or "autocomplete" => code_completion
+* If the message mentions "chatbot", "customer service", or "conversational" => chatbot_conversational
+* If the message mentions "long document summarization" => long_document_summarization
+* If the message mentions "translation" => translation
+* If the message mentions "content generation", "marketing", or "blog" => content_generation
+* If the message mentions "summarization" => summarization_short
+* If the message mentions "RAG", "retrieval", "knowledge base", "document Q&A", or "document analysis" => document_analysis_rag
+
+USER COUNT:
+
+* Use explicit number if present.
+* Otherwise estimate an integer.
+
+DOMAIN:
+
+* Start with an empty list.
+* If use_case is code_completion or code_generation_detailed, include "code".
+* If multilingual or translation is explicitly mentioned, include "multilingual".
+* If enterprise or knowledge base is explicitly mentioned, include "enterprise".
+* If the list is empty, use ["general"].
+
+GPUs:
+
+* Extract only if explicitly mentioned.
+* "A100" => ["A100-80", "A100-40"].
+* Otherwise => [].
+
+MODELS:
+
+* Extract only if explicitly mentioned.
+* A Hugging Face model ID such as "org/model-name" is an explicit model mention.
+* If the message contains a Hugging Face model ID, copy it exactly into preferred_models.
+* If no model is explicitly mentioned => [].
+
+ACCURACY / COST / LATENCY:
+
+* Set *_mentioned = true ONLY if that topic is explicitly stated.
+* NEVER infer these fields from use_case or context.
+* If *_mentioned = false, then *_priority MUST be "medium".
+* *_priority measures importance to the user.
+* Wanting lower cost means cost_priority = "high".
+* Wanting lower latency or faster responses means latency_priority = "high".
+* Saying quality, accuracy, or correctness is critical means accuracy_priority = "high".
+* Saying a topic is unimportant, does not matter, or is not a concern means that topic's priority = "low".
+* Otherwise, when explicitly mentioned but not strongly emphasized => "medium".
+
+Return valid JSON only."""
     return prompt
