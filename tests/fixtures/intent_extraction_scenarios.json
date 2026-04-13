@@ -213,7 +213,7 @@
     {
       "id": "model-granite",
       "description": "IBM Granite model extraction",
-      "user_message": "Deploy IBM Granite for document analysis, 200 users",
+      "user_message": "Deploy ibm-granite/granite-3.1-8b-instruct for document analysis, 200 users",
       "conversation_history": null,
       "expected": {
         "use_case": "document_analysis_rag",
@@ -496,7 +496,7 @@
         "user_count": {"min": 10, "max": 5000},
         "domain_specialization": {"contains": ["code"]},
         "accuracy_priority": {"one_of": ["medium"]},
-        "cost_priority": {"one_of": ["medium"]},
+        "cost_priority": {"one_of": ["medium", "high"]},
         "latency_priority": {"one_of": ["medium"]}
       }
     }

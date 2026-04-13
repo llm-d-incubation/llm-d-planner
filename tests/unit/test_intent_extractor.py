@@ -21,7 +21,6 @@ def _base_intent(**overrides) -> dict:
         "accuracy_priority": "medium",
         "cost_priority": "medium",
         "latency_priority": "medium",
-        "complexity_priority": "medium",
     }
     data.update(overrides)
     return data
@@ -96,6 +95,26 @@ def test_clean_llm_output_preserves_valid_use_case(extractor, valid_use_case):
 def test_clean_llm_output_fuzzy_matches_close_typos(extractor, typo, expected):
     """Typos close to valid values are fuzzy-matched."""
     raw = _base_intent(use_case=typo)
+    cleaned = extractor._clean_llm_output(raw)
+    assert cleaned["use_case"] == expected
+
+
+# --- Case-insensitive normalization ---
+
+
+@pytest.mark.unit
+@pytest.mark.parametrize(
+    "mixed_case, expected",
+    [
+        ("Text_Summarization", "summarization_short"),
+        ("CHATBOT", "chatbot_conversational"),
+        ("Code_Completion", "code_completion"),
+        ("DOCUMENT_ANALYSIS_RAG", "document_analysis_rag"),
+    ],
+)
+def test_clean_llm_output_handles_case_insensitive(extractor, mixed_case, expected):
+    """Mixed-case use_case values are lowercased before alias/fuzzy matching."""
+    raw = _base_intent(use_case=mixed_case)
     cleaned = extractor._clean_llm_output(raw)
     assert cleaned["use_case"] == expected
 

@@ -127,29 +127,19 @@ class OllamaClient:
     def extract_structured_data(
         self,
         prompt: str,
-        schema_description: str,
         temperature: float = 0.3,
     ) -> dict[str, Any]:
         """
         Extract structured data from prompt using JSON format.
 
         Args:
-            prompt: Input prompt describing what to extract
-            schema_description: Description of expected JSON schema
+            prompt: Input prompt (should include schema and instructions)
             temperature: Lower temperature for more consistent extraction
 
         Returns:
             Parsed JSON dict
         """
-        full_prompt = f"""{prompt}
-
-{schema_description}
-
-Return ONLY valid JSON matching the schema above. Do not include any explanation or additional text."""
-
-        response_text = self.generate_completion(
-            full_prompt, format_json=True, temperature=temperature
-        )
+        response_text = self.generate_completion(prompt, format_json=True, temperature=temperature)
 
         try:
             result: dict[str, Any] = json.loads(response_text)
