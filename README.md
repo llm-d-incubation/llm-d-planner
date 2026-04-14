@@ -12,30 +12,55 @@
 
 The system addresses a critical challenge: **how do you translate business requirements into the right model and infrastructure choices without expensive trial-and-error?**
 
-llm-d Planner guides you from concept to production LLM deployments through SLO-driven capacity planning. Conversationally define your requirements — Planner translates them into traffic profiles, performance targets, and cost constraints. Get intelligent model and GPU recommendations based on real benchmarks. Explore alternatives, compare tradeoffs, deploy with one click, and monitor actual performance—staying on course as your needs evolve.
+llm-d Planner combines three capabilities into a unified platform:
 
-The code in this repository implements the **Planner Phase 2 MVP** with production-grade data management. Phase 1 (POC) demonstrated the end-to-end workflow with synthetic data. Phase 2 adds PostgreSQL for benchmark storage, a traffic profile framework aligned with GuideLLM standards, experience-driven SLO mapping, and p95 percentile targets for conservative guarantees.
+- **Conversational Recommendation Engine** — Describe your use case in natural language and get SLO-driven model + GPU recommendations backed by real benchmarks, with multi-criteria ranking and one-click Kubernetes deployment.
+- **Capacity Planner** — Estimate GPU memory requirements for any HuggingFace model: model weights, KV cache, activation memory, and CUDA overhead. Determine minimum GPU count, maximum context length, and concurrent request capacity for a given hardware configuration.
+- **GPU Recommender** — Predict inference performance (TTFT, ITL, throughput) across GPU types using BentoML's roofline model, without running actual benchmarks. Compare cost and latency tradeoffs to find the optimal GPU for your workload.
+
+When benchmark data is unavailable for a model/GPU combination, the GPU Recommender automatically generates estimated performance, filling gaps in the recommendation pipeline so users always get actionable results.
 
 ### Key Features
 
-- **🗣️ Conversational Requirements Gathering** - Describe your use case in natural language
-- **📊 SLO-Driven Capacity Planning** - Translate business needs into technical specifications (traffic profiles, latency targets, cost constraints)
-- **🎯 Intelligent Recommendations** - Get optimal model + GPU configurations backed by real benchmark data
-- **🔍 What-If Analysis** - Explore alternatives and compare cost vs. latency tradeoffs
-- **⚡ One-Click Deployment** - Generate production-ready KServe/vLLM YAML and deploy to Kubernetes
-- **📈 Performance Monitoring** - Track actual deployment status and test inference in real-time
-- **💻 GPU-Free Development** - vLLM simulator enables local testing without GPU hardware
+- **Conversational Requirements Gathering** - Describe your use case in natural language
+- **SLO-Driven Capacity Planning** - Translate business needs into technical specifications (traffic profiles, latency targets, cost constraints)
+- **GPU Memory Estimation** - Calculate model weight memory, KV cache, activation overhead, and minimum GPU requirements for any HuggingFace model
+- **Roofline Performance Prediction** - Estimate TTFT, ITL, and throughput across GPU types without running benchmarks
+- **Intelligent Recommendations** - Get optimal model + GPU configurations backed by real benchmarks, with estimated performance fallback
+- **Multi-Criteria Ranking** - Score configurations on accuracy, price, latency, and complexity with 5 ranked views
+- **What-If Analysis** - Explore alternatives and compare cost vs. latency tradeoffs
+- **One-Click Deployment** - Generate production-ready KServe/vLLM YAML and deploy to Kubernetes
+- **Performance Monitoring** - Track actual deployment status and test inference in real-time
+- **CLI and API** - Use the `planner` CLI or REST API for programmatic access to all capabilities
+- **GPU-Free Development** - vLLM simulator enables local testing without GPU hardware
 
 ### How It Works
+
+**Recommendation flow:**
 
 1. **Extract Intent** - LLM-powered analysis converts your description into structured requirements
 2. **Map to Traffic Profile** - Match use case to one of 4 GuideLLM benchmark configurations
 3. **Set SLO Targets** - Auto-generate TTFT (p95), ITL (p95), and E2E (p95) targets based on experience class
 4. **Query Benchmarks** - Exact match on (model, GPU, traffic profile) from PostgreSQL database
-5. **Filter by SLOs** - Find configurations meeting all p95 latency targets
-6. **Plan Capacity** - Calculate required replicas based on throughput requirements
-7. **Generate & Deploy** - Create validated Kubernetes YAML and deploy to local or production clusters
-8. **Monitor & Validate** - Track deployment status and test inference endpoints
+5. **Estimate if Missing** - For models/GPUs without benchmarks, generate estimated performance via roofline model
+6. **Filter by SLOs** - Find configurations meeting all p95 latency targets
+7. **Plan Capacity** - Calculate required replicas based on throughput requirements
+8. **Generate & Deploy** - Create validated Kubernetes YAML and deploy to local or production clusters
+9. **Monitor & Validate** - Track deployment status and test inference endpoints
+
+**Capacity Planner flow:**
+
+1. **Fetch Model Config** - Retrieve architecture details from HuggingFace (layers, heads, quantization)
+2. **Calculate Memory** - Model weights, KV cache per token, activation memory, CUDA/system overhead
+3. **Evaluate Hardware Fit** - Determine valid tensor parallelism values and whether the model fits on a given GPU
+4. **Report Capacity** - Maximum context length, concurrent requests, KV cache blocks for the configuration
+
+**GPU Recommender flow:**
+
+1. **Select GPUs** - Choose from a catalog of GPU types (H100, A100, L40, etc.) or evaluate all
+2. **Run Roofline Model** - BentoML's `llm-optimizer` estimates TTFT, ITL, and throughput per GPU
+3. **Apply Constraints** - Filter by max TTFT, max ITL, max latency, and GPU count limits
+4. **Rank by Cost** - Compare qualifying GPUs sorted by cost with performance details
 
 ## Prerequisites
 
@@ -73,6 +98,8 @@ make cluster-stop   # Delete cluster (optional)
 
 ### Using Planner
 
+**Conversational Recommendations** (main page):
+
 1. **Describe your use case** in the chat interface
    - Example: "I need a customer service chatbot for 5000 users with low latency"
 2. **Analyze use case** - Click "Analyze Use Case" to extract intent
@@ -82,21 +109,28 @@ make cluster-stop   # Delete cluster (optional)
 6. **Select a recommendation** - Review ranked options and click "Select"
 7. **Deploy** - Go to the "Deployment" tab to review, copy, or download generated deployment files
 
+**Capacity Planner** (sidebar page): Enter a HuggingFace model ID and GPU configuration to see memory breakdown (model weights, KV cache, activation, overhead), maximum context length, and concurrent request capacity.
+
+**GPU Recommender** (sidebar page): Enter a model ID and workload parameters (input/output token lengths) to get estimated inference performance across GPU types, ranked by cost.
+
 ## Architecture
 
 See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for detailed system design.
 
 ## Implemented Features
 
-- ✅ **Foundation**: Project structure, synthetic data, LLM client (Ollama)
-- ✅ **Core Recommendation Engine**: Intent extraction, traffic profiling, model recommendation, capacity planning
-- ✅ **FastAPI Backend**: REST endpoints, orchestration workflow, knowledge base access
-- ✅ **Streamlit UI**: Chat interface, recommendation display, specification editor
+- ✅ **Core Recommendation Engine**: Intent extraction, traffic profiling, multi-criteria model + GPU recommendation, SLO-driven capacity planning
+- ✅ **Capacity Planner**: GPU memory estimation (model weights, KV cache, activation, overhead), model-fits-GPU analysis, maximum context length and concurrent request calculations
+- ✅ **GPU Recommender**: Roofline model performance estimation (TTFT, ITL, throughput) across GPU types via BentoML `llm-optimizer`, cost comparison, latency constraint filtering
+- ✅ **Estimated Performance Fallback**: When benchmarks are unavailable, roofline estimates fill the gap in the recommendation pipeline (visually differentiated as "Estimated" vs "Benchmarked")
+- ✅ **FastAPI Backend**: REST endpoints for recommendations, capacity planning, GPU estimation, and database management
+- ✅ **Streamlit UI**: Chat interface, recommendation display, specification editor, Capacity Planner page, GPU Recommender page
+- ✅ **CLI**: `planner plan` for capacity planning, `planner estimate` for GPU performance estimation
 - ✅ **Deployment Automation**: YAML generation (KServe/vLLM/HPA/ServiceMonitor), Kubernetes deployment
 - ✅ **Local Kubernetes**: KIND cluster support, KServe installation, cluster management
 - ✅ **vLLM Simulator**: GPU-free development mode with realistic latency simulation
 - ✅ **Monitoring & Testing**: Real-time deployment status, inference testing UI, cluster observability
-- ✅ **Database Management**: Upload/reset benchmark data via REST API or UI Configuration tab (no shell access needed)
+- ✅ **Database Management**: Upload/reset benchmark data via REST API or UI Configuration tab
 
 ## Key Technologies
 
@@ -106,10 +140,39 @@ See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for detailed system design.
 | Frontend | Streamlit |
 | LLM | Ollama (qwen2.5:7b) |
 | Data | PostgreSQL |
+| Performance Estimation | BentoML llm-optimizer (roofline model) |
+| Model Configs | HuggingFace Hub API, transformers |
 | YAML Generation | Jinja2 templates |
 | Kubernetes | KIND (local), KServe v0.14.0 |
 | Deployment | kubectl |
 
+
+## CLI
+
+The `planner` CLI provides direct access to capacity planning and GPU estimation without running the web services.
+
+```bash
+# Capacity planning — memory breakdown for a model
+planner plan --model Qwen/Qwen3-32B
+
+# With GPU memory specified — shows allocatable KV cache, max concurrent requests
+planner plan --model Qwen/Qwen3-32B --gpu-memory 80 --tp 4
+
+# Auto-calculate maximum context length that fits
+planner plan --model Qwen/Qwen3-32B --gpu-memory 80 --max-model-len -1
+
+# GPU performance estimation — estimate TTFT/ITL/throughput across GPUs
+planner estimate --model Qwen/Qwen3-32B --input-len 512 --output-len 128
+
+# Estimate with specific GPUs and latency constraints
+planner estimate --model Qwen/Qwen3-32B --input-len 512 --output-len 128 \
+  --gpu-list H100,A100,L40 --max-ttft 100 --max-itl 10
+
+# Human-readable output sorted by cost
+planner estimate --model Qwen/Qwen3-32B --input-len 512 --output-len 128 --pretty
+```
+
+Run `planner --help`, `planner plan --help`, or `planner estimate --help` for all options.
 
 ## Development Commands
 
@@ -170,20 +233,21 @@ See [docs/DEVELOPER_GUIDE.md](docs/DEVELOPER_GUIDE.md#vllm-simulator-details) fo
 - **[Logging Guide](docs/LOGGING.md)** - Logging system and debugging
 - **[Claude Code Guidance](CLAUDE.md)** - AI assistant instructions for contributors
 
-## Phase 2 Completed Features
-
-Phase 2 MVP improvements (now complete):
+## Completed Milestone Features
 
 - ✅ **PostgreSQL Database** - Production-grade benchmark storage with psycopg2
 - ✅ **Traffic Profile Framework** - 4 GuideLLM standard configurations: (512→256), (1024→1024), (4096→512), (10240→1536)
 - ✅ **Experience-Driven SLOs** - 9 use cases mapped to 5 experience classes (instant, conversational, interactive, deferred, batch)
-- ✅ **p95 Percentiles** - More conservative SLO guarantees (changed from p90)
-- ✅ **ITL Terminology** - Inter-Token Latency instead of TPOT (Time Per Output Token)
-- ✅ **Exact Traffic Matching** - No fuzzy matching, exact (prompt_tokens, output_tokens) queries
-- ✅ **Pre-calculated E2E** - E2E latency stored in benchmarks for accuracy
-- ✅ **Enhanced SLO Filtering** - Find configurations meeting all p95 targets
+- ✅ **p95 Percentiles** - Conservative SLO guarantees using p95 targets
+- ✅ **GPU Memory Estimation** - Model weights, KV cache (MHA/GQA/MQA/MLA), activation memory with empirically validated constants, CUDA/system overhead
+- ✅ **Hardware Fit Analysis** - Valid tensor parallelism values, auto-calculated max context length, concurrent request capacity
+- ✅ **Roofline Performance Estimation** - BentoML `llm-optimizer` predicts TTFT, ITL, throughput per GPU type without running benchmarks
+- ✅ **Cost Comparison** - GPU cost ranking with custom cost overrides, latency constraint filtering
+- ✅ **Estimated Performance Fallback** - When benchmark data is missing, roofline estimates fill the gap (visually differentiated as "Estimated" vs "Benchmarked")
+- ✅ **CLI** - `planner plan` and `planner estimate` subcommands for programmatic access
+- ✅ **REST API** - `/api/v1/model-info`, `/api/v1/calculate`, `/api/v1/estimate` endpoints
 
-## Future Enhancements (Phase 3+)
+## Future Enhancements
 
 1. **Production-Grade Ingress** - External access with TLS, authentication, rate limiting
 2. **Production GPU Validation** - End-to-end testing with real GPU clusters
