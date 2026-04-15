@@ -8,7 +8,7 @@ dependencies = [
     # Core dependencies
     "fastapi>=0.115.3",
     "uvicorn[standard]==0.44.0",
-    "pydantic==2.12.5",
+    "pydantic==2.13.0",
     "pydantic-settings==2.13.1",
     # LLM integration
     "ollama==0.6.1",
