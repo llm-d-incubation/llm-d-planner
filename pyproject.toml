@@ -22,7 +22,7 @@ dependencies = [
     # HTTP client
     "requests==2.33.1",
     "huggingface_hub>=0.34.4",
-    "transformers>=4.55.4",
+    "transformers>=5.5.4",
     "llm-optimizer @ git+https://github.com/bentoml/llm-optimizer.git",
     "python-multipart>=0.0.26",
 ]
