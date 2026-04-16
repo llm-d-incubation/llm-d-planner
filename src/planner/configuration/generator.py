@@ -249,12 +249,13 @@ class DeploymentGenerator:
             namespace: Kubernetes namespace
 
         Returns:
-            Dictionary with deployment_id, namespace, files, and metadata
+            Dictionary with deployment_id, namespace, files (paths), and contents (rendered YAML)
         """
         deployment_id = self.generate_deployment_id(recommendation)
         context = self._prepare_template_context(recommendation, deployment_id, namespace)
 
         generated_files = {}
+        generated_contents = {}
 
         # Generate each config file
         configs = [
@@ -275,6 +276,7 @@ class DeploymentGenerator:
                 # Extract config type from template name (remove .j2 suffix)
                 config_type = template_name.replace(".yaml.j2", "").replace("kserve-", "")
                 generated_files[config_type] = str(output_path)
+                generated_contents[config_type] = rendered
 
                 logger.info(f"Generated {config_type}: {output_path}")
 
@@ -282,20 +284,11 @@ class DeploymentGenerator:
                 logger.error(f"Failed to generate {template_name}: {e}")
                 raise
 
-        # Store deployment metadata
-        metadata = {
-            "deployment_id": deployment_id,
-            "namespace": namespace,
-            "generated_at": context["generated_at"],
-            "files": generated_files,
-            "recommendation": recommendation.model_dump(),
-        }
-
         return {
             "deployment_id": deployment_id,
             "namespace": namespace,
             "files": generated_files,
-            "metadata": metadata,
+            "contents": generated_contents,
         }
 
     def generate_kserve_yaml(
