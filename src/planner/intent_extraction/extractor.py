@@ -2,12 +2,13 @@
 
 import difflib
 import logging
+import re
 from datetime import datetime
 from pathlib import Path
 from typing import get_args
 
 from planner.llm.ollama_client import OllamaClient
-from planner.llm.prompts import INTENT_EXTRACTION_SCHEMA, build_intent_extraction_prompt
+from planner.llm.prompts import build_intent_extraction_prompt
 from planner.shared.schemas import ConversationMessage, DeploymentIntent
 
 logger = logging.getLogger(__name__)
@@ -76,15 +77,13 @@ class IntentExtractor:
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         prompt_file = PROMPTS_DIR / f"intent_extraction_{timestamp}.txt"
 
-        full_prompt_with_schema = f"{prompt}\n\n{INTENT_EXTRACTION_SCHEMA}"
-
         with open(prompt_file, "w") as f:
             f.write("=" * 80 + "\n")
             f.write("INTENT EXTRACTION PROMPT\n")
             f.write(f"Generated: {datetime.now().isoformat()}\n")
             f.write(f"User Message: {user_message}\n")
             f.write("=" * 80 + "\n\n")
-            f.write(full_prompt_with_schema)
+            f.write(prompt)
             f.write("\n\n" + "=" * 80 + "\n")
             f.write("Copy everything above this line to test in other LLMs\n")
             f.write("=" * 80 + "\n")
@@ -93,8 +92,6 @@ class IntentExtractor:
         logger.info("=" * 80)
         logger.info("[FULL INTENT EXTRACTION PROMPT - START]")
         logger.info(prompt)
-        logger.info("[SCHEMA BEING USED]")
-        logger.info(INTENT_EXTRACTION_SCHEMA)
         logger.info("[FULL INTENT EXTRACTION PROMPT - END]")
         logger.info(f"💾 Prompt saved to: {prompt_file}")
         logger.info("=" * 80)
@@ -103,7 +100,6 @@ class IntentExtractor:
             # Extract structured data from LLM
             extracted = self.llm_client.extract_structured_data(
                 prompt,
-                INTENT_EXTRACTION_SCHEMA,
                 temperature=0.3,  # Lower temperature for more consistent extraction
             )
 
@@ -111,7 +107,7 @@ class IntentExtractor:
             logger.info(f"[EXTRACTED INTENT] {extracted}")
 
             # Validate and parse into Pydantic model
-            intent = self._parse_extracted_intent(extracted)
+            intent = self._parse_extracted_intent(extracted, user_message)
             logger.info(f"Extracted intent: use_case={intent.use_case}, users={intent.user_count}")
 
             return intent
@@ -120,12 +116,13 @@ class IntentExtractor:
             logger.error(f"Failed to extract intent: {e}")
             raise ValueError(f"Intent extraction failed: {e}") from e
 
-    def _parse_extracted_intent(self, raw_data: dict) -> DeploymentIntent:
+    def _parse_extracted_intent(self, raw_data: dict, user_message: str = "") -> DeploymentIntent:
         """
         Parse and validate raw LLM output into DeploymentIntent.
 
         Args:
             raw_data: Raw dict from LLM
+            user_message: Original user message for priority validation
 
         Returns:
             Validated DeploymentIntent
@@ -134,7 +131,7 @@ class IntentExtractor:
             ValueError: If data is invalid
         """
         # Handle common LLM mistakes
-        cleaned_data = self._clean_llm_output(raw_data)
+        cleaned_data = self._clean_llm_output(raw_data, user_message)
 
         try:
             return DeploymentIntent(**cleaned_data)
@@ -142,12 +139,13 @@ class IntentExtractor:
             logger.error(f"Failed to parse intent from: {cleaned_data}")
             raise ValueError(f"Invalid intent data: {e}") from e
 
-    def _clean_llm_output(self, data: dict) -> dict:
+    def _clean_llm_output(self, data: dict, user_message: str = "") -> dict:
         """
         Clean common LLM output mistakes.
 
         Args:
             data: Raw LLM output
+            user_message: Original user message for priority validation
 
         Returns:
             Cleaned data dict
@@ -161,7 +159,8 @@ class IntentExtractor:
             cleaned["use_case"] = cleaned["use_case"].split("|")[0].strip()
 
         # Normalize hallucinated use_case values
-        use_case = cleaned.get("use_case", "")
+        use_case = cleaned.get("use_case", "").lower()
+        cleaned["use_case"] = use_case
         valid_use_cases = list(get_args(DeploymentIntent.model_fields["use_case"].annotation))
         if use_case not in valid_use_cases:
             mapped = _USE_CASE_ALIASES.get(use_case)
@@ -173,6 +172,14 @@ class IntentExtractor:
                 if close:
                     logger.info("Fuzzy-matched use_case '%s' -> '%s'", use_case, close[0])
                     cleaned["use_case"] = close[0]
+                else:
+                    logger.warning(
+                        "Unrecognized use_case '%s' — no alias or fuzzy match found", use_case
+                    )
+
+        # Normalize experience_class to lowercase if provided by LLM
+        if "experience_class" in cleaned and isinstance(cleaned["experience_class"], str):
+            cleaned["experience_class"] = cleaned["experience_class"].lower()
 
         # Infer experience_class if not provided
         if "experience_class" not in cleaned or not cleaned.get("experience_class"):
@@ -203,8 +210,6 @@ class IntentExtractor:
         # Fix user_count if it's a descriptive string instead of integer
         if "user_count" in cleaned and isinstance(cleaned["user_count"], str):
             # Extract integer from strings like "thousands of users (estimated: 5,000 - 10,000)"
-            import re
-
             user_count_str = cleaned["user_count"]
 
             # Try to find numbers with commas or ranges
@@ -249,31 +254,46 @@ class IntentExtractor:
                         f"Could not parse user_count from '{user_count_str}', defaulting to 1000"
                     )
 
-        # Ensure domain_specialization is a list
+        # Ensure domain_specialization is a list with lowercase values
         if "domain_specialization" in cleaned:
             if isinstance(cleaned["domain_specialization"], str):
-                # Convert single string to list
-                cleaned["domain_specialization"] = [cleaned["domain_specialization"]]
-            elif "|" in str(cleaned.get("domain_specialization", "")):
-                # Handle "general|code" format
+                if "|" in cleaned["domain_specialization"]:
+                    # Handle "general|code" format
+                    cleaned["domain_specialization"] = [
+                        d.strip().lower() for d in cleaned["domain_specialization"].split("|")
+                    ]
+                else:
+                    # Convert single string to list
+                    cleaned["domain_specialization"] = [cleaned["domain_specialization"].lower()]
+            elif isinstance(cleaned["domain_specialization"], list):
                 cleaned["domain_specialization"] = [
-                    d.strip() for d in cleaned["domain_specialization"].split("|")
+                    d.lower() if isinstance(d, str) else d for d in cleaned["domain_specialization"]
                 ]
 
         # Ensure priority fields have valid values (default to "medium" if invalid/missing)
         valid_priorities = ["low", "medium", "high"]
+        # Map common LLM variations to valid values before discarding
+        _priority_aliases = {
+            "very_high": "high",
+            "very high": "high",
+            "critical": "high",
+            "very_low": "low",
+            "very low": "low",
+            "none": "low",
+        }
         for priority_field in [
             "accuracy_priority",
             "cost_priority",
             "latency_priority",
-            "complexity_priority",
         ]:
             if priority_field in cleaned:
                 # Normalize to lowercase and validate
                 priority_value = str(cleaned[priority_field]).lower().strip()
+                priority_value = _priority_aliases.get(priority_value, priority_value)
                 if priority_value not in valid_priorities:
                     logger.info(
-                        f"Invalid {priority_field}='{cleaned[priority_field]}', defaulting to 'medium'"
+                        f"Invalid {priority_field}='{cleaned[priority_field]}', "
+                        f"defaulting to 'medium'"
                     )
                     cleaned[priority_field] = "medium"
                 else:
@@ -282,6 +302,27 @@ class IntentExtractor:
                 # Field not provided by LLM, default to medium
                 cleaned[priority_field] = "medium"
 
+        # Enforce explicit-only priority extraction.
+        # The LLM returns *_mentioned booleans alongside *_priority values.
+        # Trust the LLM's priority only when it reports the user mentioned the
+        # topic.  Otherwise reset to medium — the LLM is likely inferring from
+        # use-case type rather than from what the user said.  The SLO profiles
+        # already handle use-case-appropriate targets.
+        for prefix in ("accuracy", "cost", "latency"):
+            mentioned_key = f"{prefix}_mentioned"
+            priority_key = f"{prefix}_priority"
+            mentioned_raw = cleaned.pop(mentioned_key, False)
+            mentioned = (
+                str(mentioned_raw).lower() == "true"
+                if isinstance(mentioned_raw, str)
+                else bool(mentioned_raw)
+            )
+            if not mentioned and cleaned.get(priority_key, "medium") != "medium":
+                logger.info(
+                    f"Resetting {priority_key} from '{cleaned[priority_key]}' to 'medium' "
+                    f"(LLM reported {mentioned_key}=false)"
+                )
+                cleaned[priority_key] = "medium"
         # Remove any unexpected fields that aren't in the schema
         valid_fields = DeploymentIntent.model_fields.keys()
         cleaned = {k: v for k, v in cleaned.items() if k in valid_fields}
@@ -302,11 +343,7 @@ class IntentExtractor:
         if intent.domain_specialization == ["general"]:
             if intent.use_case in ["code_generation_detailed", "code_completion"]:
                 intent.domain_specialization = ["general", "code"]
-            elif intent.use_case == "translation" or (
-                "multilingual" in intent.additional_context.lower()
-                if intent.additional_context
-                else False
-            ):
+            elif intent.use_case == "translation":
                 intent.domain_specialization = ["general", "multilingual"]
 
         return intent

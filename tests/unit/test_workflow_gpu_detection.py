@@ -94,7 +94,6 @@ class TestWorkflowGPUDetection:
             experience_class="conversational",
             user_count=100,
             preferred_gpu_types=[],
-            additional_context=None,
         )
         traffic = TrafficProfile(prompt_tokens=512, output_tokens=256, expected_qps=5.0)
         slo = SLOTargets(ttft_p95_target_ms=500, itl_p95_target_ms=50, e2e_p95_target_ms=15000)
