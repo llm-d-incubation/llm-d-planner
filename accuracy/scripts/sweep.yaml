@@ -242,3 +242,32 @@ runs:
   #   tp: 1
   #   _label: fp8dyn-redhatai-qwen2-5-7b
   #   _sweep_dim: quantization
+
+  # ── vLLM version sensitivity: activation memory across releases ───────────
+  # Goal: validate whether activation constants change across vLLM versions.
+  # Model: Qwen3-14B (tp=1, ~28 GiB bf16; tp=5 invalid — vocab not divisible).
+  # See sweep-versions.yaml to run these; results go in results/v<X>/
+  # DONE: v0.15.0
+  # - model: Qwen/Qwen3-14B
+  #   tp: 1
+  #   vllm_image: vllm/vllm-openai:v0.15.0
+  #   _label: qwen3-14b-vllm-v0.15.0
+  #   _sweep_dim: vllm_version
+  # DONE: v0.16.0
+  # - model: Qwen/Qwen3-14B
+  #   tp: 1
+  #   vllm_image: vllm/vllm-openai:v0.16.0
+  #   _label: qwen3-14b-vllm-v0.16.0
+  #   _sweep_dim: vllm_version
+  # DONE: v0.17.0
+  # - model: Qwen/Qwen3-14B
+  #   tp: 1
+  #   vllm_image: vllm/vllm-openai:v0.17.0
+  #   _label: qwen3-14b-vllm-v0.17.0
+  #   _sweep_dim: vllm_version
+  # DONE: v0.18.0
+  # - model: Qwen/Qwen3-14B
+  #   tp: 1
+  #   vllm_image: vllm/vllm-openai:v0.18.0
+  #   _label: qwen3-14b-vllm-v0.18.0
+  #   _sweep_dim: vllm_version
