@@ -109,7 +109,7 @@ def _render_deployment_controls(deployment_info: dict):
 
     st.markdown("#### Deployment Management")
 
-    col1, col2, col3 = st.columns(3)
+    col1, col2, col3 = st.columns(3, gap="medium")
 
     with col1:
         ready_status = "Ready" if status.get("ready") else "Pending"
@@ -292,7 +292,7 @@ def _run_inference_test(deployment_id: str, prompt: str, max_tokens: int, temper
                     st.code(response_text, language=None)
 
                     usage = response_data.get("usage", {})
-                    c1, c2, c3 = st.columns(3)
+                    c1, c2, c3 = st.columns(3, gap="medium")
                     with c1:
                         st.metric("Prompt Tokens", usage.get("prompt_tokens", 0))
                     with c2:

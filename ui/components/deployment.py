@@ -38,7 +38,7 @@ def render_deployment_tab():
 
     st.markdown(
         f"""
-    <div style="border-radius: 12px; padding: 1rem; margin-bottom: 1.5rem;">
+    <div style="border-radius: 12px; margin-bottom: 1.5rem;">
         <div style="display: flex; align-items: center; gap: 2rem; flex-wrap: wrap;">
             <div>
                 <span style="font-size: 0.85rem;">Model:</span>

@@ -27,8 +27,7 @@ def _render_filter_summary():
     filter_pct = passed_configs / total_configs * 100
     st.markdown(
         f"""
-    <div style="display: flex; align-items: center; gap: 1.5rem; margin-bottom: 1rem; padding: 0.6rem 1rem;
-                border-radius: 8px; ">
+    <div style="display: flex; align-items: center; gap: 1.5rem; margin-bottom: 1rem;">
         <span style="font-size: 0.85rem;">
             <strong style="color: #10B981;">{passed_configs:,}</strong> configs passed SLO filter
             from <strong>{total_configs:,}</strong> total
@@ -124,7 +123,7 @@ def _render_category_card(title, recs_list, highlight_field, category_key, col):
 
     with col, st.container(border=True):
         st.markdown(
-            f'<div style="line-height: 1.7;">'
+            f'<div style="line-height: 1.7; margin-bottom: 1rem;">'
             f'<strong style="font-size: 1.05rem;">{title}</strong>{badge_html}<br>'
             f'<span style="font-size: 0.9rem;"><strong>Solution:</strong> Model: {model_name} | Hardware: {hw_count}x {hw_type} | Replicas: {replicas}</span><br>'
             f'<span style="font-size: 0.9rem;"><strong>Scores:</strong> {scores_line}</span><br>'
@@ -133,55 +132,74 @@ def _render_category_card(title, recs_list, highlight_field, category_key, col):
             unsafe_allow_html=True,
         )
 
-        # Prev/Next navigation (circular)
+        # Prev/Next navigation (circular) - compact centered layout
         if len(recs_list) > 1:
             last = len(recs_list) - 1
-            nav_prev, nav_label, nav_next = st.columns([1, 2, 1])
-            with nav_prev:
-                if st.button("<", key=f"prev_{category_key}"):
-                    st.session_state[idx_key] = last if idx == 0 else idx - 1
-                    st.session_state.deployment_selected_config = None
-                    st.session_state.deployment_selected_category = None
-                    st.session_state.deployment_yaml_generated = False
-                    st.session_state.deployment_yaml_files = {}
-                    st.session_state.deployment_id = None
-                    st.session_state.deployment_error = None
-                    st.session_state.deployed_to_cluster = False
-                    st.rerun()
-            with nav_label:
-                st.markdown(
-                    f"<div style='text-align: center; line-height: 2.4; font-size: 0.85rem;'>#{idx + 1} of {len(recs_list)}</div>",
-                    unsafe_allow_html=True,
-                )
-            with nav_next:
-                if st.button("\\>", key=f"next_{category_key}"):
-                    st.session_state[idx_key] = 0 if idx == last else idx + 1
-                    st.session_state.deployment_selected_config = None
-                    st.session_state.deployment_selected_category = None
-                    st.session_state.deployment_yaml_generated = False
-                    st.session_state.deployment_yaml_files = {}
-                    st.session_state.deployment_id = None
-                    st.session_state.deployment_error = None
-                    st.session_state.deployed_to_cluster = False
-                    st.rerun()
+
+            # Use narrow columns for compact centered navigation
+            spacer_l, nav_area, spacer_r = st.columns([0.3, 0.4, 0.3])
+            with nav_area:
+                btn_prev, counter, btn_next = st.columns([1, 1.5, 1])
+                with btn_prev:
+                    # Right-align the prev button using nested columns
+                    empty, btn = st.columns([0.3, 0.7])
+                    with btn:
+                        if st.button("◀", key=f"prev_{category_key}"):
+                            st.session_state[idx_key] = last if idx == 0 else idx - 1
+                            st.session_state.deployment_selected_config = None
+                            st.session_state.deployment_selected_category = None
+                            st.session_state.deployment_yaml_generated = False
+                            st.session_state.deployment_yaml_files = {}
+                            st.session_state.deployment_id = None
+                            st.session_state.deployment_error = None
+                            st.session_state.deployed_to_cluster = False
+                            st.rerun()
+                with counter:
+                    st.markdown(
+                        f"<div style='text-align: center; line-height: 2.4; font-size: 0.85rem;'>#{idx + 1} of {len(recs_list)}</div>",
+                        unsafe_allow_html=True,
+                    )
+                with btn_next:
+                    # Left-align but add spacing with nested columns
+                    btn, empty = st.columns([0.7, 0.3])
+                    with btn:
+                        if st.button("▶", key=f"next_{category_key}"):
+                            st.session_state[idx_key] = 0 if idx == last else idx + 1
+                            st.session_state.deployment_selected_config = None
+                            st.session_state.deployment_selected_category = None
+                            st.session_state.deployment_yaml_generated = False
+                            st.session_state.deployment_yaml_files = {}
+                            st.session_state.deployment_id = None
+                            st.session_state.deployment_error = None
+                            st.session_state.deployed_to_cluster = False
+                            st.rerun()
 
         selected_category = st.session_state.get("deployment_selected_category")
         is_selected = selected_category == category_key
 
         if is_selected:
-            if st.button(
-                "Selected", key=f"selected_{category_key}", width="stretch", type="primary"
-            ):
-                st.session_state.deployment_selected_config = None
-                st.session_state.deployment_selected_category = None
-                st.session_state.deployment_yaml_generated = False
-                st.session_state.deployment_yaml_files = {}
-                st.session_state.deployment_id = None
-                st.session_state.deployment_error = None
-                st.session_state.deployed_to_cluster = False
-                st.rerun()
+            # Show custom green "Selected" indicator (visual only)
+            st.markdown(
+                """
+                <div style="
+                    width: 100%;
+                    padding: 0.5rem 1rem;
+                    background-color: #D1FAE5;
+                    color: #065F46;
+                    border: 1px solid #10B981;
+                    border-radius: 0.375rem;
+                    font-size: 1rem;
+                    font-weight: 400;
+                    text-align: center;
+                    margin-bottom: 0.5rem;
+                ">
+                    ✓ Selected
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
         else:
-            if st.button("Select", key=f"select_{category_key}", width="stretch"):
+            if st.button("Select", key=f"select_{category_key}", use_container_width=True):
                 st.session_state.deployment_selected_config = rec
                 st.session_state.deployment_selected_category = category_key
                 st.session_state.deployment_yaml_generated = False
@@ -476,8 +494,6 @@ def render_recommendation_result(result: dict, priority: str, extraction: dict):
             for warn in estimation_warnings:
                 st.warning(warn)
 
-    st.markdown("---")
-
     # Get all recommendations for the cards
     all_recs: list[dict[str, Any]] = []
     for cat in ["balanced", "best_accuracy", "lowest_cost", "lowest_latency", "simplest"]:
@@ -503,15 +519,33 @@ def render_recommendation_result(result: dict, priority: str, extraction: dict):
     if unique_recs:
         render_top5_table(unique_recs, priority)
 
-    # === LIST OPTIONS SECTION (inline expandable) ===
+    # === VIEW DEPLOYMENT CONFIGURATION BUTTON ===
     st.markdown("<div style='height: 1.5rem;'></div>", unsafe_allow_html=True)
-    col_left, col_center, col_right = st.columns([1, 2, 1])
-    with col_center:
-        is_expanded = st.session_state.get("show_options_list_expanded", False)
-        button_text = "Hide Option List" if is_expanded else "List Options"
-        if st.button(button_text, key="list_options_btn", width="stretch"):
-            st.session_state.show_options_list_expanded = not is_expanded
-            st.rerun()
 
-    if st.session_state.get("show_options_list_expanded", False):
+    has_selection = st.session_state.get("deployment_selected_category") is not None
+
+    # Use columns to center and limit button width to ~500px
+    col_left, col_center, col_right = st.columns([1, 1, 1])
+    with col_center:
+        if has_selection:
+            if st.button(
+                "View Deployment Configuration",
+                key="view_deployment_config_btn",
+                use_container_width=True,
+                type="primary"
+            ):
+                # Navigate to Deployment tab (index 3)
+                st.session_state["_pending_tab"] = 3
+                st.rerun()
+        else:
+            st.button(
+                "View Deployment Configuration",
+                key="view_deployment_config_btn_disabled",
+                use_container_width=True,
+                disabled=True
+            )
+
+    # === CONFIGURATION OPTIONS SECTION ===
+    st.markdown("<div style='height: 1.5rem;'></div>", unsafe_allow_html=True)
+    with st.expander("Configuration Options", expanded=False):
         render_options_list_inline()

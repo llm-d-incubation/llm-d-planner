@@ -77,7 +77,7 @@ def render_extraction_with_approval(extraction: dict, models_df):
         f"**Priorities:** {priorities}"
     )
 
-    col1, col2, col3 = st.columns([1, 1, 1])
+    col1, col2, col3 = st.columns([1, 1, 1], gap="medium")
     with col1:
         if st.button(
             "Generate Specification",
@@ -142,7 +142,7 @@ def render_extraction_edit_form(extraction: dict, models_df):
     current_use_case = extraction.get("use_case", "chatbot_conversational")
     current_idx = use_cases.index(current_use_case) if current_use_case in use_cases else 0
 
-    col1, col2 = st.columns(2)
+    col1, col2 = st.columns(2, gap="medium")
     with col1:
         new_use_case = st.selectbox(
             "Use Case",
@@ -198,7 +198,7 @@ def render_extraction_edit_form(extraction: dict, models_df):
 
     # Model selection
     st.markdown("**Model Preferences** (optional)")
-    col_models, col_custom = st.columns(2)
+    col_models, col_custom = st.columns(2, gap="medium")
     with col_models:
         # Get catalog models for multiselect
         catalog_model_ids = fetch_catalog_model_ids()
@@ -227,7 +227,7 @@ def render_extraction_edit_form(extraction: dict, models_df):
 
     st.markdown("<br>", unsafe_allow_html=True)
 
-    col1, col2 = st.columns(2)
+    col1, col2 = st.columns(2, gap="medium")
     with col1:
         if st.button("Apply Changes", type="primary", width="stretch", key="apply_edit"):
             edited = {
