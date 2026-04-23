@@ -1,0 +1,771 @@
+DEBUG 04-23 00:59:37 [plugins/__init__.py:36] No plugins for group vllm.platform_plugins found.
+DEBUG 04-23 00:59:37 [platforms/__init__.py:37] Checking if TPU platform is available.
+DEBUG 04-23 00:59:37 [platforms/__init__.py:56] TPU platform is not available because: No module named 'libtpu'
+DEBUG 04-23 00:59:37 [platforms/__init__.py:62] Checking if CUDA platform is available.
+DEBUG 04-23 00:59:37 [platforms/__init__.py:85] Confirmed CUDA platform is available.
+DEBUG 04-23 00:59:37 [platforms/__init__.py:113] Checking if ROCm platform is available.
+DEBUG 04-23 00:59:37 [platforms/__init__.py:127] ROCm platform is not available because: No module named 'amdsmi'
+DEBUG 04-23 00:59:37 [platforms/__init__.py:134] Checking if XPU platform is available.
+DEBUG 04-23 00:59:37 [platforms/__init__.py:165] Checking if CPU platform is available.
+DEBUG 04-23 00:59:37 [platforms/__init__.py:62] Checking if CUDA platform is available.
+DEBUG 04-23 00:59:37 [platforms/__init__.py:85] Confirmed CUDA platform is available.
+DEBUG 04-23 00:59:37 [platforms/__init__.py:247] Automatically detected platform cuda.
+DEBUG 04-23 00:59:42 [utils/import_utils.py:74] Loading module triton_kernels from /usr/local/lib/python3.12/dist-packages/vllm/third_party/triton_kernels/__init__.py.
+DEBUG 04-23 00:59:44 [entrypoints/utils.py:170] Setting VLLM_WORKER_MULTIPROC_METHOD to 'spawn'
+DEBUG 04-23 00:59:44 [plugins/__init__.py:44] Available plugins for group vllm.general_plugins:
+DEBUG 04-23 00:59:44 [plugins/__init__.py:46] - lora_filesystem_resolver -> vllm.plugins.lora_resolvers.filesystem_resolver:register_filesystem_resolver
+DEBUG 04-23 00:59:44 [plugins/__init__.py:46] - lora_hf_hub_resolver -> vllm.plugins.lora_resolvers.hf_hub_resolver:register_hf_hub_resolver
+DEBUG 04-23 00:59:44 [plugins/__init__.py:49] All plugins in this group will be loaded. Set `VLLM_PLUGINS` to control which plugins to load.
+(APIServer pid=1) INFO 04-23 00:59:44 [entrypoints/utils.py:299] 
+(APIServer pid=1) INFO 04-23 00:59:44 [entrypoints/utils.py:299]        █     █     █▄   ▄█
+(APIServer pid=1) INFO 04-23 00:59:44 [entrypoints/utils.py:299]  ▄▄ ▄█ █     █     █ ▀▄▀ █  version 0.19.0
+(APIServer pid=1) INFO 04-23 00:59:44 [entrypoints/utils.py:299]   █▄█▀ █     █     █     █  model   Qwen/Qwen1.5-MoE-A2.7B
+(APIServer pid=1) INFO 04-23 00:59:44 [entrypoints/utils.py:299]    ▀▀  ▀▀▀▀▀ ▀▀▀▀▀ ▀     ▀
+(APIServer pid=1) INFO 04-23 00:59:44 [entrypoints/utils.py:299] 
+(APIServer pid=1) INFO 04-23 00:59:44 [entrypoints/utils.py:233] non-default args: {'model_tag': 'Qwen/Qwen1.5-MoE-A2.7B', 'model': 'Qwen/Qwen1.5-MoE-A2.7B', 'max_model_len': 8192, 'gpu_memory_utilization': 0.95, 'enable_prefix_caching': False}
+(APIServer pid=1) WARNING 04-23 00:59:44 [envs.py:1744] Unknown vLLM environment variable detected: VLLM_ATTENTION_BACKEND
+(APIServer pid=1) DEBUG 04-23 00:59:45 [model_executor/models/registry.py:774] Cached model info file for class vllm.model_executor.models.qwen2_moe.Qwen2MoeForCausalLM not found
+(APIServer pid=1) DEBUG 04-23 00:59:45 [model_executor/models/registry.py:834] Cache model info for class vllm.model_executor.models.qwen2_moe.Qwen2MoeForCausalLM miss. Loading model instead.
+(APIServer pid=1) DEBUG 04-23 00:59:54 [model_executor/models/registry.py:844] Loaded model info for class vllm.model_executor.models.qwen2_moe.Qwen2MoeForCausalLM
+(APIServer pid=1) DEBUG 04-23 00:59:55 [logging_utils/log_time.py:29] Registry inspect model class: Elapsed time 9.9489278 secs
+(APIServer pid=1) INFO 04-23 00:59:55 [config/model.py:549] Resolved architecture: Qwen2MoeForCausalLM
+(APIServer pid=1) INFO 04-23 00:59:55 [config/model.py:1678] Using max model len 8192
+(APIServer pid=1) DEBUG 04-23 00:59:55 [config/model.py:1743] Generative models support chunked prefill.
+(APIServer pid=1) DEBUG 04-23 00:59:55 [config/model.py:1801] Generative models support prefix caching.
+(APIServer pid=1) DEBUG 04-23 00:59:55 [engine/arg_utils.py:2116] Enabling chunked prefill by default
+(APIServer pid=1) DEBUG 04-23 00:59:55 [engine/arg_utils.py:2232] Defaulting max_num_batched_tokens to 8192 for OPENAI_API_SERVER usage context.
+(APIServer pid=1) DEBUG 04-23 00:59:55 [engine/arg_utils.py:2242] Defaulting max_num_seqs to 1024 for OPENAI_API_SERVER usage context.
+(APIServer pid=1) INFO 04-23 00:59:55 [config/scheduler.py:238] Chunked prefill is enabled with max_num_batched_tokens=8192.
+(APIServer pid=1) INFO 04-23 00:59:55 [config/vllm.py:790] Asynchronous scheduling is enabled.
+(APIServer pid=1) DEBUG 04-23 00:59:55 [plugins/__init__.py:36] No plugins for group vllm.stat_logger_plugins found.
+(APIServer pid=1) DEBUG 04-23 00:59:55 [tokenizers/registry.py:68] Loading CachedHfTokenizer for tokenizer_mode='hf'
+(APIServer pid=1) DEBUG 04-23 00:59:57 [renderers/registry.py:57] Loading HfRenderer for renderer_mode='hf'
+(APIServer pid=1) DEBUG 04-23 00:59:57 [plugins/io_processors/__init__.py:36] No IOProcessor plugins requested by the model
+DEBUG 04-23 01:00:01 [plugins/__init__.py:36] No plugins for group vllm.platform_plugins found.
+DEBUG 04-23 01:00:01 [platforms/__init__.py:37] Checking if TPU platform is available.
+DEBUG 04-23 01:00:01 [platforms/__init__.py:56] TPU platform is not available because: No module named 'libtpu'
+DEBUG 04-23 01:00:01 [platforms/__init__.py:62] Checking if CUDA platform is available.
+DEBUG 04-23 01:00:01 [platforms/__init__.py:85] Confirmed CUDA platform is available.
+DEBUG 04-23 01:00:01 [platforms/__init__.py:113] Checking if ROCm platform is available.
+DEBUG 04-23 01:00:01 [platforms/__init__.py:127] ROCm platform is not available because: No module named 'amdsmi'
+DEBUG 04-23 01:00:01 [platforms/__init__.py:134] Checking if XPU platform is available.
+DEBUG 04-23 01:00:01 [platforms/__init__.py:165] Checking if CPU platform is available.
+DEBUG 04-23 01:00:01 [platforms/__init__.py:62] Checking if CUDA platform is available.
+DEBUG 04-23 01:00:01 [platforms/__init__.py:85] Confirmed CUDA platform is available.
+DEBUG 04-23 01:00:01 [platforms/__init__.py:247] Automatically detected platform cuda.
+DEBUG 04-23 01:00:06 [utils/import_utils.py:74] Loading module triton_kernels from /usr/local/lib/python3.12/dist-packages/vllm/third_party/triton_kernels/__init__.py.
+(APIServer pid=1) DEBUG 04-23 01:00:07 [v1/engine/utils.py:1042] Waiting for 1 local, 0 remote core engine proc(s) to connect.
+(EngineCore pid=436) DEBUG 04-23 01:00:07 [v1/engine/core.py:1018] Waiting for init message from front-end.
+(APIServer pid=1) DEBUG 04-23 01:00:07 [v1/engine/utils.py:1158] HELLO from local core engine process 0.
+(EngineCore pid=436) DEBUG 04-23 01:00:07 [v1/engine/core.py:1029] Received init message: EngineHandshakeMetadata(addresses=EngineZmqAddresses(inputs=['ipc:///tmp/21edced6-b313-45ec-92ff-bf9809b8e7de'], outputs=['ipc:///tmp/db714d47-5168-4d47-9fd1-3221cefdb843'], coordinator_input=None, coordinator_output=None, frontend_stats_publish_address=None), parallel_config={})
+(EngineCore pid=436) DEBUG 04-23 01:00:07 [v1/engine/core.py:826] Has DP Coordinator: False, stats publish address: None
+(EngineCore pid=436) DEBUG 04-23 01:00:07 [plugins/__init__.py:44] Available plugins for group vllm.general_plugins:
+(EngineCore pid=436) DEBUG 04-23 01:00:07 [plugins/__init__.py:46] - lora_filesystem_resolver -> vllm.plugins.lora_resolvers.filesystem_resolver:register_filesystem_resolver
+(EngineCore pid=436) DEBUG 04-23 01:00:07 [plugins/__init__.py:46] - lora_hf_hub_resolver -> vllm.plugins.lora_resolvers.hf_hub_resolver:register_hf_hub_resolver
+(EngineCore pid=436) DEBUG 04-23 01:00:07 [plugins/__init__.py:49] All plugins in this group will be loaded. Set `VLLM_PLUGINS` to control which plugins to load.
+(EngineCore pid=436) INFO 04-23 01:00:07 [v1/engine/core.py:105] Initializing a V1 LLM engine (v0.19.0) with config: model='Qwen/Qwen1.5-MoE-A2.7B', speculative_config=None, tokenizer='Qwen/Qwen1.5-MoE-A2.7B', skip_tokenizer_init=False, tokenizer_mode=auto, revision=None, tokenizer_revision=None, trust_remote_code=False, dtype=torch.bfloat16, max_seq_len=8192, download_dir=None, load_format=auto, tensor_parallel_size=1, pipeline_parallel_size=1, data_parallel_size=1, decode_context_parallel_size=1, dcp_comm_backend=ag_rs, disable_custom_all_reduce=False, quantization=None, enforce_eager=False, enable_return_routed_experts=False, kv_cache_dtype=auto, device_config=cuda, structured_outputs_config=StructuredOutputsConfig(backend='auto', disable_any_whitespace=False, disable_additional_properties=False, reasoning_parser='', reasoning_parser_plugin='', enable_in_reasoning=False), observability_config=ObservabilityConfig(show_hidden_metrics_for_version=None, otlp_traces_endpoint=None, collect_detailed_traces=None, kv_cache_metrics=False, kv_cache_metrics_sample=0.01, cudagraph_metrics=False, enable_layerwise_nvtx_tracing=False, enable_mfu_metrics=False, enable_mm_processor_stats=False, enable_logging_iteration_details=False), seed=0, served_model_name=Qwen/Qwen1.5-MoE-A2.7B, enable_prefix_caching=False, enable_chunked_prefill=True, pooler_config=None, compilation_config={'mode': <CompilationMode.VLLM_COMPILE: 3>, 'debug_dump_path': None, 'cache_dir': '', 'compile_cache_save_format': 'binary', 'backend': 'inductor', 'custom_ops': ['none'], 'splitting_ops': ['vllm::unified_attention', 'vllm::unified_attention_with_output', 'vllm::unified_mla_attention', 'vllm::unified_mla_attention_with_output', 'vllm::mamba_mixer2', 'vllm::mamba_mixer', 'vllm::short_conv', 'vllm::linear_attention', 'vllm::plamo2_mamba_mixer', 'vllm::gdn_attention_core', 'vllm::olmo_hybrid_gdn_full_forward', 'vllm::kda_attention', 'vllm::sparse_attn_indexer', 'vllm::rocm_aiter_sparse_attn_indexer', 'vllm::unified_kv_cache_update', 'vllm::unified_mla_kv_cache_update'], 'compile_mm_encoder': False, 'cudagraph_mm_encoder': False, 'encoder_cudagraph_token_budgets': [], 'encoder_cudagraph_max_images_per_batch': 0, 'compile_sizes': [], 'compile_ranges_endpoints': [8192], 'inductor_compile_config': {'enable_auto_functionalized_v2': False, 'size_asserts': True, 'alignment_asserts': True, 'scalar_asserts': True, 'combo_kernels': True, 'benchmark_combo_kernel': True}, 'inductor_passes': {}, 'cudagraph_mode': <CUDAGraphMode.FULL_AND_PIECEWISE: (2, 1)>, 'cudagraph_num_of_warmups': 1, 'cudagraph_capture_sizes': [1, 2, 4, 8, 16, 24, 32, 40, 48, 56, 64, 72, 80, 88, 96, 104, 112, 120, 128, 136, 144, 152, 160, 168, 176, 184, 192, 200, 208, 216, 224, 232, 240, 248, 256, 272, 288, 304, 320, 336, 352, 368, 384, 400, 416, 432, 448, 464, 480, 496, 512], 'cudagraph_copy_inputs': False, 'cudagraph_specialize_lora': True, 'use_inductor_graph_partition': False, 'pass_config': {'fuse_norm_quant': False, 'fuse_act_quant': False, 'fuse_attn_quant': False, 'enable_sp': False, 'fuse_gemm_comms': False, 'fuse_allreduce_rms': False}, 'max_cudagraph_capture_size': 512, 'dynamic_shapes_config': {'type': <DynamicShapesType.BACKED: 'backed'>, 'evaluate_guards': False, 'assume_32_bit_indexing': False}, 'local_cache_dir': None, 'fast_moe_cold_start': True, 'static_all_moe_layers': []}
+(EngineCore pid=436) DEBUG 04-23 01:00:08 [distributed/parallel_state.py:1356] world_size=1 rank=0 local_rank=0 distributed_init_method=tcp://10.130.6.25:50059 backend=nccl
+(EngineCore pid=436) INFO 04-23 01:00:08 [distributed/parallel_state.py:1400] world_size=1 rank=0 local_rank=0 distributed_init_method=tcp://10.130.6.25:50059 backend=nccl
+[Gloo] Rank 0 is connected to 0 peer ranks. Expected number of connected peer ranks is : 0
+(EngineCore pid=436) DEBUG 04-23 01:00:08 [distributed/parallel_state.py:1459] Detected 1 nodes in the distributed environment
+[Gloo] Rank 0 is connected to 0 peer ranks. Expected number of connected peer ranks is : 0
+[Gloo] Rank 0 is connected to 0 peer ranks. Expected number of connected peer ranks is : 0
+[Gloo] Rank 0 is connected to 0 peer ranks. Expected number of connected peer ranks is : 0
+[Gloo] Rank 0 is connected to 0 peer ranks. Expected number of connected peer ranks is : 0
+[Gloo] Rank 0 is connected to 0 peer ranks. Expected number of connected peer ranks is : 0
+[Gloo] Rank 0 is connected to 0 peer ranks. Expected number of connected peer ranks is : 0
+(EngineCore pid=436) INFO 04-23 01:00:08 [distributed/parallel_state.py:1716] rank 0 in world size 1 is assigned as DP rank 0, PP rank 0, PCP rank 0, TP rank 0, EP rank 0, EPLB rank N/A
+(EngineCore pid=436) DEBUG 04-23 01:00:08 [v1/worker/gpu_worker.py:284] worker init memory snapshot: torch_peak=0.0GiB, free_memory=78.68GiB, total_memory=79.19GiB, cuda_memory=0.51GiB, torch_memory=0.0GiB, non_torch_memory=0.51GiB, timestamp=1776906008.6471531, auto_measure=True
+(EngineCore pid=436) DEBUG 04-23 01:00:08 [v1/worker/gpu_worker.py:285] worker requested memory: 75.23GiB
+(EngineCore pid=436) DEBUG 04-23 01:00:08 [compilation/decorators.py:213] Inferred dynamic dimensions for forward method of <class 'vllm.model_executor.models.deepseek_v2.DeepseekV2Model'>: ['input_ids', 'positions', 'intermediate_tensors', 'inputs_embeds']
+(EngineCore pid=436) DEBUG 04-23 01:00:08 [compilation/decorators.py:213] Inferred dynamic dimensions for forward method of <class 'vllm.model_executor.models.deepseek_eagle3.DeepseekV2Eagle3Model'>: ['input_ids', 'positions', 'hidden_states', 'input_embeds']
+(EngineCore pid=436) DEBUG 04-23 01:00:08 [compilation/decorators.py:213] Inferred dynamic dimensions for forward method of <class 'vllm.model_executor.models.llama.LlamaModel'>: ['input_ids', 'positions', 'intermediate_tensors', 'inputs_embeds']
+(EngineCore pid=436) DEBUG 04-23 01:00:08 [compilation/decorators.py:213] Inferred dynamic dimensions for forward method of <class 'vllm.v1.spec_decode.ngram_proposer_gpu.NgramGPUKernel'>: ['num_tokens_no_spec', 'token_ids_gpu', 'combined_mask']
+(EngineCore pid=436) DEBUG 04-23 01:00:08 [v1/sample/ops/topk_topp_sampler.py:57] FlashInfer top-p/top-k sampling is available but disabled by default. Set VLLM_USE_FLASHINFER_SAMPLER=1 to opt in after verifying accuracy for your workloads.
+(EngineCore pid=436) DEBUG 04-23 01:00:08 [v1/sample/logits_processor/__init__.py:65] No logitsprocs plugins installed (group vllm.logits_processors).
+(EngineCore pid=436) DEBUG 04-23 01:00:08 [model_executor/offloader/base.py:107] Offloader set to NoopOffloader (no offloading).
+(EngineCore pid=436) DEBUG 04-23 01:00:08 [compilation/decorators.py:213] Inferred dynamic dimensions for forward method of <class 'vllm.model_executor.models.qwen2_moe.Qwen2MoeModel'>: ['input_ids', 'positions', 'intermediate_tensors', 'inputs_embeds']
+(EngineCore pid=436) INFO 04-23 01:00:08 [v1/worker/gpu_model_runner.py:4735] Starting to load model Qwen/Qwen1.5-MoE-A2.7B...
+(EngineCore pid=436) DEBUG 04-23 01:00:09 [platforms/cuda.py:293] Some attention backends are not valid for cuda with AttentionSelectorConfig(head_size=128, dtype=torch.bfloat16, kv_cache_dtype=auto, block_size=None, use_mla=False, has_sink=False, use_sparse=False, use_mm_prefix=False, use_per_head_quant_scales=False, attn_type=AttentionType.DECODER). Reasons: {}.
+(EngineCore pid=436) INFO 04-23 01:00:09 [platforms/cuda.py:334] Using FLASH_ATTN attention backend out of potential backends: ['FLASH_ATTN', 'FLASHINFER', 'TRITON_ATTN', 'FLEX_ATTENTION'].
+(EngineCore pid=436) INFO 04-23 01:00:09 [v1/attention/backends/flash_attn.py:596] Using FlashAttention version 3
+(EngineCore pid=436) INFO 04-23 01:00:09 [model_executor/.../oracle/unquantized.py:186] Using TRITON backend for Unquantized MoE
+(EngineCore pid=436) DEBUG 04-23 01:00:09 [model_executor/.../runner/default_moe_runner.py:240] Enabled separate cuda stream for MoE shared_experts
+(EngineCore pid=436) <frozen importlib._bootstrap_external>:1301: FutureWarning: The cuda.cudart module is deprecated and will be removed in a future release, please switch to use the cuda.bindings.runtime module instead.
+(EngineCore pid=436) <frozen importlib._bootstrap_external>:1301: FutureWarning: The cuda.nvrtc module is deprecated and will be removed in a future release, please switch to use the cuda.bindings.nvrtc module instead.
+(EngineCore pid=436) DEBUG 04-23 01:00:09 [compilation/backends.py:101] Using InductorStandaloneAdaptor
+(EngineCore pid=436) DEBUG 04-23 01:00:09 [config/compilation.py:1194] enabled custom ops: Counter()
+(EngineCore pid=436) DEBUG 04-23 01:00:09 [config/compilation.py:1195] disabled custom ops: Counter({'rms_norm': 49, 'silu_and_mul': 24, 'fused_moe': 24, 'unquantized_fused_moe': 24, 'vocab_parallel_embedding': 1, 'rotary_embedding': 1, 'apply_rotary_emb': 1, 'parallel_lm_head': 1, 'logits_processor': 1})
+(EngineCore pid=436) DEBUG 04-23 01:00:09 [model_executor/model_loader/base_loader.py:63] Loading weights on cuda ...
+(EngineCore pid=436) DEBUG 04-23 01:00:09 [model_executor/model_loader/weight_utils.py:557] Using model weights format [['model-00005-of-00008.safetensors', 'model-00008-of-00008.safetensors', 'model-00003-of-00008.safetensors', 'model-00007-of-00008.safetensors', 'model-00002-of-00008.safetensors', 'model-00001-of-00008.safetensors', 'model-00006-of-00008.safetensors', 'model-00004-of-00008.safetensors']]
+(APIServer pid=1) DEBUG 04-23 01:00:17 [v1/engine/utils.py:1047] Waiting for 1 local, 0 remote core engine proc(s) to start.
+(APIServer pid=1) DEBUG 04-23 01:00:27 [v1/engine/utils.py:1047] Waiting for 1 local, 0 remote core engine proc(s) to start.
+(APIServer pid=1) DEBUG 04-23 01:00:37 [v1/engine/utils.py:1047] Waiting for 1 local, 0 remote core engine proc(s) to start.
+(APIServer pid=1) DEBUG 04-23 01:00:47 [v1/engine/utils.py:1047] Waiting for 1 local, 0 remote core engine proc(s) to start.
+(APIServer pid=1) DEBUG 04-23 01:00:57 [v1/engine/utils.py:1047] Waiting for 1 local, 0 remote core engine proc(s) to start.
+(APIServer pid=1) DEBUG 04-23 01:01:07 [v1/engine/utils.py:1047] Waiting for 1 local, 0 remote core engine proc(s) to start.
+(APIServer pid=1) DEBUG 04-23 01:01:17 [v1/engine/utils.py:1047] Waiting for 1 local, 0 remote core engine proc(s) to start.
+(EngineCore pid=436) INFO 04-23 01:01:22 [model_executor/model_loader/weight_utils.py:581] Time spent downloading weights for Qwen/Qwen1.5-MoE-A2.7B: 72.140959 seconds
+(EngineCore pid=436) Loading safetensors checkpoint shards:   0% Completed | 0/8 [00:00<?, ?it/s]
+(EngineCore pid=436) Loading safetensors checkpoint shards:  12% Completed | 1/8 [00:03<00:24,  3.55s/it]
+(APIServer pid=1) DEBUG 04-23 01:01:27 [v1/engine/utils.py:1047] Waiting for 1 local, 0 remote core engine proc(s) to start.
+(EngineCore pid=436) Loading safetensors checkpoint shards:  25% Completed | 2/8 [00:07<00:21,  3.56s/it]
+(EngineCore pid=436) Loading safetensors checkpoint shards:  38% Completed | 3/8 [00:10<00:17,  3.53s/it]
+(EngineCore pid=436) Loading safetensors checkpoint shards:  50% Completed | 4/8 [00:14<00:14,  3.54s/it]
+(APIServer pid=1) DEBUG 04-23 01:01:37 [v1/engine/utils.py:1047] Waiting for 1 local, 0 remote core engine proc(s) to start.
+(EngineCore pid=436) Loading safetensors checkpoint shards:  62% Completed | 5/8 [00:17<00:10,  3.55s/it]
+(EngineCore pid=436) Loading safetensors checkpoint shards:  75% Completed | 6/8 [00:21<00:07,  3.54s/it]
+(EngineCore pid=436) Loading safetensors checkpoint shards:  88% Completed | 7/8 [00:24<00:03,  3.53s/it]
+(EngineCore pid=436) DEBUG 04-23 01:01:47 [model_executor/models/utils.py:227] Loaded weight lm_head.weight with shape torch.Size([151936, 2048])
+(EngineCore pid=436) Loading safetensors checkpoint shards: 100% Completed | 8/8 [00:25<00:00,  2.60s/it]
+(EngineCore pid=436) Loading safetensors checkpoint shards: 100% Completed | 8/8 [00:25<00:00,  3.17s/it]
+(EngineCore pid=436) 
+(EngineCore pid=436) INFO 04-23 01:01:47 [model_executor/model_loader/default_loader.py:384] Loading weights took 25.38 seconds
+(EngineCore pid=436) DEBUG 04-23 01:01:47 [model_executor/model_loader/base_loader.py:70] Peak GPU memory after loading weights: 26.7 GiB
+(APIServer pid=1) DEBUG 04-23 01:01:47 [v1/engine/utils.py:1047] Waiting for 1 local, 0 remote core engine proc(s) to start.
+(EngineCore pid=436) INFO 04-23 01:01:47 [v1/worker/gpu_model_runner.py:4820] Model loading took 26.67 GiB memory and 98.477608 seconds
+(EngineCore pid=436) DEBUG 04-23 01:01:48 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:01:48 [compilation/decorators.py:528] Start compiling function <code object forward at 0x10cfa3b0, file "/usr/local/lib/python3.12/dist-packages/vllm/model_executor/models/qwen2_moe.py", line 396>
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:995] Traced files (to be considered for compilation cache):
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:995] /usr/local/lib/python3.12/dist-packages/torch/_dynamo/polyfills/__init__.py
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:995] /usr/local/lib/python3.12/dist-packages/torch/_dynamo/polyfills/builtins.py
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:995] /usr/local/lib/python3.12/dist-packages/torch/_dynamo/polyfills/itertools.py
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:995] /usr/local/lib/python3.12/dist-packages/torch/nn/modules/container.py
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:995] /usr/local/lib/python3.12/dist-packages/vllm/distributed/communication_op.py
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:995] /usr/local/lib/python3.12/dist-packages/vllm/distributed/parallel_state.py
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:995] /usr/local/lib/python3.12/dist-packages/vllm/forward_context.py
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:995] /usr/local/lib/python3.12/dist-packages/vllm/model_executor/custom_op.py
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:995] /usr/local/lib/python3.12/dist-packages/vllm/model_executor/layers/attention/attention.py
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:995] /usr/local/lib/python3.12/dist-packages/vllm/model_executor/layers/fused_moe/config.py
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:995] /usr/local/lib/python3.12/dist-packages/vllm/model_executor/layers/fused_moe/fused_moe_method_base.py
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:995] /usr/local/lib/python3.12/dist-packages/vllm/model_executor/layers/fused_moe/layer.py
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:995] /usr/local/lib/python3.12/dist-packages/vllm/model_executor/layers/fused_moe/runner/default_moe_runner.py
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:995] /usr/local/lib/python3.12/dist-packages/vllm/model_executor/layers/fused_moe/shared_fused_moe.py
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:995] /usr/local/lib/python3.12/dist-packages/vllm/model_executor/layers/layernorm.py
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:995] /usr/local/lib/python3.12/dist-packages/vllm/model_executor/layers/linear.py
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:995] /usr/local/lib/python3.12/dist-packages/vllm/model_executor/layers/rotary_embedding/base.py
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:995] /usr/local/lib/python3.12/dist-packages/vllm/model_executor/layers/rotary_embedding/common.py
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:995] /usr/local/lib/python3.12/dist-packages/vllm/model_executor/layers/utils.py
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:995] /usr/local/lib/python3.12/dist-packages/vllm/model_executor/layers/vocab_parallel_embedding.py
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:995] /usr/local/lib/python3.12/dist-packages/vllm/model_executor/models/qwen2_moe.py
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:995] /usr/local/lib/python3.12/dist-packages/vllm/model_executor/parameter.py
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:995] /usr/local/lib/python3.12/dist-packages/vllm/platforms/interface.py
+(EngineCore pid=436) INFO 04-23 01:01:51 [compilation/backends.py:1051] Using cache directory: /data/.cache/vllm/torch_compile_cache/bf7cc57660/rank_0_0/backbone for vLLM's torch.compile
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:1063] torch.compile cache factors: env=75f21ac68beac6c5fde9e2342596ca1c49109ca8862043c2fd0e3619eaf3ccd8 cfg=155e491f75 comp=e546579c48 code=18cfc43ea7c46403958dd7b7827107c640593b29e9880eadef1653adb7ec84a6 dir=/data/.cache/vllm/torch_compile_cache/bf7cc57660/rank_0_0/backbone
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:1074] Compile env factors (raw):
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:1074] {'CMAKE_BUILD_TYPE': None,
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:1074]  'CUDA_HOME': None,
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:1074]  'K_SCALE_CONSTANT': 200,
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:1074]  'NVCC_THREADS': None,
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:1074]  'Q_SCALE_CONSTANT': 200,
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:1074]  'RAY_EXPERIMENTAL_NOSET_ASCEND_RT_VISIBLE_DEVICES': None,
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:1074]  'RAY_EXPERIMENTAL_NOSET_CUDA_VISIBLE_DEVICES': None,
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:1074]  'RAY_EXPERIMENTAL_NOSET_HABANA_VISIBLE_MODULES': None,
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:1074]  'RAY_EXPERIMENTAL_NOSET_HIP_VISIBLE_DEVICES': None,
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:1074]  'RAY_EXPERIMENTAL_NOSET_NEURON_RT_VISIBLE_CORES': None,
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:1074]  'RAY_EXPERIMENTAL_NOSET_ONEAPI_DEVICE_SELECTOR': None,
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:1074]  'RAY_EXPERIMENTAL_NOSET_RBLN_RT_VISIBLE_DEVICES': None,
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:1074]  'RAY_EXPERIMENTAL_NOSET_ROCR_VISIBLE_DEVICES': None,
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:1074]  'RAY_EXPERIMENTAL_NOSET_TPU_VISIBLE_CHIPS': None,
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:1074]  'VERBOSE': False,
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:1074]  'VLLM_ALLOW_CHUNKED_LOCAL_ATTN_WITH_HYBRID_KV_CACHE': True,
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:1074]  'VLLM_ALLOW_INSECURE_SERIALIZATION': False,
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:1074]  'VLLM_ALLOW_LONG_MAX_MODEL_LEN': False,
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:1074]  'VLLM_ALLOW_RUNTIME_LORA_UPDATING': False,
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:1074]  'VLLM_ALLREDUCE_USE_FLASHINFER': False,
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:1074]  'VLLM_ALLREDUCE_USE_SYMM_MEM': True,
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:1074]  'VLLM_API_KEY': None,
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:1074]  'VLLM_BATCH_INVARIANT': False,
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:1074]  'VLLM_BLOCKSCALE_FP8_GEMM_FLASHINFER': True,
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:1074]  'VLLM_COMPILE_CACHE_SAVE_FORMAT': 'binary',
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:1074]  'VLLM_COMPUTE_NANS_IN_LOGITS': False,
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:1074]  'VLLM_CONFIGURE_LOGGING': True,
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:1074]  'VLLM_CONFIG_ROOT': '/data/.config/vllm',
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:1074]  'VLLM_CPU_NUM_OF_RESERVED_CPU': None,
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:1074]  'VLLM_CPU_OMP_THREADS_BIND': 'auto',
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:1074]  'VLLM_CPU_SGL_KERNEL': False,
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:1074]  'VLLM_CUDART_SO_PATH': None,
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:1074]  'VLLM_CUSTOM_SCOPES_FOR_PROFILING': False,
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:1074]  'VLLM_DBO_COMM_SMS': 20,
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:1074]  'VLLM_DEBUG_MFU_METRICS': False,
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:1074]  'VLLM_DEBUG_WORKSPACE': False,
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:1074]  'VLLM_DEEPEPLL_NVFP4_DISPATCH': False,
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:1074]  'VLLM_DEEPEP_BUFFER_SIZE_MB': 1024,
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:1074]  'VLLM_DEEPEP_HIGH_THROUGHPUT_FORCE_INTRA_NODE': False,
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:1074]  'VLLM_DEEPEP_LOW_LATENCY_USE_MNNVL': False,
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:1074]  'VLLM_DEEP_GEMM_WARMUP': 'relax',
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:1074]  'VLLM_DISABLED_KERNELS': (),
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:1074]  'VLLM_DISABLE_COMPILE_CACHE': False,
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:1074]  'VLLM_DISABLE_LOG_LOGO': False,
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:1074]  'VLLM_DISABLE_PYNCCL': False,
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:1074]  'VLLM_DISABLE_REQUEST_ID_RANDOMIZATION': False,
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:1074]  'VLLM_DISABLE_SHARED_EXPERTS_STREAM': False,
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:1074]  'VLLM_DOCKER_BUILD_CONTEXT': False,
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:1074]  'VLLM_DP_RANK': 0,
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:1074]  'VLLM_DP_RANK_LOCAL': 0,
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:1074]  'VLLM_DP_SIZE': 1,
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:1074]  'VLLM_ELASTIC_EP_DRAIN_REQUESTS': False,
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:1074]  'VLLM_ELASTIC_EP_SCALE_UP_LAUNCH': False,
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:1074]  'VLLM_ENABLE_CUDAGRAPH_GC': False,
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:1074]  'VLLM_ENABLE_FLA_PACKED_RECURRENT_DECODE': True,
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:1074]  'VLLM_ENABLE_INDUCTOR_COORDINATE_DESCENT_TUNING': True,
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:1074]  'VLLM_ENABLE_INDUCTOR_MAX_AUTOTUNE': True,
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:1074]  'VLLM_ENABLE_MOE_DP_CHUNK': True,
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:1074]  'VLLM_ENABLE_PREGRAD_PASSES': False,
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:1074]  'VLLM_ENABLE_RESPONSES_API_STORE': False,
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:1074]  'VLLM_ENGINE_READY_TIMEOUT_S': 600,
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:1074]  'VLLM_FLASHINFER_ALLREDUCE_BACKEND': 'auto',
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:1074]  'VLLM_FLASHINFER_ALLREDUCE_FUSION_THRESHOLDS_MB': (),
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:1074]  'VLLM_FLASHINFER_MOE_BACKEND': 'latency',
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:1074]  'VLLM_FLASHINFER_WORKSPACE_BUFFER_SIZE': 413138944,
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:1074]  'VLLM_FLOAT32_MATMUL_PRECISION': 'highest',
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:1074]  'VLLM_GC_DEBUG': '',
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:1074]  'VLLM_GPT_OSS_HARMONY_SYSTEM_INSTRUCTIONS': False,
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:1074]  'VLLM_GPT_OSS_SYSTEM_TOOL_MCP_LABELS': (),
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:1074]  'VLLM_HAS_FLASHINFER_CUBIN': False,
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:1074]  'VLLM_KV_CACHE_LAYOUT': None,
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:1074]  'VLLM_KV_EVENTS_USE_INT_BLOCK_HASHES': True,
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:1074]  'VLLM_LOG_BATCHSIZE_INTERVAL': -1.0,
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:1074]  'VLLM_LOG_MODEL_INSPECTION': False,
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:1074]  'VLLM_LOOPBACK_IP': '',
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:1074]  'VLLM_LORA_DISABLE_PDL': False,
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:1074]  'VLLM_LORA_RESOLVER_CACHE_DIR': None,
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:1074]  'VLLM_LORA_RESOLVER_HF_REPO_LIST': None,
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:1074]  'VLLM_MAIN_CUDA_VERSION': '12.9',
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:1074]  'VLLM_MARLIN_INPUT_DTYPE': None,
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:1074]  'VLLM_MARLIN_USE_ATOMIC_ADD': False,
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:1074]  'VLLM_MAX_N_SEQUENCES': 16384,
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:1074]  'VLLM_MAX_TOKENS_PER_EXPERT_FP4_MOE': 163840,
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:1074]  'VLLM_MEMORY_PROFILER_ESTIMATE_CUDAGRAPHS': False,
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:1074]  'VLLM_MLA_DISABLE': False,
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:1074]  'VLLM_MM_HASHER_ALGORITHM': 'blake3',
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:1074]  'VLLM_MOE_DP_CHUNK_SIZE': 256,
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:1074]  'VLLM_MOE_ROUTING_SIMULATION_STRATEGY': '',
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:1074]  'VLLM_MOE_USE_DEEP_GEMM': True,
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:1074]  'VLLM_MOONCAKE_ABORT_REQUEST_TIMEOUT': 480,
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:1074]  'VLLM_MOONCAKE_BOOTSTRAP_PORT': 8998,
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:1074]  'VLLM_MORIIO_CONNECTOR_READ_MODE': False,
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:1074]  'VLLM_MORIIO_NUM_WORKERS': 1,
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:1074]  'VLLM_MORIIO_POST_BATCH_SIZE': -1,
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:1074]  'VLLM_MORIIO_QP_PER_TRANSFER': 1,
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:1074]  'VLLM_MQ_MAX_CHUNK_BYTES_MB': 16,
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:1074]  'VLLM_MSGPACK_ZERO_COPY_THRESHOLD': 256,
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:1074]  'VLLM_MXFP4_USE_MARLIN': None,
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:1074]  'VLLM_NCCL_INCLUDE_PATH': None,
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:1074]  'VLLM_NCCL_SO_PATH': None,
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:1074]  'VLLM_NIXL_ABORT_REQUEST_TIMEOUT': 480,
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:1074]  'VLLM_NIXL_EP_MAX_NUM_RANKS': 32,
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:1074]  'VLLM_NIXL_SIDE_CHANNEL_HOST': 'localhost',
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:1074]  'VLLM_NIXL_SIDE_CHANNEL_PORT': 5600,
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:1074]  'VLLM_NVFP4_GEMM_BACKEND': None,
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:1074]  'VLLM_NVTX_SCOPES_FOR_PROFILING': False,
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:1074]  'VLLM_PATTERN_MATCH_DEBUG': None,
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:1074]  'VLLM_PLUGINS': None,
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:1074]  'VLLM_PP_LAYER_PARTITION': None,
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:1074]  'VLLM_PROCESS_NAME_PREFIX': 'VLLM',
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:1074]  'VLLM_RAY_BUNDLE_INDICES': '',
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:1074]  'VLLM_RAY_DP_PACK_STRATEGY': 'strict',
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:1074]  'VLLM_RAY_EXTRA_ENV_VARS_TO_COPY': '',
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:1074]  'VLLM_RAY_EXTRA_ENV_VAR_PREFIXES_TO_COPY': '',
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:1074]  'VLLM_RAY_PER_WORKER_GPUS': 1.0,
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:1074]  'VLLM_ROCM_FP8_MFMA_PAGE_ATTN': False,
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:1074]  'VLLM_ROCM_FP8_PADDING': True,
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:1074]  'VLLM_ROCM_MOE_PADDING': True,
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:1074]  'VLLM_ROCM_QUICK_REDUCE_CAST_BF16_TO_FP16': True,
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:1074]  'VLLM_ROCM_QUICK_REDUCE_MAX_SIZE_BYTES_MB': None,
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:1074]  'VLLM_ROCM_QUICK_REDUCE_QUANTIZATION': 'NONE',
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:1074]  'VLLM_ROCM_SHUFFLE_KV_CACHE_LAYOUT': False,
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:1074]  'VLLM_ROCM_SLEEP_MEM_CHUNK_SIZE': 256,
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:1074]  'VLLM_ROCM_USE_AITER': False,
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:1074]  'VLLM_ROCM_USE_AITER_FP4BMM': True,
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:1074]  'VLLM_ROCM_USE_AITER_FP4_ASM_GEMM': False,
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:1074]  'VLLM_ROCM_USE_AITER_FP8BMM': True,
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:1074]  'VLLM_ROCM_USE_AITER_FUSION_SHARED_EXPERTS': False,
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:1074]  'VLLM_ROCM_USE_AITER_LINEAR': True,
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:1074]  'VLLM_ROCM_USE_AITER_MHA': True,
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:1074]  'VLLM_ROCM_USE_AITER_MLA': True,
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:1074]  'VLLM_ROCM_USE_AITER_MOE': True,
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:1074]  'VLLM_ROCM_USE_AITER_PAGED_ATTN': False,
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:1074]  'VLLM_ROCM_USE_AITER_RMSNORM': True,
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:1074]  'VLLM_ROCM_USE_AITER_TRITON_GEMM': True,
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:1074]  'VLLM_ROCM_USE_AITER_TRITON_ROPE': False,
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:1074]  'VLLM_ROCM_USE_AITER_UNIFIED_ATTENTION': False,
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:1074]  'VLLM_ROCM_USE_SKINNY_GEMM': True,
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:1074]  'VLLM_RPC_TIMEOUT': 10000,
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:1074]  'VLLM_SHARED_EXPERTS_STREAM_TOKEN_THRESHOLD': 256,
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:1074]  'VLLM_SKIP_P2P_CHECK': True,
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:1074]  'VLLM_SKIP_PRECOMPILED_VERSION_SUFFIX': False,
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:1074]  'VLLM_SPARSE_INDEXER_MAX_LOGITS_MB': 512,
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:1074]  'VLLM_SYSTEM_START_DATE': None,
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:1074]  'VLLM_TARGET_DEVICE': 'cuda',
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:1074]  'VLLM_TEST_FORCE_FP8_MARLIN': False,
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:1074]  'VLLM_TOOL_JSON_ERROR_AUTOMATIC_RETRY': False,
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:1074]  'VLLM_TOOL_PARSE_REGEX_TIMEOUT_SECONDS': 1,
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:1074]  'VLLM_TPU_BUCKET_PADDING_GAP': 0,
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:1074]  'VLLM_TPU_MOST_MODEL_LEN': None,
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:1074]  'VLLM_TPU_USING_PATHWAYS': False,
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:1074]  'VLLM_TRACE_FUNCTION': 0,
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:1074]  'VLLM_USAGE_SOURCE': 'production-docker-image',
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:1074]  'VLLM_USE_AOT_COMPILE': True,
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:1074]  'VLLM_USE_BYTECODE_HOOK': True,
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:1074]  'VLLM_USE_DEEP_GEMM': True,
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:1074]  'VLLM_USE_DEEP_GEMM_E8M0': True,
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:1074]  'VLLM_USE_DEEP_GEMM_TMA_ALIGNED_SCALES': True,
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:1074]  'VLLM_USE_EXPERIMENTAL_PARSER_CONTEXT': False,
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:1074]  'VLLM_USE_FBGEMM': False,
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:1074]  'VLLM_USE_FLASHINFER_MOE_FP16': False,
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:1074]  'VLLM_USE_FLASHINFER_MOE_FP4': False,
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:1074]  'VLLM_USE_FLASHINFER_MOE_FP8': False,
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:1074]  'VLLM_USE_FLASHINFER_MOE_INT4': False,
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:1074]  'VLLM_USE_FLASHINFER_MOE_MXFP4_BF16': False,
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:1074]  'VLLM_USE_FLASHINFER_MOE_MXFP4_MXFP8': False,
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:1074]  'VLLM_USE_FLASHINFER_MOE_MXFP4_MXFP8_CUTLASS': False,
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:1074]  'VLLM_USE_FLASHINFER_SAMPLER': None,
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:1074]  'VLLM_USE_FUSED_MOE_GROUPED_TOPK': True,
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:1074]  'VLLM_USE_MEGA_AOT_ARTIFACT': False,
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:1074]  'VLLM_USE_NCCL_SYMM_MEM': False,
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:1074]  'VLLM_USE_NVFP4_CT_EMULATIONS': False,
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:1074]  'VLLM_USE_OINK_OPS': False,
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:1074]  'VLLM_USE_PRECOMPILED': False,
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:1074]  'VLLM_USE_RAY_COMPILED_DAG_CHANNEL_TYPE': 'auto',
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:1074]  'VLLM_USE_RAY_COMPILED_DAG_OVERLAP_COMM': False,
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:1074]  'VLLM_USE_RAY_WRAPPED_PP_COMM': True,
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:1074]  'VLLM_USE_SIMPLE_KV_OFFLOAD': False,
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:1074]  'VLLM_USE_STANDALONE_COMPILE': True,
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:1074]  'VLLM_USE_TRITON_AWQ': False,
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:1074]  'VLLM_USE_V2_MODEL_RUNNER': False,
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:1074]  'VLLM_V1_USE_OUTLINES_CACHE': False,
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:1074]  'VLLM_WEIGHT_OFFLOADING_DISABLE_PIN_MEMORY': False,
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:1074]  'VLLM_WEIGHT_OFFLOADING_DISABLE_UVA': False,
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:1074]  'VLLM_XGRAMMAR_CACHE_MB': 512,
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:1074]  'VLLM_XLA_CACHE_PATH': '/data/.cache/vllm/xla_cache',
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:1074]  'VLLM_XLA_CHECK_RECOMPILATION': False,
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:1074]  'VLLM_XLA_USE_SPMD': False,
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:1074]  'VLLM_XPU_ENABLE_XPU_GRAPH': False,
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:1074]  'V_SCALE_CONSTANT': 100}
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/backends.py:1074] Vllm config hash: 155e491f75
+(EngineCore pid=436) INFO 04-23 01:01:51 [compilation/backends.py:1111] Dynamo bytecode transform time: 3.42 s
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/piecewise_backend.py:151] PiecewiseBackend: compile_ranges: [(1, 8192)]
+(EngineCore pid=436) DEBUG 04-23 01:01:51 [compilation/piecewise_backend.py:155] PiecewiseBackend: compile_sizes: []
+(EngineCore pid=436) DEBUG 04-23 01:01:52 [compilation/.../utility/noop_elimination.py:105] Removed 0 no-op reshapes and slices
+(EngineCore pid=436) DEBUG 04-23 01:01:52 [compilation/passes/vllm_inductor_pass.py:79] NoOpEliminationPass completed in 0.4 ms
+(EngineCore pid=436) DEBUG 04-23 01:01:52 [compilation/passes/vllm_inductor_pass.py:79] PostCleanupPass completed in 0.8 ms
+(EngineCore pid=436) DEBUG 04-23 01:01:52 [compilation/.../utility/fix_functionalization.py:203] De-functionalized 0 nodes, removed 0 nodes
+(EngineCore pid=436) DEBUG 04-23 01:01:52 [compilation/passes/vllm_inductor_pass.py:79] FixFunctionalizationPass completed in 0.2 ms
+(EngineCore pid=436) INFO 04-23 01:01:53 [compilation/backends.py:372] Cache the graph of compile range (1, 8192) for later use
+(EngineCore pid=436) DEBUG 04-23 01:01:53 [compilation/backends.py:377] Store the 0-th graph for compile range(1, 8192) from inductor_standalone via handle ('artifact_compile_range_1_8192_subgraph_0', '/data/.cache/vllm/torch_compile_cache/bf7cc57660/rank_0_0/backbone/artifact_compile_range_1_8192_subgraph_0')
+(EngineCore pid=436) DEBUG 04-23 01:01:53 [compilation/.../utility/noop_elimination.py:105] Removed 0 no-op reshapes and slices
+(EngineCore pid=436) DEBUG 04-23 01:01:53 [compilation/passes/vllm_inductor_pass.py:79] NoOpEliminationPass completed in 0.5 ms
+(EngineCore pid=436) DEBUG 04-23 01:01:53 [compilation/passes/vllm_inductor_pass.py:79] PostCleanupPass completed in 1.1 ms
+(EngineCore pid=436) DEBUG 04-23 01:01:53 [compilation/.../utility/fix_functionalization.py:203] De-functionalized 0 nodes, removed 0 nodes
+(EngineCore pid=436) DEBUG 04-23 01:01:53 [compilation/passes/vllm_inductor_pass.py:79] FixFunctionalizationPass completed in 0.2 ms
+(EngineCore pid=436) DEBUG 04-23 01:01:54 [compilation/backends.py:377] Store the 1-th graph for compile range(1, 8192) from inductor_standalone via handle ('artifact_compile_range_1_8192_subgraph_1', '/data/.cache/vllm/torch_compile_cache/bf7cc57660/rank_0_0/backbone/artifact_compile_range_1_8192_subgraph_1')
+(EngineCore pid=436) DEBUG 04-23 01:01:55 [compilation/.../utility/noop_elimination.py:105] Removed 0 no-op reshapes and slices
+(EngineCore pid=436) DEBUG 04-23 01:01:55 [compilation/passes/vllm_inductor_pass.py:79] NoOpEliminationPass completed in 0.8 ms
+(EngineCore pid=436) DEBUG 04-23 01:01:55 [compilation/passes/vllm_inductor_pass.py:79] PostCleanupPass completed in 0.9 ms
+(EngineCore pid=436) DEBUG 04-23 01:01:55 [compilation/.../utility/fix_functionalization.py:203] De-functionalized 0 nodes, removed 0 nodes
+(EngineCore pid=436) DEBUG 04-23 01:01:55 [compilation/passes/vllm_inductor_pass.py:79] FixFunctionalizationPass completed in 0.3 ms
+(EngineCore pid=436) DEBUG 04-23 01:01:56 [compilation/backends.py:377] Store the 24-th graph for compile range(1, 8192) from inductor_standalone via handle ('artifact_compile_range_1_8192_subgraph_24', '/data/.cache/vllm/torch_compile_cache/bf7cc57660/rank_0_0/backbone/artifact_compile_range_1_8192_subgraph_24')
+(EngineCore pid=436) INFO 04-23 01:01:56 [compilation/backends.py:390] Compiling a graph for compile range (1, 8192) takes 4.27 s
+(EngineCore pid=436) DEBUG 04-23 01:01:56 [compilation/backends.py:1228] Computation graph saved to /data/.cache/vllm/torch_compile_cache/bf7cc57660/rank_0_0/backbone/computation_graph.py
+(EngineCore pid=436) INFO 04-23 01:01:57 [compilation/decorators.py:640] saved AOT compiled function to /data/.cache/vllm/torch_compile_cache/torch_aot_compile/fe26b561311617008fabbb42b46538f4447d96637ecd092d3fde6e2428b1dd0a/rank_0_0/model
+(EngineCore pid=436) INFO 04-23 01:01:57 [compilation/monitor.py:48] torch.compile took 8.98 s in total
+(APIServer pid=1) DEBUG 04-23 01:01:57 [v1/engine/utils.py:1047] Waiting for 1 local, 0 remote core engine proc(s) to start.
+(EngineCore pid=436) WARNING 04-23 01:01:57 [model_executor/.../fused_moe/fused_moe.py:1090] Using default MoE config. Performance might be sub-optimal! Config file not found at /usr/local/lib/python3.12/dist-packages/vllm/model_executor/layers/fused_moe/configs/E=60,N=1408,device_name=NVIDIA_H100_80GB_HBM3.json
+(EngineCore pid=436) INFO 04-23 01:01:58 [compilation/monitor.py:76] Initial profiling/warmup run took 1.65 s
+(EngineCore pid=436) INFO 04-23 01:02:04 [v1/core/kv_cache_utils.py:829] Overriding num_gpu_blocks=0 with num_gpu_blocks_override=512
+(EngineCore pid=436) DEBUG 04-23 01:02:04 [v1/worker/gpu_model_runner.py:5818] Initialized minimal KV cache for CUDA graph profiling
+(EngineCore pid=436) INFO 04-23 01:02:04 [v1/worker/gpu_model_runner.py:5876] Profiling CUDA graph memory: PIECEWISE=51 (largest=512), FULL=51 (largest=512)
+(EngineCore pid=436) DEBUG 04-23 01:02:04 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:05 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:05 [compilation/cuda_graph.py:271] Capturing a cudagraph on (PIECEWISE,BatchDescriptor(num_tokens=512, num_reqs=None, uniform=False, has_lora=False, num_active_loras=0))
+(EngineCore pid=436) DEBUG 04-23 01:02:05 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:05 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:05 [compilation/cuda_graph.py:271] Capturing a cudagraph on (PIECEWISE,BatchDescriptor(num_tokens=496, num_reqs=None, uniform=False, has_lora=False, num_active_loras=0))
+(EngineCore pid=436) DEBUG 04-23 01:02:05 [v1/worker/gpu_model_runner.py:5928] Estimated PIECEWISE CUDA graph memory: 96.00 MiB first-capture + (51-1) × 8.00 MiB per-graph
+(EngineCore pid=436) DEBUG 04-23 01:02:05 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:05 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:05 [compilation/cuda_graph.py:271] Capturing a cudagraph on (FULL,BatchDescriptor(num_tokens=512, num_reqs=512, uniform=True, has_lora=False, num_active_loras=0))
+(EngineCore pid=436) DEBUG 04-23 01:02:05 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:05 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:05 [compilation/cuda_graph.py:271] Capturing a cudagraph on (FULL,BatchDescriptor(num_tokens=496, num_reqs=496, uniform=True, has_lora=False, num_active_loras=0))
+(EngineCore pid=436) DEBUG 04-23 01:02:05 [v1/worker/gpu_model_runner.py:5928] Estimated FULL CUDA graph memory: 136.00 MiB first-capture + (51-1) × 6.00 MiB per-graph
+(EngineCore pid=436) DEBUG 04-23 01:02:05 [v1/worker/gpu_model_runner.py:5859] Cleaned up profiling KV cache and CUDA graphs
+(EngineCore pid=436) INFO 04-23 01:02:05 [v1/worker/gpu_model_runner.py:5955] Estimated CUDA graph memory: 0.82 GiB total
+(EngineCore pid=436) DEBUG 04-23 01:02:06 [v1/worker/gpu_worker.py:424] Initial free memory: 78.68 GiB; Requested memory: 0.950000 (util), 75.23 GiB
+(EngineCore pid=436) DEBUG 04-23 01:02:06 [v1/worker/gpu_worker.py:430] Free memory after profiling: 50.86 GiB (total), 47.41 GiB (within requested)
+(EngineCore pid=436) DEBUG 04-23 01:02:06 [v1/worker/gpu_worker.py:435] Memory profiling takes 17.98 seconds. Total non KV cache memory: 29.4GiB; torch peak memory increase: 2.47GiB; non-torch forward increase memory: 0.25GiB; weights memory: 26.67GiB.
+(EngineCore pid=436) INFO 04-23 01:02:06 [v1/worker/gpu_worker.py:436] Available KV cache memory: 45.83 GiB
+(EngineCore pid=436) INFO 04-23 01:02:06 [v1/worker/gpu_worker.py:470] In v0.19, CUDA graph memory profiling will be enabled by default (VLLM_MEMORY_PROFILER_ESTIMATE_CUDAGRAPHS=1), which more accurately accounts for CUDA graph memory during KV cache allocation. To try it now, set VLLM_MEMORY_PROFILER_ESTIMATE_CUDAGRAPHS=1 and increase --gpu-memory-utilization from 0.9500 to 0.9603 to maintain the same effective KV cache size.
+(EngineCore pid=436) INFO 04-23 01:02:06 [v1/core/kv_cache_utils.py:1319] GPU KV cache size: 250,304 tokens
+(EngineCore pid=436) INFO 04-23 01:02:06 [v1/core/kv_cache_utils.py:1324] Maximum concurrency for 8,192 tokens per request: 30.55x
+(EngineCore pid=436) 2026-04-23 01:02:06,159 - INFO - autotuner.py:262 - flashinfer.jit: [Autotuner]: Autotuning process starts ...
+(EngineCore pid=436) DEBUG 04-23 01:02:06 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) 2026-04-23 01:02:06,186 - INFO - autotuner.py:268 - flashinfer.jit: [Autotuner]: Autotuning process ends
+(EngineCore pid=436) Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):   0%|          | 0/51 [00:00<?, ?it/s](EngineCore pid=436) DEBUG 04-23 01:02:06 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:06 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:06 [compilation/cuda_graph.py:271] Capturing a cudagraph on (PIECEWISE,BatchDescriptor(num_tokens=512, num_reqs=None, uniform=False, has_lora=False, num_active_loras=0))
+(EngineCore pid=436) DEBUG 04-23 01:02:06 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:06 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:06 [compilation/cuda_graph.py:271] Capturing a cudagraph on (PIECEWISE,BatchDescriptor(num_tokens=496, num_reqs=None, uniform=False, has_lora=False, num_active_loras=0))
+Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):   4%|▍         | 2/51 [00:00<00:02, 19.10it/s](EngineCore pid=436) DEBUG 04-23 01:02:06 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:06 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:06 [compilation/cuda_graph.py:271] Capturing a cudagraph on (PIECEWISE,BatchDescriptor(num_tokens=480, num_reqs=None, uniform=False, has_lora=False, num_active_loras=0))
+(EngineCore pid=436) DEBUG 04-23 01:02:06 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:06 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:06 [compilation/cuda_graph.py:271] Capturing a cudagraph on (PIECEWISE,BatchDescriptor(num_tokens=464, num_reqs=None, uniform=False, has_lora=False, num_active_loras=0))
+Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):   8%|▊         | 4/51 [00:00<00:02, 18.77it/s](EngineCore pid=436) DEBUG 04-23 01:02:06 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:06 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:06 [compilation/cuda_graph.py:271] Capturing a cudagraph on (PIECEWISE,BatchDescriptor(num_tokens=448, num_reqs=None, uniform=False, has_lora=False, num_active_loras=0))
+(EngineCore pid=436) DEBUG 04-23 01:02:06 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:06 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:06 [compilation/cuda_graph.py:271] Capturing a cudagraph on (PIECEWISE,BatchDescriptor(num_tokens=432, num_reqs=None, uniform=False, has_lora=False, num_active_loras=0))
+Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  12%|█▏        | 6/51 [00:00<00:02, 18.12it/s](EngineCore pid=436) DEBUG 04-23 01:02:06 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:06 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:06 [compilation/cuda_graph.py:271] Capturing a cudagraph on (PIECEWISE,BatchDescriptor(num_tokens=416, num_reqs=None, uniform=False, has_lora=False, num_active_loras=0))
+(EngineCore pid=436) DEBUG 04-23 01:02:06 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:06 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:06 [compilation/cuda_graph.py:271] Capturing a cudagraph on (PIECEWISE,BatchDescriptor(num_tokens=400, num_reqs=None, uniform=False, has_lora=False, num_active_loras=0))
+Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  16%|█▌        | 8/51 [00:00<00:02, 17.78it/s](EngineCore pid=436) DEBUG 04-23 01:02:06 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:06 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:06 [compilation/cuda_graph.py:271] Capturing a cudagraph on (PIECEWISE,BatchDescriptor(num_tokens=384, num_reqs=None, uniform=False, has_lora=False, num_active_loras=0))
+(EngineCore pid=436) DEBUG 04-23 01:02:06 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:06 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:06 [compilation/cuda_graph.py:271] Capturing a cudagraph on (PIECEWISE,BatchDescriptor(num_tokens=368, num_reqs=None, uniform=False, has_lora=False, num_active_loras=0))
+Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  20%|█▉        | 10/51 [00:00<00:02, 17.80it/s](EngineCore pid=436) DEBUG 04-23 01:02:07 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:07 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:07 [compilation/cuda_graph.py:271] Capturing a cudagraph on (PIECEWISE,BatchDescriptor(num_tokens=352, num_reqs=None, uniform=False, has_lora=False, num_active_loras=0))
+(EngineCore pid=436) DEBUG 04-23 01:02:07 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:07 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:07 [compilation/cuda_graph.py:271] Capturing a cudagraph on (PIECEWISE,BatchDescriptor(num_tokens=336, num_reqs=None, uniform=False, has_lora=False, num_active_loras=0))
+Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  24%|██▎       | 12/51 [00:00<00:02, 17.85it/s](EngineCore pid=436) DEBUG 04-23 01:02:07 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:07 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:07 [compilation/cuda_graph.py:271] Capturing a cudagraph on (PIECEWISE,BatchDescriptor(num_tokens=320, num_reqs=None, uniform=False, has_lora=False, num_active_loras=0))
+(EngineCore pid=436) DEBUG 04-23 01:02:07 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:07 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:07 [compilation/cuda_graph.py:271] Capturing a cudagraph on (PIECEWISE,BatchDescriptor(num_tokens=304, num_reqs=None, uniform=False, has_lora=False, num_active_loras=0))
+Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  27%|██▋       | 14/51 [00:00<00:02, 17.72it/s](EngineCore pid=436) DEBUG 04-23 01:02:07 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:07 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:07 [compilation/cuda_graph.py:271] Capturing a cudagraph on (PIECEWISE,BatchDescriptor(num_tokens=288, num_reqs=None, uniform=False, has_lora=False, num_active_loras=0))
+(EngineCore pid=436) DEBUG 04-23 01:02:07 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:07 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:07 [compilation/cuda_graph.py:271] Capturing a cudagraph on (PIECEWISE,BatchDescriptor(num_tokens=272, num_reqs=None, uniform=False, has_lora=False, num_active_loras=0))
+Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  31%|███▏      | 16/51 [00:00<00:01, 17.51it/s](EngineCore pid=436) DEBUG 04-23 01:02:07 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:07 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:07 [compilation/cuda_graph.py:271] Capturing a cudagraph on (PIECEWISE,BatchDescriptor(num_tokens=256, num_reqs=None, uniform=False, has_lora=False, num_active_loras=0))
+(EngineCore pid=436) DEBUG 04-23 01:02:07 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:07 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:07 [compilation/cuda_graph.py:271] Capturing a cudagraph on (PIECEWISE,BatchDescriptor(num_tokens=248, num_reqs=None, uniform=False, has_lora=False, num_active_loras=0))
+Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  35%|███▌      | 18/51 [00:01<00:01, 16.71it/s](EngineCore pid=436) DEBUG 04-23 01:02:07 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:07 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:07 [compilation/cuda_graph.py:271] Capturing a cudagraph on (PIECEWISE,BatchDescriptor(num_tokens=240, num_reqs=None, uniform=False, has_lora=False, num_active_loras=0))
+(EngineCore pid=436) DEBUG 04-23 01:02:07 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:07 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:07 [compilation/cuda_graph.py:271] Capturing a cudagraph on (PIECEWISE,BatchDescriptor(num_tokens=232, num_reqs=None, uniform=False, has_lora=False, num_active_loras=0))
+Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  39%|███▉      | 20/51 [00:01<00:01, 16.42it/s](EngineCore pid=436) DEBUG 04-23 01:02:07 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:07 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:07 [compilation/cuda_graph.py:271] Capturing a cudagraph on (PIECEWISE,BatchDescriptor(num_tokens=224, num_reqs=None, uniform=False, has_lora=False, num_active_loras=0))
+(APIServer pid=1) DEBUG 04-23 01:02:07 [v1/engine/utils.py:1047] Waiting for 1 local, 0 remote core engine proc(s) to start.
+(EngineCore pid=436) DEBUG 04-23 01:02:07 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:07 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:07 [compilation/cuda_graph.py:271] Capturing a cudagraph on (PIECEWISE,BatchDescriptor(num_tokens=216, num_reqs=None, uniform=False, has_lora=False, num_active_loras=0))
+Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  43%|████▎     | 22/51 [00:01<00:01, 16.14it/s](EngineCore pid=436) DEBUG 04-23 01:02:07 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:07 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:07 [compilation/cuda_graph.py:271] Capturing a cudagraph on (PIECEWISE,BatchDescriptor(num_tokens=208, num_reqs=None, uniform=False, has_lora=False, num_active_loras=0))
+(EngineCore pid=436) DEBUG 04-23 01:02:07 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:07 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:07 [compilation/cuda_graph.py:271] Capturing a cudagraph on (PIECEWISE,BatchDescriptor(num_tokens=200, num_reqs=None, uniform=False, has_lora=False, num_active_loras=0))
+Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  47%|████▋     | 24/51 [00:01<00:01, 15.87it/s](EngineCore pid=436) DEBUG 04-23 01:02:07 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:07 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:07 [compilation/cuda_graph.py:271] Capturing a cudagraph on (PIECEWISE,BatchDescriptor(num_tokens=192, num_reqs=None, uniform=False, has_lora=False, num_active_loras=0))
+(EngineCore pid=436) DEBUG 04-23 01:02:07 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:07 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:07 [compilation/cuda_graph.py:271] Capturing a cudagraph on (PIECEWISE,BatchDescriptor(num_tokens=184, num_reqs=None, uniform=False, has_lora=False, num_active_loras=0))
+Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  51%|█████     | 26/51 [00:01<00:01, 15.60it/s](EngineCore pid=436) DEBUG 04-23 01:02:08 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:08 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:08 [compilation/cuda_graph.py:271] Capturing a cudagraph on (PIECEWISE,BatchDescriptor(num_tokens=176, num_reqs=None, uniform=False, has_lora=False, num_active_loras=0))
+(EngineCore pid=436) DEBUG 04-23 01:02:08 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:08 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:08 [compilation/cuda_graph.py:271] Capturing a cudagraph on (PIECEWISE,BatchDescriptor(num_tokens=168, num_reqs=None, uniform=False, has_lora=False, num_active_loras=0))
+Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  55%|█████▍    | 28/51 [00:01<00:01, 15.32it/s](EngineCore pid=436) DEBUG 04-23 01:02:08 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:08 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:08 [compilation/cuda_graph.py:271] Capturing a cudagraph on (PIECEWISE,BatchDescriptor(num_tokens=160, num_reqs=None, uniform=False, has_lora=False, num_active_loras=0))
+(EngineCore pid=436) DEBUG 04-23 01:02:08 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:08 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:08 [compilation/cuda_graph.py:271] Capturing a cudagraph on (PIECEWISE,BatchDescriptor(num_tokens=152, num_reqs=None, uniform=False, has_lora=False, num_active_loras=0))
+Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  59%|█████▉    | 30/51 [00:01<00:01, 15.27it/s](EngineCore pid=436) DEBUG 04-23 01:02:08 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:08 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:08 [compilation/cuda_graph.py:271] Capturing a cudagraph on (PIECEWISE,BatchDescriptor(num_tokens=144, num_reqs=None, uniform=False, has_lora=False, num_active_loras=0))
+(EngineCore pid=436) DEBUG 04-23 01:02:08 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:08 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:08 [compilation/cuda_graph.py:271] Capturing a cudagraph on (PIECEWISE,BatchDescriptor(num_tokens=136, num_reqs=None, uniform=False, has_lora=False, num_active_loras=0))
+Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  63%|██████▎   | 32/51 [00:01<00:01, 15.29it/s](EngineCore pid=436) DEBUG 04-23 01:02:08 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:08 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:08 [compilation/cuda_graph.py:271] Capturing a cudagraph on (PIECEWISE,BatchDescriptor(num_tokens=128, num_reqs=None, uniform=False, has_lora=False, num_active_loras=0))
+(EngineCore pid=436) DEBUG 04-23 01:02:08 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:09 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:09 [compilation/cuda_graph.py:271] Capturing a cudagraph on (PIECEWISE,BatchDescriptor(num_tokens=120, num_reqs=None, uniform=False, has_lora=False, num_active_loras=0))
+Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  67%|██████▋   | 34/51 [00:02<00:02,  6.93it/s](EngineCore pid=436) DEBUG 04-23 01:02:09 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:09 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:09 [compilation/cuda_graph.py:271] Capturing a cudagraph on (PIECEWISE,BatchDescriptor(num_tokens=112, num_reqs=None, uniform=False, has_lora=False, num_active_loras=0))
+(EngineCore pid=436) DEBUG 04-23 01:02:09 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:09 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:09 [compilation/cuda_graph.py:271] Capturing a cudagraph on (PIECEWISE,BatchDescriptor(num_tokens=104, num_reqs=None, uniform=False, has_lora=False, num_active_loras=0))
+Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  71%|███████   | 36/51 [00:02<00:01,  8.26it/s](EngineCore pid=436) DEBUG 04-23 01:02:09 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:09 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:09 [compilation/cuda_graph.py:271] Capturing a cudagraph on (PIECEWISE,BatchDescriptor(num_tokens=96, num_reqs=None, uniform=False, has_lora=False, num_active_loras=0))
+(EngineCore pid=436) DEBUG 04-23 01:02:09 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:09 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:09 [compilation/cuda_graph.py:271] Capturing a cudagraph on (PIECEWISE,BatchDescriptor(num_tokens=88, num_reqs=None, uniform=False, has_lora=False, num_active_loras=0))
+Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  75%|███████▍  | 38/51 [00:03<00:02,  5.87it/s](EngineCore pid=436) DEBUG 04-23 01:02:09 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:09 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:09 [compilation/cuda_graph.py:271] Capturing a cudagraph on (PIECEWISE,BatchDescriptor(num_tokens=80, num_reqs=None, uniform=False, has_lora=False, num_active_loras=0))
+(EngineCore pid=436) DEBUG 04-23 01:02:09 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:09 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:09 [compilation/cuda_graph.py:271] Capturing a cudagraph on (PIECEWISE,BatchDescriptor(num_tokens=72, num_reqs=None, uniform=False, has_lora=False, num_active_loras=0))
+Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  78%|███████▊  | 40/51 [00:03<00:01,  7.14it/s](EngineCore pid=436) DEBUG 04-23 01:02:09 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:10 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:10 [compilation/cuda_graph.py:271] Capturing a cudagraph on (PIECEWISE,BatchDescriptor(num_tokens=64, num_reqs=None, uniform=False, has_lora=False, num_active_loras=0))
+(EngineCore pid=436) DEBUG 04-23 01:02:10 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:10 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:10 [compilation/cuda_graph.py:271] Capturing a cudagraph on (PIECEWISE,BatchDescriptor(num_tokens=56, num_reqs=None, uniform=False, has_lora=False, num_active_loras=0))
+Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  82%|████████▏ | 42/51 [00:04<00:01,  5.43it/s](EngineCore pid=436) DEBUG 04-23 01:02:10 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:10 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:10 [compilation/cuda_graph.py:271] Capturing a cudagraph on (PIECEWISE,BatchDescriptor(num_tokens=48, num_reqs=None, uniform=False, has_lora=False, num_active_loras=0))
+(EngineCore pid=436) DEBUG 04-23 01:02:10 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:10 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:10 [compilation/cuda_graph.py:271] Capturing a cudagraph on (PIECEWISE,BatchDescriptor(num_tokens=40, num_reqs=None, uniform=False, has_lora=False, num_active_loras=0))
+Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  86%|████████▋ | 44/51 [00:04<00:01,  6.71it/s](EngineCore pid=436) DEBUG 04-23 01:02:10 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:11 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:11 [compilation/cuda_graph.py:271] Capturing a cudagraph on (PIECEWISE,BatchDescriptor(num_tokens=32, num_reqs=None, uniform=False, has_lora=False, num_active_loras=0))
+(EngineCore pid=436) DEBUG 04-23 01:02:11 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:11 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:11 [compilation/cuda_graph.py:271] Capturing a cudagraph on (PIECEWISE,BatchDescriptor(num_tokens=24, num_reqs=None, uniform=False, has_lora=False, num_active_loras=0))
+Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  90%|█████████ | 46/51 [00:04<00:00,  5.37it/s](EngineCore pid=436) DEBUG 04-23 01:02:11 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:11 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:11 [compilation/cuda_graph.py:271] Capturing a cudagraph on (PIECEWISE,BatchDescriptor(num_tokens=16, num_reqs=None, uniform=False, has_lora=False, num_active_loras=0))
+(EngineCore pid=436) DEBUG 04-23 01:02:11 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:11 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:11 [compilation/cuda_graph.py:271] Capturing a cudagraph on (PIECEWISE,BatchDescriptor(num_tokens=8, num_reqs=None, uniform=False, has_lora=False, num_active_loras=0))
+Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  94%|█████████▍| 48/51 [00:05<00:00,  4.71it/s](EngineCore pid=436) DEBUG 04-23 01:02:11 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:11 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:11 [compilation/cuda_graph.py:271] Capturing a cudagraph on (PIECEWISE,BatchDescriptor(num_tokens=4, num_reqs=None, uniform=False, has_lora=False, num_active_loras=0))
+(EngineCore pid=436) DEBUG 04-23 01:02:11 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:12 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:12 [compilation/cuda_graph.py:271] Capturing a cudagraph on (PIECEWISE,BatchDescriptor(num_tokens=2, num_reqs=None, uniform=False, has_lora=False, num_active_loras=0))
+Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  98%|█████████▊| 50/51 [00:05<00:00,  4.38it/s](EngineCore pid=436) DEBUG 04-23 01:02:12 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:12 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:12 [compilation/cuda_graph.py:271] Capturing a cudagraph on (PIECEWISE,BatchDescriptor(num_tokens=1, num_reqs=None, uniform=False, has_lora=False, num_active_loras=0))
+Capturing CUDA graphs (mixed prefill-decode, PIECEWISE): 100%|██████████| 51/51 [00:06<00:00,  3.98it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE): 100%|██████████| 51/51 [00:06<00:00,  8.31it/s]
+(EngineCore pid=436) Capturing CUDA graphs (decode, FULL):   0%|          | 0/51 [00:00<?, ?it/s](EngineCore pid=436) DEBUG 04-23 01:02:12 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:12 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:12 [compilation/cuda_graph.py:271] Capturing a cudagraph on (FULL,BatchDescriptor(num_tokens=512, num_reqs=512, uniform=True, has_lora=False, num_active_loras=0))
+(EngineCore pid=436) DEBUG 04-23 01:02:12 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:12 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:12 [compilation/cuda_graph.py:271] Capturing a cudagraph on (FULL,BatchDescriptor(num_tokens=496, num_reqs=496, uniform=True, has_lora=False, num_active_loras=0))
+Capturing CUDA graphs (decode, FULL):   4%|▍         | 2/51 [00:00<00:02, 19.17it/s](EngineCore pid=436) DEBUG 04-23 01:02:12 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:12 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:12 [compilation/cuda_graph.py:271] Capturing a cudagraph on (FULL,BatchDescriptor(num_tokens=480, num_reqs=480, uniform=True, has_lora=False, num_active_loras=0))
+(EngineCore pid=436) DEBUG 04-23 01:02:12 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:12 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:12 [compilation/cuda_graph.py:271] Capturing a cudagraph on (FULL,BatchDescriptor(num_tokens=464, num_reqs=464, uniform=True, has_lora=False, num_active_loras=0))
+Capturing CUDA graphs (decode, FULL):   8%|▊         | 4/51 [00:00<00:02, 19.47it/s](EngineCore pid=436) DEBUG 04-23 01:02:12 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:12 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:12 [compilation/cuda_graph.py:271] Capturing a cudagraph on (FULL,BatchDescriptor(num_tokens=448, num_reqs=448, uniform=True, has_lora=False, num_active_loras=0))
+(EngineCore pid=436) DEBUG 04-23 01:02:12 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:12 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:12 [compilation/cuda_graph.py:271] Capturing a cudagraph on (FULL,BatchDescriptor(num_tokens=432, num_reqs=432, uniform=True, has_lora=False, num_active_loras=0))
+(EngineCore pid=436) DEBUG 04-23 01:02:12 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:12 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:12 [compilation/cuda_graph.py:271] Capturing a cudagraph on (FULL,BatchDescriptor(num_tokens=416, num_reqs=416, uniform=True, has_lora=False, num_active_loras=0))
+Capturing CUDA graphs (decode, FULL):  14%|█▎        | 7/51 [00:00<00:02, 19.91it/s](EngineCore pid=436) DEBUG 04-23 01:02:12 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:12 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:12 [compilation/cuda_graph.py:271] Capturing a cudagraph on (FULL,BatchDescriptor(num_tokens=400, num_reqs=400, uniform=True, has_lora=False, num_active_loras=0))
+(EngineCore pid=436) DEBUG 04-23 01:02:12 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:13 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:13 [compilation/cuda_graph.py:271] Capturing a cudagraph on (FULL,BatchDescriptor(num_tokens=384, num_reqs=384, uniform=True, has_lora=False, num_active_loras=0))
+(EngineCore pid=436) DEBUG 04-23 01:02:13 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:13 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:13 [compilation/cuda_graph.py:271] Capturing a cudagraph on (FULL,BatchDescriptor(num_tokens=368, num_reqs=368, uniform=True, has_lora=False, num_active_loras=0))
+Capturing CUDA graphs (decode, FULL):  20%|█▉        | 10/51 [00:00<00:02, 20.34it/s](EngineCore pid=436) DEBUG 04-23 01:02:13 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:13 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:13 [compilation/cuda_graph.py:271] Capturing a cudagraph on (FULL,BatchDescriptor(num_tokens=352, num_reqs=352, uniform=True, has_lora=False, num_active_loras=0))
+(EngineCore pid=436) DEBUG 04-23 01:02:13 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:13 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:13 [compilation/cuda_graph.py:271] Capturing a cudagraph on (FULL,BatchDescriptor(num_tokens=336, num_reqs=336, uniform=True, has_lora=False, num_active_loras=0))
+(EngineCore pid=436) DEBUG 04-23 01:02:13 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:13 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:13 [compilation/cuda_graph.py:271] Capturing a cudagraph on (FULL,BatchDescriptor(num_tokens=320, num_reqs=320, uniform=True, has_lora=False, num_active_loras=0))
+Capturing CUDA graphs (decode, FULL):  25%|██▌       | 13/51 [00:00<00:01, 20.56it/s](EngineCore pid=436) DEBUG 04-23 01:02:13 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:13 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:13 [compilation/cuda_graph.py:271] Capturing a cudagraph on (FULL,BatchDescriptor(num_tokens=304, num_reqs=304, uniform=True, has_lora=False, num_active_loras=0))
+(EngineCore pid=436) DEBUG 04-23 01:02:13 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:13 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:13 [compilation/cuda_graph.py:271] Capturing a cudagraph on (FULL,BatchDescriptor(num_tokens=288, num_reqs=288, uniform=True, has_lora=False, num_active_loras=0))
+(EngineCore pid=436) DEBUG 04-23 01:02:13 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:13 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:13 [compilation/cuda_graph.py:271] Capturing a cudagraph on (FULL,BatchDescriptor(num_tokens=272, num_reqs=272, uniform=True, has_lora=False, num_active_loras=0))
+Capturing CUDA graphs (decode, FULL):  31%|███▏      | 16/51 [00:00<00:01, 20.40it/s](EngineCore pid=436) DEBUG 04-23 01:02:13 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:13 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:13 [compilation/cuda_graph.py:271] Capturing a cudagraph on (FULL,BatchDescriptor(num_tokens=256, num_reqs=256, uniform=True, has_lora=False, num_active_loras=0))
+(EngineCore pid=436) DEBUG 04-23 01:02:13 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:13 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:13 [compilation/cuda_graph.py:271] Capturing a cudagraph on (FULL,BatchDescriptor(num_tokens=248, num_reqs=248, uniform=True, has_lora=False, num_active_loras=0))
+(EngineCore pid=436) DEBUG 04-23 01:02:13 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:13 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:13 [compilation/cuda_graph.py:271] Capturing a cudagraph on (FULL,BatchDescriptor(num_tokens=240, num_reqs=240, uniform=True, has_lora=False, num_active_loras=0))
+Capturing CUDA graphs (decode, FULL):  37%|███▋      | 19/51 [00:00<00:01, 19.31it/s](EngineCore pid=436) DEBUG 04-23 01:02:13 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:13 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:13 [compilation/cuda_graph.py:271] Capturing a cudagraph on (FULL,BatchDescriptor(num_tokens=232, num_reqs=232, uniform=True, has_lora=False, num_active_loras=0))
+(EngineCore pid=436) DEBUG 04-23 01:02:13 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:13 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:13 [compilation/cuda_graph.py:271] Capturing a cudagraph on (FULL,BatchDescriptor(num_tokens=224, num_reqs=224, uniform=True, has_lora=False, num_active_loras=0))
+Capturing CUDA graphs (decode, FULL):  41%|████      | 21/51 [00:01<00:01, 18.96it/s](EngineCore pid=436) DEBUG 04-23 01:02:13 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:13 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:13 [compilation/cuda_graph.py:271] Capturing a cudagraph on (FULL,BatchDescriptor(num_tokens=216, num_reqs=216, uniform=True, has_lora=False, num_active_loras=0))
+(EngineCore pid=436) DEBUG 04-23 01:02:13 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:13 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:13 [compilation/cuda_graph.py:271] Capturing a cudagraph on (FULL,BatchDescriptor(num_tokens=208, num_reqs=208, uniform=True, has_lora=False, num_active_loras=0))
+Capturing CUDA graphs (decode, FULL):  45%|████▌     | 23/51 [00:01<00:01, 18.67it/s](EngineCore pid=436) DEBUG 04-23 01:02:13 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:13 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:13 [compilation/cuda_graph.py:271] Capturing a cudagraph on (FULL,BatchDescriptor(num_tokens=200, num_reqs=200, uniform=True, has_lora=False, num_active_loras=0))
+(EngineCore pid=436) DEBUG 04-23 01:02:13 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:13 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:13 [compilation/cuda_graph.py:271] Capturing a cudagraph on (FULL,BatchDescriptor(num_tokens=192, num_reqs=192, uniform=True, has_lora=False, num_active_loras=0))
+Capturing CUDA graphs (decode, FULL):  49%|████▉     | 25/51 [00:01<00:01, 18.44it/s](EngineCore pid=436) DEBUG 04-23 01:02:13 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:13 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:13 [compilation/cuda_graph.py:271] Capturing a cudagraph on (FULL,BatchDescriptor(num_tokens=184, num_reqs=184, uniform=True, has_lora=False, num_active_loras=0))
+(EngineCore pid=436) DEBUG 04-23 01:02:13 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:13 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:13 [compilation/cuda_graph.py:271] Capturing a cudagraph on (FULL,BatchDescriptor(num_tokens=176, num_reqs=176, uniform=True, has_lora=False, num_active_loras=0))
+Capturing CUDA graphs (decode, FULL):  53%|█████▎    | 27/51 [00:01<00:01, 18.32it/s](EngineCore pid=436) DEBUG 04-23 01:02:14 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:14 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:14 [compilation/cuda_graph.py:271] Capturing a cudagraph on (FULL,BatchDescriptor(num_tokens=168, num_reqs=168, uniform=True, has_lora=False, num_active_loras=0))
+(EngineCore pid=436) DEBUG 04-23 01:02:14 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:14 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:14 [compilation/cuda_graph.py:271] Capturing a cudagraph on (FULL,BatchDescriptor(num_tokens=160, num_reqs=160, uniform=True, has_lora=False, num_active_loras=0))
+Capturing CUDA graphs (decode, FULL):  57%|█████▋    | 29/51 [00:01<00:01, 18.35it/s](EngineCore pid=436) DEBUG 04-23 01:02:14 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:14 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:14 [compilation/cuda_graph.py:271] Capturing a cudagraph on (FULL,BatchDescriptor(num_tokens=152, num_reqs=152, uniform=True, has_lora=False, num_active_loras=0))
+(EngineCore pid=436) DEBUG 04-23 01:02:14 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:14 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:14 [compilation/cuda_graph.py:271] Capturing a cudagraph on (FULL,BatchDescriptor(num_tokens=144, num_reqs=144, uniform=True, has_lora=False, num_active_loras=0))
+Capturing CUDA graphs (decode, FULL):  61%|██████    | 31/51 [00:01<00:01, 18.21it/s](EngineCore pid=436) DEBUG 04-23 01:02:14 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:14 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:14 [compilation/cuda_graph.py:271] Capturing a cudagraph on (FULL,BatchDescriptor(num_tokens=136, num_reqs=136, uniform=True, has_lora=False, num_active_loras=0))
+(EngineCore pid=436) DEBUG 04-23 01:02:14 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:14 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:14 [compilation/cuda_graph.py:271] Capturing a cudagraph on (FULL,BatchDescriptor(num_tokens=128, num_reqs=128, uniform=True, has_lora=False, num_active_loras=0))
+Capturing CUDA graphs (decode, FULL):  65%|██████▍   | 33/51 [00:01<00:00, 18.19it/s](EngineCore pid=436) DEBUG 04-23 01:02:14 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:14 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:14 [compilation/cuda_graph.py:271] Capturing a cudagraph on (FULL,BatchDescriptor(num_tokens=120, num_reqs=120, uniform=True, has_lora=False, num_active_loras=0))
+(EngineCore pid=436) DEBUG 04-23 01:02:14 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:14 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:14 [compilation/cuda_graph.py:271] Capturing a cudagraph on (FULL,BatchDescriptor(num_tokens=112, num_reqs=112, uniform=True, has_lora=False, num_active_loras=0))
+Capturing CUDA graphs (decode, FULL):  69%|██████▊   | 35/51 [00:01<00:00, 18.15it/s](EngineCore pid=436) DEBUG 04-23 01:02:14 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:14 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:14 [compilation/cuda_graph.py:271] Capturing a cudagraph on (FULL,BatchDescriptor(num_tokens=104, num_reqs=104, uniform=True, has_lora=False, num_active_loras=0))
+(EngineCore pid=436) DEBUG 04-23 01:02:14 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:14 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:14 [compilation/cuda_graph.py:271] Capturing a cudagraph on (FULL,BatchDescriptor(num_tokens=96, num_reqs=96, uniform=True, has_lora=False, num_active_loras=0))
+Capturing CUDA graphs (decode, FULL):  73%|███████▎  | 37/51 [00:01<00:00, 18.18it/s](EngineCore pid=436) DEBUG 04-23 01:02:14 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:14 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:14 [compilation/cuda_graph.py:271] Capturing a cudagraph on (FULL,BatchDescriptor(num_tokens=88, num_reqs=88, uniform=True, has_lora=False, num_active_loras=0))
+(EngineCore pid=436) DEBUG 04-23 01:02:14 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:14 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:14 [compilation/cuda_graph.py:271] Capturing a cudagraph on (FULL,BatchDescriptor(num_tokens=80, num_reqs=80, uniform=True, has_lora=False, num_active_loras=0))
+Capturing CUDA graphs (decode, FULL):  76%|███████▋  | 39/51 [00:02<00:00, 18.12it/s](EngineCore pid=436) DEBUG 04-23 01:02:14 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:14 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:14 [compilation/cuda_graph.py:271] Capturing a cudagraph on (FULL,BatchDescriptor(num_tokens=72, num_reqs=72, uniform=True, has_lora=False, num_active_loras=0))
+(EngineCore pid=436) DEBUG 04-23 01:02:14 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:14 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:14 [compilation/cuda_graph.py:271] Capturing a cudagraph on (FULL,BatchDescriptor(num_tokens=64, num_reqs=64, uniform=True, has_lora=False, num_active_loras=0))
+Capturing CUDA graphs (decode, FULL):  80%|████████  | 41/51 [00:02<00:00, 18.17it/s](EngineCore pid=436) DEBUG 04-23 01:02:14 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:14 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:14 [compilation/cuda_graph.py:271] Capturing a cudagraph on (FULL,BatchDescriptor(num_tokens=56, num_reqs=56, uniform=True, has_lora=False, num_active_loras=0))
+(EngineCore pid=436) DEBUG 04-23 01:02:14 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:14 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:14 [compilation/cuda_graph.py:271] Capturing a cudagraph on (FULL,BatchDescriptor(num_tokens=48, num_reqs=48, uniform=True, has_lora=False, num_active_loras=0))
+Capturing CUDA graphs (decode, FULL):  84%|████████▍ | 43/51 [00:02<00:00, 18.14it/s](EngineCore pid=436) DEBUG 04-23 01:02:14 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:14 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:14 [compilation/cuda_graph.py:271] Capturing a cudagraph on (FULL,BatchDescriptor(num_tokens=40, num_reqs=40, uniform=True, has_lora=False, num_active_loras=0))
+(EngineCore pid=436) DEBUG 04-23 01:02:14 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:14 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:14 [compilation/cuda_graph.py:271] Capturing a cudagraph on (FULL,BatchDescriptor(num_tokens=32, num_reqs=32, uniform=True, has_lora=False, num_active_loras=0))
+Capturing CUDA graphs (decode, FULL):  88%|████████▊ | 45/51 [00:02<00:00, 18.21it/s](EngineCore pid=436) DEBUG 04-23 01:02:14 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:15 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:15 [compilation/cuda_graph.py:271] Capturing a cudagraph on (FULL,BatchDescriptor(num_tokens=24, num_reqs=24, uniform=True, has_lora=False, num_active_loras=0))
+(EngineCore pid=436) DEBUG 04-23 01:02:15 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:15 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:15 [compilation/cuda_graph.py:271] Capturing a cudagraph on (FULL,BatchDescriptor(num_tokens=16, num_reqs=16, uniform=True, has_lora=False, num_active_loras=0))
+Capturing CUDA graphs (decode, FULL):  92%|█████████▏| 47/51 [00:02<00:00, 18.09it/s](EngineCore pid=436) DEBUG 04-23 01:02:15 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:15 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:15 [compilation/cuda_graph.py:271] Capturing a cudagraph on (FULL,BatchDescriptor(num_tokens=8, num_reqs=8, uniform=True, has_lora=False, num_active_loras=0))
+(EngineCore pid=436) DEBUG 04-23 01:02:15 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:15 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:15 [compilation/cuda_graph.py:271] Capturing a cudagraph on (FULL,BatchDescriptor(num_tokens=4, num_reqs=4, uniform=True, has_lora=False, num_active_loras=0))
+Capturing CUDA graphs (decode, FULL):  96%|█████████▌| 49/51 [00:02<00:00, 18.16it/s](EngineCore pid=436) DEBUG 04-23 01:02:15 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:15 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:15 [compilation/cuda_graph.py:271] Capturing a cudagraph on (FULL,BatchDescriptor(num_tokens=2, num_reqs=2, uniform=True, has_lora=False, num_active_loras=0))
+(EngineCore pid=436) DEBUG 04-23 01:02:15 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:15 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) DEBUG 04-23 01:02:15 [compilation/cuda_graph.py:271] Capturing a cudagraph on (FULL,BatchDescriptor(num_tokens=1, num_reqs=1, uniform=True, has_lora=False, num_active_loras=0))
+Capturing CUDA graphs (decode, FULL): 100%|██████████| 51/51 [00:02<00:00, 17.97it/s]Capturing CUDA graphs (decode, FULL): 100%|██████████| 51/51 [00:02<00:00, 18.65it/s]
+(EngineCore pid=436) INFO 04-23 01:02:15 [v1/worker/gpu_model_runner.py:6046] Graph capturing finished in 10 secs, took 1.10 GiB
+(EngineCore pid=436) INFO 04-23 01:02:15 [v1/worker/gpu_worker.py:597] CUDA graph pool memory: 1.1 GiB (actual), 0.82 GiB (estimated), difference: 0.28 GiB (25.6%).
+(EngineCore pid=436) DEBUG 04-23 01:02:15 [v1/worker/gpu_worker.py:661] Free memory on device (78.68/79.19 GiB) on startup. Desired GPU memory utilization is (0.95, 75.23 GiB). Actual usage is 26.67 GiB for weight, 2.47 GiB for peak activation, 0.25 GiB for non-torch memory, and 1.1 GiB for CUDAGraph memory. Replace gpu_memory_utilization config with `--kv-cache-memory=47878365184` (44.59 GiB) to fit into requested memory, or `--kv-cache-memory=51579412480` (48.04 GiB) to fully utilize gpu memory. Current kv cache memory in use is 45.83 GiB.
+(EngineCore pid=436) DEBUG 04-23 01:02:15 [v1/worker/gpu_model_runner.py:5342] ubatch_slices: None, ubatch_slices_padded: None
+(EngineCore pid=436) INFO 04-23 01:02:16 [v1/engine/core.py:283] init engine (profile, create kv cache, warmup model) took 28.25 seconds
+(EngineCore pid=436) DEBUG 04-23 01:02:16 [tokenizers/registry.py:68] Loading CachedHfTokenizer for tokenizer_mode='hf'
+(EngineCore pid=436) DEBUG 04-23 01:02:16 [v1/engine/core.py:190] Batch queue is enabled with size 2
+(EngineCore pid=436) DEBUG 04-23 01:02:17 [utils/gc_utils.py:40] GC Debug Config. enabled:False,top_objects:-1
+(EngineCore pid=436) INFO 04-23 01:02:17 [config/vllm.py:790] Asynchronous scheduling is enabled.
+(APIServer pid=1) DEBUG 04-23 01:02:17 [v1/engine/utils.py:1158] READY from local core engine process 0.
+(EngineCore pid=436) DEBUG 04-23 01:02:17 [v1/engine/core.py:1158] EngineCore waiting for work.
+(APIServer pid=1) DEBUG 04-23 01:02:17 [v1/metrics/loggers.py:273] Engine 000: vllm cache_config_info with initialization after num_gpu_blocks is: 15644
+(EngineCore pid=436) DEBUG 04-23 01:02:17 [v1/engine/core.py:1158] EngineCore waiting for work.
+(EngineCore pid=436) DEBUG 04-23 01:02:17 [v1/engine/core.py:1158] EngineCore waiting for work.
+(APIServer pid=1) INFO 04-23 01:02:17 [entrypoints/openai/api_server.py:590] Supported tasks: ['generate']
+(APIServer pid=1) DEBUG 04-23 01:02:17 [renderers/base.py:197] Warming up chat template processing...
+(APIServer pid=1) DEBUG 04-23 01:02:17 [transformers_utils/repo_utils.py:243] File or repository not found in hf_hub_download: 404 Client Error. (Request ID: Root=1-69e96f99-49acc8517b55e3c27c27b3fd;0ff6226b-61f0-4694-a7ba-e344dca6a98b)
+(APIServer pid=1) DEBUG 04-23 01:02:17 [transformers_utils/repo_utils.py:243] 
+(APIServer pid=1) DEBUG 04-23 01:02:17 [transformers_utils/repo_utils.py:243] Entry Not Found for url: https://huggingface.co/Qwen/Qwen1.5-MoE-A2.7B/resolve/main/processor_config.json.
+(APIServer pid=1) DEBUG 04-23 01:02:17 [transformers_utils/repo_utils.py:243] File or repository not found in hf_hub_download: 404 Client Error. (Request ID: Root=1-69e96f99-302f25b46924f6d474e923ed;f66e4a8a-b29f-4504-b32e-9c681e3dd50b)
+(APIServer pid=1) DEBUG 04-23 01:02:17 [transformers_utils/repo_utils.py:243] 
+(APIServer pid=1) DEBUG 04-23 01:02:17 [transformers_utils/repo_utils.py:243] Entry Not Found for url: https://huggingface.co/Qwen/Qwen1.5-MoE-A2.7B/resolve/main/preprocessor_config.json.
+(APIServer pid=1) INFO 04-23 01:02:18 [renderers/hf.py:314] Detected the chat template content format to be 'string'. You can set `--chat-template-content-format` to override this.
+(APIServer pid=1) DEBUG 04-23 01:02:18 [renderers/base.py:203] Chat template warmup completed in 0.723s
+(APIServer pid=1) INFO 04-23 01:02:18 [entrypoints/openai/api_server.py:594] Starting vLLM server on http://0.0.0.0:8000
+(APIServer pid=1) INFO 04-23 01:02:18 [entrypoints/launcher.py:37] Available routes are:
+(APIServer pid=1) INFO 04-23 01:02:18 [entrypoints/launcher.py:46] Route: /openapi.json, Methods: GET, HEAD
+(APIServer pid=1) INFO 04-23 01:02:18 [entrypoints/launcher.py:46] Route: /docs, Methods: GET, HEAD
+(APIServer pid=1) INFO 04-23 01:02:18 [entrypoints/launcher.py:46] Route: /docs/oauth2-redirect, Methods: GET, HEAD
+(APIServer pid=1) INFO 04-23 01:02:18 [entrypoints/launcher.py:46] Route: /redoc, Methods: GET, HEAD
+(APIServer pid=1) INFO 04-23 01:02:18 [entrypoints/launcher.py:46] Route: /tokenize, Methods: POST
+(APIServer pid=1) INFO 04-23 01:02:18 [entrypoints/launcher.py:46] Route: /detokenize, Methods: POST
+(APIServer pid=1) INFO 04-23 01:02:18 [entrypoints/launcher.py:46] Route: /load, Methods: GET
+(APIServer pid=1) INFO 04-23 01:02:18 [entrypoints/launcher.py:46] Route: /version, Methods: GET
+(APIServer pid=1) INFO 04-23 01:02:18 [entrypoints/launcher.py:46] Route: /health, Methods: GET
+(APIServer pid=1) INFO 04-23 01:02:18 [entrypoints/launcher.py:46] Route: /metrics, Methods: GET
+(APIServer pid=1) INFO 04-23 01:02:18 [entrypoints/launcher.py:46] Route: /v1/models, Methods: GET
+(APIServer pid=1) INFO 04-23 01:02:18 [entrypoints/launcher.py:46] Route: /ping, Methods: GET
+(APIServer pid=1) INFO 04-23 01:02:18 [entrypoints/launcher.py:46] Route: /ping, Methods: POST
+(APIServer pid=1) INFO 04-23 01:02:18 [entrypoints/launcher.py:46] Route: /invocations, Methods: POST
+(APIServer pid=1) INFO 04-23 01:02:18 [entrypoints/launcher.py:46] Route: /v1/chat/completions, Methods: POST
+(APIServer pid=1) INFO 04-23 01:02:18 [entrypoints/launcher.py:46] Route: /v1/chat/completions/batch, Methods: POST
+(APIServer pid=1) INFO 04-23 01:02:18 [entrypoints/launcher.py:46] Route: /v1/responses, Methods: POST
+(APIServer pid=1) INFO 04-23 01:02:18 [entrypoints/launcher.py:46] Route: /v1/responses/{response_id}, Methods: GET
+(APIServer pid=1) INFO 04-23 01:02:18 [entrypoints/launcher.py:46] Route: /v1/responses/{response_id}/cancel, Methods: POST
+(APIServer pid=1) INFO 04-23 01:02:18 [entrypoints/launcher.py:46] Route: /v1/completions, Methods: POST
+(APIServer pid=1) INFO 04-23 01:02:18 [entrypoints/launcher.py:46] Route: /v1/messages, Methods: POST
+(APIServer pid=1) INFO 04-23 01:02:18 [entrypoints/launcher.py:46] Route: /v1/messages/count_tokens, Methods: POST
+(APIServer pid=1) INFO 04-23 01:02:18 [entrypoints/launcher.py:46] Route: /inference/v1/generate, Methods: POST
+(APIServer pid=1) INFO 04-23 01:02:18 [entrypoints/launcher.py:46] Route: /scale_elastic_ep, Methods: POST
+(APIServer pid=1) INFO 04-23 01:02:18 [entrypoints/launcher.py:46] Route: /is_scaling_elastic_ep, Methods: POST
+(APIServer pid=1) INFO 04-23 01:02:18 [entrypoints/launcher.py:46] Route: /v1/chat/completions/render, Methods: POST
+(APIServer pid=1) INFO 04-23 01:02:18 [entrypoints/launcher.py:46] Route: /v1/completions/render, Methods: POST
+(APIServer pid=1) INFO:     Started server process [1]
+(APIServer pid=1) INFO:     Waiting for application startup.
+(APIServer pid=1) INFO:     Application startup complete.
+(APIServer pid=1) DEBUG 04-23 01:02:23 [v1/engine/async_llm.py:875] Called check_health.
+(APIServer pid=1) INFO:     10.130.6.2:59836 - "GET /health HTTP/1.1" 200 OK

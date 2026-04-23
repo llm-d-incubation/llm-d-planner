@@ -1,0 +1,440 @@
+DEBUG 04-22 01:29:53 [plugins/__init__.py:36] No plugins for group vllm.platform_plugins found.
+DEBUG 04-22 01:29:53 [platforms/__init__.py:37] Checking if TPU platform is available.
+DEBUG 04-22 01:29:53 [platforms/__init__.py:56] TPU platform is not available because: No module named 'libtpu'
+DEBUG 04-22 01:29:53 [platforms/__init__.py:62] Checking if CUDA platform is available.
+DEBUG 04-22 01:29:53 [platforms/__init__.py:85] Confirmed CUDA platform is available.
+DEBUG 04-22 01:29:53 [platforms/__init__.py:113] Checking if ROCm platform is available.
+DEBUG 04-22 01:29:53 [platforms/__init__.py:127] ROCm platform is not available because: No module named 'amdsmi'
+DEBUG 04-22 01:29:53 [platforms/__init__.py:134] Checking if XPU platform is available.
+DEBUG 04-22 01:29:53 [platforms/__init__.py:165] Checking if CPU platform is available.
+DEBUG 04-22 01:29:53 [platforms/__init__.py:62] Checking if CUDA platform is available.
+DEBUG 04-22 01:29:53 [platforms/__init__.py:85] Confirmed CUDA platform is available.
+DEBUG 04-22 01:29:53 [platforms/__init__.py:247] Automatically detected platform cuda.
+DEBUG 04-22 01:29:58 [utils/import_utils.py:74] Loading module triton_kernels from /usr/local/lib/python3.12/dist-packages/vllm/third_party/triton_kernels/__init__.py.
+DEBUG 04-22 01:29:59 [entrypoints/utils.py:170] Setting VLLM_WORKER_MULTIPROC_METHOD to 'spawn'
+DEBUG 04-22 01:29:59 [plugins/__init__.py:44] Available plugins for group vllm.general_plugins:
+DEBUG 04-22 01:29:59 [plugins/__init__.py:46] - lora_filesystem_resolver -> vllm.plugins.lora_resolvers.filesystem_resolver:register_filesystem_resolver
+DEBUG 04-22 01:29:59 [plugins/__init__.py:46] - lora_hf_hub_resolver -> vllm.plugins.lora_resolvers.hf_hub_resolver:register_hf_hub_resolver
+DEBUG 04-22 01:29:59 [plugins/__init__.py:49] All plugins in this group will be loaded. Set `VLLM_PLUGINS` to control which plugins to load.
+(APIServer pid=1) INFO 04-22 01:29:59 [entrypoints/utils.py:299] 
+(APIServer pid=1) INFO 04-22 01:29:59 [entrypoints/utils.py:299]        █     █     █▄   ▄█
+(APIServer pid=1) INFO 04-22 01:29:59 [entrypoints/utils.py:299]  ▄▄ ▄█ █     █     █ ▀▄▀ █  version 0.19.0
+(APIServer pid=1) INFO 04-22 01:29:59 [entrypoints/utils.py:299]   █▄█▀ █     █     █     █  model   meta-llama/Llama-4-Scout-17B-16E-Instruct
+(APIServer pid=1) INFO 04-22 01:29:59 [entrypoints/utils.py:299]    ▀▀  ▀▀▀▀▀ ▀▀▀▀▀ ▀     ▀
+(APIServer pid=1) INFO 04-22 01:29:59 [entrypoints/utils.py:299] 
+(APIServer pid=1) INFO 04-22 01:29:59 [entrypoints/utils.py:233] non-default args: {'model_tag': 'meta-llama/Llama-4-Scout-17B-16E-Instruct', 'model': 'meta-llama/Llama-4-Scout-17B-16E-Instruct', 'max_model_len': 8192, 'tensor_parallel_size': 4, 'gpu_memory_utilization': 0.95, 'enable_prefix_caching': False}
+(APIServer pid=1) WARNING 04-22 01:29:59 [envs.py:1744] Unknown vLLM environment variable detected: VLLM_ATTENTION_BACKEND
+(APIServer pid=1) DEBUG 04-22 01:30:00 [model_executor/models/registry.py:827] Loaded model info for class vllm.model_executor.models.mllama4.Llama4ForConditionalGeneration from cache
+(APIServer pid=1) DEBUG 04-22 01:30:00 [logging_utils/log_time.py:29] Registry inspect model class: Elapsed time 0.0008244 secs
+(APIServer pid=1) INFO 04-22 01:30:00 [config/model.py:549] Resolved architecture: Llama4ForConditionalGeneration
+(APIServer pid=1) INFO 04-22 01:30:00 [config/model.py:1678] Using max model len 8192
+(APIServer pid=1) DEBUG 04-22 01:30:00 [config/model.py:1743] Generative models support chunked prefill.
+(APIServer pid=1) DEBUG 04-22 01:30:00 [config/model.py:1801] Generative models support prefix caching.
+(APIServer pid=1) DEBUG 04-22 01:30:00 [engine/arg_utils.py:2116] Enabling chunked prefill by default
+(APIServer pid=1) DEBUG 04-22 01:30:00 [engine/arg_utils.py:2232] Defaulting max_num_batched_tokens to 8192 for OPENAI_API_SERVER usage context.
+(APIServer pid=1) DEBUG 04-22 01:30:00 [engine/arg_utils.py:2242] Defaulting max_num_seqs to 1024 for OPENAI_API_SERVER usage context.
+(APIServer pid=1) DEBUG 04-22 01:30:00 [config/parallel.py:743] Defaulting to use mp for distributed inference
+(APIServer pid=1) INFO 04-22 01:30:00 [config/scheduler.py:238] Chunked prefill is enabled with max_num_batched_tokens=8192.
+(APIServer pid=1) INFO 04-22 01:30:00 [config/vllm.py:790] Asynchronous scheduling is enabled.
+(APIServer pid=1) <frozen importlib._bootstrap_external>:1301: FutureWarning: The cuda.cudart module is deprecated and will be removed in a future release, please switch to use the cuda.bindings.runtime module instead.
+(APIServer pid=1) <frozen importlib._bootstrap_external>:1301: FutureWarning: The cuda.nvrtc module is deprecated and will be removed in a future release, please switch to use the cuda.bindings.nvrtc module instead.
+(APIServer pid=1) INFO 04-22 01:30:01 [config/compilation.py:290] Enabled custom fusions: allreduce_rms
+(APIServer pid=1) DEBUG 04-22 01:30:01 [plugins/__init__.py:36] No plugins for group vllm.stat_logger_plugins found.
+(APIServer pid=1) DEBUG 04-22 01:30:01 [tokenizers/registry.py:68] Loading CachedHfTokenizer for tokenizer_mode='hf'
+(APIServer pid=1) DEBUG 04-22 01:30:02 [renderers/registry.py:57] Loading HfRenderer for renderer_mode='hf'
+(APIServer pid=1) DEBUG 04-22 01:30:02 [compilation/decorators.py:213] Inferred dynamic dimensions for forward method of <class 'vllm.model_executor.models.llama.LlamaModel'>: ['input_ids', 'positions', 'intermediate_tensors', 'inputs_embeds']
+(APIServer pid=1) DEBUG 04-22 01:30:02 [compilation/decorators.py:213] Inferred dynamic dimensions for forward method of <class 'vllm.model_executor.models.llama4.Llama4Model'>: ['input_ids', 'positions', 'intermediate_tensors', 'inputs_embeds']
+(APIServer pid=1) DEBUG 04-22 01:30:03 [utils/torch_utils.py:119] OMP_NUM_THREADS is not set; defaulting Torch threads to 1.
+(APIServer pid=1) DEBUG 04-22 01:30:03 [plugins/io_processors/__init__.py:36] No IOProcessor plugins requested by the model
+DEBUG 04-22 01:30:13 [plugins/__init__.py:36] No plugins for group vllm.platform_plugins found.
+DEBUG 04-22 01:30:13 [platforms/__init__.py:37] Checking if TPU platform is available.
+DEBUG 04-22 01:30:13 [platforms/__init__.py:56] TPU platform is not available because: No module named 'libtpu'
+DEBUG 04-22 01:30:13 [platforms/__init__.py:62] Checking if CUDA platform is available.
+DEBUG 04-22 01:30:13 [platforms/__init__.py:85] Confirmed CUDA platform is available.
+DEBUG 04-22 01:30:13 [platforms/__init__.py:113] Checking if ROCm platform is available.
+DEBUG 04-22 01:30:13 [platforms/__init__.py:127] ROCm platform is not available because: No module named 'amdsmi'
+DEBUG 04-22 01:30:13 [platforms/__init__.py:134] Checking if XPU platform is available.
+DEBUG 04-22 01:30:13 [platforms/__init__.py:165] Checking if CPU platform is available.
+DEBUG 04-22 01:30:13 [platforms/__init__.py:62] Checking if CUDA platform is available.
+DEBUG 04-22 01:30:13 [platforms/__init__.py:85] Confirmed CUDA platform is available.
+DEBUG 04-22 01:30:13 [platforms/__init__.py:247] Automatically detected platform cuda.
+DEBUG 04-22 01:30:17 [utils/import_utils.py:74] Loading module triton_kernels from /usr/local/lib/python3.12/dist-packages/vllm/third_party/triton_kernels/__init__.py.
+(EngineCore pid=470) DEBUG 04-22 01:30:19 [v1/engine/core.py:1018] Waiting for init message from front-end.
+(EngineCore pid=470) DEBUG 04-22 01:30:19 [v1/engine/core.py:1029] Received init message: EngineHandshakeMetadata(addresses=EngineZmqAddresses(inputs=['ipc:///tmp/d183e7bb-6eef-4da4-943b-f32769998c39'], outputs=['ipc:///tmp/1364cfc6-7766-4264-bfe9-0dd5982225b8'], coordinator_input=None, coordinator_output=None, frontend_stats_publish_address=None), parallel_config={})
+(APIServer pid=1) DEBUG 04-22 01:30:19 [v1/engine/utils.py:1158] HELLO from local core engine process 0.
+(EngineCore pid=470) DEBUG 04-22 01:30:19 [v1/engine/core.py:826] Has DP Coordinator: False, stats publish address: None
+(EngineCore pid=470) DEBUG 04-22 01:30:19 [plugins/__init__.py:44] Available plugins for group vllm.general_plugins:
+(EngineCore pid=470) DEBUG 04-22 01:30:19 [plugins/__init__.py:46] - lora_filesystem_resolver -> vllm.plugins.lora_resolvers.filesystem_resolver:register_filesystem_resolver
+(EngineCore pid=470) DEBUG 04-22 01:30:19 [plugins/__init__.py:46] - lora_hf_hub_resolver -> vllm.plugins.lora_resolvers.hf_hub_resolver:register_hf_hub_resolver
+(EngineCore pid=470) DEBUG 04-22 01:30:19 [plugins/__init__.py:49] All plugins in this group will be loaded. Set `VLLM_PLUGINS` to control which plugins to load.
+(EngineCore pid=470) INFO 04-22 01:30:19 [v1/engine/core.py:105] Initializing a V1 LLM engine (v0.19.0) with config: model='meta-llama/Llama-4-Scout-17B-16E-Instruct', speculative_config=None, tokenizer='meta-llama/Llama-4-Scout-17B-16E-Instruct', skip_tokenizer_init=False, tokenizer_mode=auto, revision=None, tokenizer_revision=None, trust_remote_code=False, dtype=torch.bfloat16, max_seq_len=8192, download_dir=None, load_format=auto, tensor_parallel_size=4, pipeline_parallel_size=1, data_parallel_size=1, decode_context_parallel_size=1, dcp_comm_backend=ag_rs, disable_custom_all_reduce=False, quantization=None, enforce_eager=False, enable_return_routed_experts=False, kv_cache_dtype=auto, device_config=cuda, structured_outputs_config=StructuredOutputsConfig(backend='auto', disable_any_whitespace=False, disable_additional_properties=False, reasoning_parser='', reasoning_parser_plugin='', enable_in_reasoning=False), observability_config=ObservabilityConfig(show_hidden_metrics_for_version=None, otlp_traces_endpoint=None, collect_detailed_traces=None, kv_cache_metrics=False, kv_cache_metrics_sample=0.01, cudagraph_metrics=False, enable_layerwise_nvtx_tracing=False, enable_mfu_metrics=False, enable_mm_processor_stats=False, enable_logging_iteration_details=False), seed=0, served_model_name=meta-llama/Llama-4-Scout-17B-16E-Instruct, enable_prefix_caching=False, enable_chunked_prefill=True, pooler_config=None, compilation_config={'mode': <CompilationMode.VLLM_COMPILE: 3>, 'debug_dump_path': None, 'cache_dir': '', 'compile_cache_save_format': 'binary', 'backend': 'inductor', 'custom_ops': ['none'], 'splitting_ops': ['vllm::unified_attention', 'vllm::unified_attention_with_output', 'vllm::unified_mla_attention', 'vllm::unified_mla_attention_with_output', 'vllm::mamba_mixer2', 'vllm::mamba_mixer', 'vllm::short_conv', 'vllm::linear_attention', 'vllm::plamo2_mamba_mixer', 'vllm::gdn_attention_core', 'vllm::olmo_hybrid_gdn_full_forward', 'vllm::kda_attention', 'vllm::sparse_attn_indexer', 'vllm::rocm_aiter_sparse_attn_indexer', 'vllm::unified_kv_cache_update', 'vllm::unified_mla_kv_cache_update'], 'compile_mm_encoder': False, 'cudagraph_mm_encoder': False, 'encoder_cudagraph_token_budgets': [], 'encoder_cudagraph_max_images_per_batch': 0, 'compile_sizes': [], 'compile_ranges_endpoints': [204, 8192], 'inductor_compile_config': {'enable_auto_functionalized_v2': False, 'size_asserts': True, 'alignment_asserts': True, 'scalar_asserts': True, 'combo_kernels': True, 'benchmark_combo_kernel': True}, 'inductor_passes': {}, 'cudagraph_mode': <CUDAGraphMode.FULL_AND_PIECEWISE: (2, 1)>, 'cudagraph_num_of_warmups': 1, 'cudagraph_capture_sizes': [1, 2, 4, 8, 16, 24, 32, 40, 48, 56, 64, 72, 80, 88, 96, 104, 112, 120, 128, 136, 144, 152, 160, 168, 176, 184, 192, 200, 208, 216, 224, 232, 240, 248, 256, 272, 288, 304, 320, 336, 352, 368, 384, 400, 416, 432, 448, 464, 480, 496, 512], 'cudagraph_copy_inputs': False, 'cudagraph_specialize_lora': True, 'use_inductor_graph_partition': False, 'pass_config': {'fuse_norm_quant': False, 'fuse_act_quant': False, 'fuse_attn_quant': False, 'enable_sp': False, 'fuse_gemm_comms': False, 'fuse_allreduce_rms': True}, 'max_cudagraph_capture_size': 512, 'dynamic_shapes_config': {'type': <DynamicShapesType.BACKED: 'backed'>, 'evaluate_guards': False, 'assume_32_bit_indexing': False}, 'local_cache_dir': None, 'fast_moe_cold_start': True, 'static_all_moe_layers': []}
+(EngineCore pid=470) WARNING 04-22 01:30:19 [v1/executor/multiproc_executor.py:1014] Reducing Torch parallelism from 112 threads to 1 to avoid unnecessary CPU contention. Set OMP_NUM_THREADS in the external environment to tune this value as needed.
+(EngineCore pid=470) INFO 04-22 01:30:19 [v1/executor/multiproc_executor.py:134] DP group leader: node_rank=0, node_rank_within_dp=0, master_addr=127.0.0.1, mq_connect_ip=10.131.7.87 (local), world_size=4, local_world_size=4
+(EngineCore pid=470) DEBUG 04-22 01:30:19 [distributed/device_communicators/shm_broadcast.py:390] Binding to ipc:///tmp/e7240d42-f49f-4d17-9d01-cc24e0453b78
+(EngineCore pid=470) DEBUG 04-22 01:30:19 [distributed/device_communicators/shm_broadcast.py:443] vLLM message queue communication handle: Handle(local_reader_ranks=[0, 1, 2, 3], buffer_handle=(4, 16777216, 10, 'psm_2b2306a0'), local_subscribe_addr='ipc:///tmp/e7240d42-f49f-4d17-9d01-cc24e0453b78', local_notify_addr='ipc:///tmp/36af057c-4fa5-42de-9705-f0cd0cc565fb', remote_subscribe_addr=None, remote_addr_ipv6=False)
+DEBUG 04-22 01:30:22 [plugins/__init__.py:36] No plugins for group vllm.platform_plugins found.
+DEBUG 04-22 01:30:22 [platforms/__init__.py:37] Checking if TPU platform is available.
+DEBUG 04-22 01:30:22 [platforms/__init__.py:56] TPU platform is not available because: No module named 'libtpu'
+DEBUG 04-22 01:30:22 [platforms/__init__.py:62] Checking if CUDA platform is available.
+DEBUG 04-22 01:30:22 [plugins/__init__.py:36] No plugins for group vllm.platform_plugins found.
+DEBUG 04-22 01:30:22 [platforms/__init__.py:37] Checking if TPU platform is available.
+DEBUG 04-22 01:30:22 [platforms/__init__.py:56] TPU platform is not available because: No module named 'libtpu'
+DEBUG 04-22 01:30:22 [platforms/__init__.py:62] Checking if CUDA platform is available.
+DEBUG 04-22 01:30:22 [platforms/__init__.py:85] Confirmed CUDA platform is available.
+DEBUG 04-22 01:30:22 [platforms/__init__.py:113] Checking if ROCm platform is available.
+DEBUG 04-22 01:30:22 [platforms/__init__.py:127] ROCm platform is not available because: No module named 'amdsmi'
+DEBUG 04-22 01:30:22 [platforms/__init__.py:134] Checking if XPU platform is available.
+DEBUG 04-22 01:30:22 [platforms/__init__.py:165] Checking if CPU platform is available.
+DEBUG 04-22 01:30:22 [platforms/__init__.py:62] Checking if CUDA platform is available.
+DEBUG 04-22 01:30:22 [platforms/__init__.py:85] Confirmed CUDA platform is available.
+DEBUG 04-22 01:30:22 [platforms/__init__.py:113] Checking if ROCm platform is available.
+DEBUG 04-22 01:30:22 [platforms/__init__.py:85] Confirmed CUDA platform is available.
+DEBUG 04-22 01:30:22 [platforms/__init__.py:127] ROCm platform is not available because: No module named 'amdsmi'
+DEBUG 04-22 01:30:22 [platforms/__init__.py:134] Checking if XPU platform is available.
+DEBUG 04-22 01:30:22 [platforms/__init__.py:165] Checking if CPU platform is available.
+DEBUG 04-22 01:30:22 [platforms/__init__.py:62] Checking if CUDA platform is available.
+DEBUG 04-22 01:30:22 [platforms/__init__.py:247] Automatically detected platform cuda.
+DEBUG 04-22 01:30:22 [platforms/__init__.py:85] Confirmed CUDA platform is available.
+DEBUG 04-22 01:30:22 [platforms/__init__.py:247] Automatically detected platform cuda.
+DEBUG 04-22 01:30:22 [plugins/__init__.py:36] No plugins for group vllm.platform_plugins found.
+DEBUG 04-22 01:30:22 [plugins/__init__.py:36] No plugins for group vllm.platform_plugins found.
+DEBUG 04-22 01:30:22 [platforms/__init__.py:37] Checking if TPU platform is available.
+DEBUG 04-22 01:30:22 [platforms/__init__.py:37] Checking if TPU platform is available.
+DEBUG 04-22 01:30:22 [platforms/__init__.py:56] TPU platform is not available because: No module named 'libtpu'
+DEBUG 04-22 01:30:22 [platforms/__init__.py:56] TPU platform is not available because: No module named 'libtpu'
+DEBUG 04-22 01:30:22 [platforms/__init__.py:62] Checking if CUDA platform is available.
+DEBUG 04-22 01:30:22 [platforms/__init__.py:62] Checking if CUDA platform is available.
+DEBUG 04-22 01:30:22 [platforms/__init__.py:85] Confirmed CUDA platform is available.
+DEBUG 04-22 01:30:22 [platforms/__init__.py:85] Confirmed CUDA platform is available.
+DEBUG 04-22 01:30:22 [platforms/__init__.py:113] Checking if ROCm platform is available.
+DEBUG 04-22 01:30:22 [platforms/__init__.py:127] ROCm platform is not available because: No module named 'amdsmi'
+DEBUG 04-22 01:30:22 [platforms/__init__.py:134] Checking if XPU platform is available.
+DEBUG 04-22 01:30:22 [platforms/__init__.py:165] Checking if CPU platform is available.
+DEBUG 04-22 01:30:22 [platforms/__init__.py:62] Checking if CUDA platform is available.
+DEBUG 04-22 01:30:22 [platforms/__init__.py:113] Checking if ROCm platform is available.
+DEBUG 04-22 01:30:22 [platforms/__init__.py:127] ROCm platform is not available because: No module named 'amdsmi'
+DEBUG 04-22 01:30:22 [platforms/__init__.py:134] Checking if XPU platform is available.
+DEBUG 04-22 01:30:22 [platforms/__init__.py:165] Checking if CPU platform is available.
+DEBUG 04-22 01:30:22 [platforms/__init__.py:62] Checking if CUDA platform is available.
+DEBUG 04-22 01:30:22 [platforms/__init__.py:85] Confirmed CUDA platform is available.
+DEBUG 04-22 01:30:22 [platforms/__init__.py:247] Automatically detected platform cuda.
+DEBUG 04-22 01:30:22 [platforms/__init__.py:85] Confirmed CUDA platform is available.
+DEBUG 04-22 01:30:22 [platforms/__init__.py:247] Automatically detected platform cuda.
+DEBUG 04-22 01:30:27 [utils/import_utils.py:74] Loading module triton_kernels from /usr/local/lib/python3.12/dist-packages/vllm/third_party/triton_kernels/__init__.py.
+DEBUG 04-22 01:30:27 [utils/import_utils.py:74] Loading module triton_kernels from /usr/local/lib/python3.12/dist-packages/vllm/third_party/triton_kernels/__init__.py.
+DEBUG 04-22 01:30:27 [utils/import_utils.py:74] Loading module triton_kernels from /usr/local/lib/python3.12/dist-packages/vllm/third_party/triton_kernels/__init__.py.
+DEBUG 04-22 01:30:27 [utils/import_utils.py:74] Loading module triton_kernels from /usr/local/lib/python3.12/dist-packages/vllm/third_party/triton_kernels/__init__.py.
+DEBUG 04-22 01:30:28 [plugins/__init__.py:44] Available plugins for group vllm.general_plugins:
+DEBUG 04-22 01:30:28 [plugins/__init__.py:46] - lora_filesystem_resolver -> vllm.plugins.lora_resolvers.filesystem_resolver:register_filesystem_resolver
+DEBUG 04-22 01:30:28 [plugins/__init__.py:46] - lora_hf_hub_resolver -> vllm.plugins.lora_resolvers.hf_hub_resolver:register_hf_hub_resolver
+DEBUG 04-22 01:30:28 [plugins/__init__.py:49] All plugins in this group will be loaded. Set `VLLM_PLUGINS` to control which plugins to load.
+DEBUG 04-22 01:30:29 [plugins/__init__.py:44] Available plugins for group vllm.general_plugins:
+DEBUG 04-22 01:30:29 [plugins/__init__.py:46] - lora_filesystem_resolver -> vllm.plugins.lora_resolvers.filesystem_resolver:register_filesystem_resolver
+DEBUG 04-22 01:30:29 [plugins/__init__.py:46] - lora_hf_hub_resolver -> vllm.plugins.lora_resolvers.hf_hub_resolver:register_hf_hub_resolver
+DEBUG 04-22 01:30:29 [plugins/__init__.py:49] All plugins in this group will be loaded. Set `VLLM_PLUGINS` to control which plugins to load.
+DEBUG 04-22 01:30:29 [plugins/__init__.py:44] Available plugins for group vllm.general_plugins:
+DEBUG 04-22 01:30:29 [plugins/__init__.py:46] - lora_filesystem_resolver -> vllm.plugins.lora_resolvers.filesystem_resolver:register_filesystem_resolver
+DEBUG 04-22 01:30:29 [plugins/__init__.py:46] - lora_hf_hub_resolver -> vllm.plugins.lora_resolvers.hf_hub_resolver:register_hf_hub_resolver
+DEBUG 04-22 01:30:29 [plugins/__init__.py:49] All plugins in this group will be loaded. Set `VLLM_PLUGINS` to control which plugins to load.
+DEBUG 04-22 01:30:29 [plugins/__init__.py:44] Available plugins for group vllm.general_plugins:
+DEBUG 04-22 01:30:29 [plugins/__init__.py:46] - lora_filesystem_resolver -> vllm.plugins.lora_resolvers.filesystem_resolver:register_filesystem_resolver
+DEBUG 04-22 01:30:29 [plugins/__init__.py:46] - lora_hf_hub_resolver -> vllm.plugins.lora_resolvers.hf_hub_resolver:register_hf_hub_resolver
+DEBUG 04-22 01:30:29 [plugins/__init__.py:49] All plugins in this group will be loaded. Set `VLLM_PLUGINS` to control which plugins to load.
+(APIServer pid=1) DEBUG 04-22 01:30:29 [v1/engine/utils.py:1047] Waiting for 1 local, 0 remote core engine proc(s) to start.
+DEBUG 04-22 01:30:29 [compilation/decorators.py:213] Inferred dynamic dimensions for forward method of <class 'vllm.model_executor.models.llama.LlamaModel'>: ['input_ids', 'positions', 'intermediate_tensors', 'inputs_embeds']
+DEBUG 04-22 01:30:29 [compilation/decorators.py:213] Inferred dynamic dimensions for forward method of <class 'vllm.model_executor.models.llama4.Llama4Model'>: ['input_ids', 'positions', 'intermediate_tensors', 'inputs_embeds']
+DEBUG 04-22 01:30:29 [compilation/decorators.py:213] Inferred dynamic dimensions for forward method of <class 'vllm.model_executor.models.llama.LlamaModel'>: ['input_ids', 'positions', 'intermediate_tensors', 'inputs_embeds']
+DEBUG 04-22 01:30:29 [compilation/decorators.py:213] Inferred dynamic dimensions for forward method of <class 'vllm.model_executor.models.llama4.Llama4Model'>: ['input_ids', 'positions', 'intermediate_tensors', 'inputs_embeds']
+DEBUG 04-22 01:30:29 [tokenizers/registry.py:68] Loading CachedHfTokenizer for tokenizer_mode='hf'
+DEBUG 04-22 01:30:29 [compilation/decorators.py:213] Inferred dynamic dimensions for forward method of <class 'vllm.model_executor.models.llama.LlamaModel'>: ['input_ids', 'positions', 'intermediate_tensors', 'inputs_embeds']
+DEBUG 04-22 01:30:29 [compilation/decorators.py:213] Inferred dynamic dimensions for forward method of <class 'vllm.model_executor.models.llama4.Llama4Model'>: ['input_ids', 'positions', 'intermediate_tensors', 'inputs_embeds']
+DEBUG 04-22 01:30:29 [tokenizers/registry.py:68] Loading CachedHfTokenizer for tokenizer_mode='hf'
+DEBUG 04-22 01:30:29 [compilation/decorators.py:213] Inferred dynamic dimensions for forward method of <class 'vllm.model_executor.models.llama.LlamaModel'>: ['input_ids', 'positions', 'intermediate_tensors', 'inputs_embeds']
+DEBUG 04-22 01:30:29 [compilation/decorators.py:213] Inferred dynamic dimensions for forward method of <class 'vllm.model_executor.models.llama4.Llama4Model'>: ['input_ids', 'positions', 'intermediate_tensors', 'inputs_embeds']
+DEBUG 04-22 01:30:29 [tokenizers/registry.py:68] Loading CachedHfTokenizer for tokenizer_mode='hf'
+DEBUG 04-22 01:30:29 [tokenizers/registry.py:68] Loading CachedHfTokenizer for tokenizer_mode='hf'
+(Worker pid=669) DEBUG 04-22 01:30:30 [distributed/parallel_state.py:1356] world_size=4 rank=0 local_rank=0 distributed_init_method=tcp://127.0.0.1:38185 backend=nccl
+(Worker pid=669) INFO 04-22 01:30:30 [distributed/parallel_state.py:1400] world_size=4 rank=0 local_rank=0 distributed_init_method=tcp://127.0.0.1:38185 backend=nccl
+(Worker pid=670) DEBUG 04-22 01:30:31 [distributed/parallel_state.py:1356] world_size=4 rank=1 local_rank=1 distributed_init_method=tcp://127.0.0.1:38185 backend=nccl
+(Worker pid=670) INFO 04-22 01:30:31 [distributed/parallel_state.py:1400] world_size=4 rank=1 local_rank=1 distributed_init_method=tcp://127.0.0.1:38185 backend=nccl
+(Worker pid=671) DEBUG 04-22 01:30:31 [distributed/parallel_state.py:1356] world_size=4 rank=2 local_rank=2 distributed_init_method=tcp://127.0.0.1:38185 backend=nccl
+(Worker pid=671) INFO 04-22 01:30:31 [distributed/parallel_state.py:1400] world_size=4 rank=2 local_rank=2 distributed_init_method=tcp://127.0.0.1:38185 backend=nccl
+(Worker pid=672) DEBUG 04-22 01:30:31 [distributed/parallel_state.py:1356] world_size=4 rank=3 local_rank=3 distributed_init_method=tcp://127.0.0.1:38185 backend=nccl
+(Worker pid=672) INFO 04-22 01:30:31 [distributed/parallel_state.py:1400] world_size=4 rank=3 local_rank=3 distributed_init_method=tcp://127.0.0.1:38185 backend=nccl
+[Gloo] Rank 0 is connected to 3 peer ranks. Expected number of connected peer ranks is : 3
+[Gloo] Rank 2 is connected to 3 peer ranks. Expected number of connected peer ranks is : 3
+[Gloo] Rank 1 is connected to 3 peer ranks. Expected number of connected peer ranks is : 3
+[Gloo] Rank 3 is connected to 3 peer ranks. Expected number of connected peer ranks is : 3
+(Worker pid=670) DEBUG 04-22 01:30:31 [distributed/parallel_state.py:1459] Detected 1 nodes in the distributed environment
+(Worker pid=671) DEBUG 04-22 01:30:31 [distributed/parallel_state.py:1459] Detected 1 nodes in the distributed environment
+(Worker pid=672) DEBUG 04-22 01:30:31 [distributed/parallel_state.py:1459] Detected 1 nodes in the distributed environment
+(Worker pid=669) DEBUG 04-22 01:30:31 [distributed/parallel_state.py:1459] Detected 1 nodes in the distributed environment
+[Gloo] Rank 2 is connected to 3 peer ranks. Expected number of connected peer ranks is : 3
+[Gloo] Rank 3 is connected to 3 peer ranks. Expected number of connected peer ranks is : 3
+[Gloo] Rank 1 is connected to 3 peer ranks. Expected number of connected peer ranks is : 3
+[Gloo] Rank 0 is connected to 3 peer ranks. Expected number of connected peer ranks is : 3
+(Worker pid=670) <frozen importlib._bootstrap_external>:1301: FutureWarning: The cuda.cudart module is deprecated and will be removed in a future release, please switch to use the cuda.bindings.runtime module instead.
+(Worker pid=671) <frozen importlib._bootstrap_external>:1301: FutureWarning: The cuda.cudart module is deprecated and will be removed in a future release, please switch to use the cuda.bindings.runtime module instead.
+(Worker pid=670) <frozen importlib._bootstrap_external>:1301: FutureWarning: The cuda.nvrtc module is deprecated and will be removed in a future release, please switch to use the cuda.bindings.nvrtc module instead.
+(Worker pid=671) <frozen importlib._bootstrap_external>:1301: FutureWarning: The cuda.nvrtc module is deprecated and will be removed in a future release, please switch to use the cuda.bindings.nvrtc module instead.
+(Worker pid=672) <frozen importlib._bootstrap_external>:1301: FutureWarning: The cuda.cudart module is deprecated and will be removed in a future release, please switch to use the cuda.bindings.runtime module instead.
+(Worker pid=672) <frozen importlib._bootstrap_external>:1301: FutureWarning: The cuda.nvrtc module is deprecated and will be removed in a future release, please switch to use the cuda.bindings.nvrtc module instead.
+(Worker pid=669) <frozen importlib._bootstrap_external>:1301: FutureWarning: The cuda.cudart module is deprecated and will be removed in a future release, please switch to use the cuda.bindings.runtime module instead.
+(Worker pid=669) <frozen importlib._bootstrap_external>:1301: FutureWarning: The cuda.nvrtc module is deprecated and will be removed in a future release, please switch to use the cuda.bindings.nvrtc module instead.
+(Worker pid=669) DEBUG 04-22 01:30:31 [utils/nccl.py:34] Found nccl from library libnccl.so.2
+(Worker pid=669) INFO 04-22 01:30:31 [distributed/device_communicators/pynccl.py:111] vLLM is using nccl==2.27.5
+(Worker pid=670) DEBUG 04-22 01:30:32 [distributed/device_communicators/custom_all_reduce.py:37] Skipping P2P check and trusting the driver's P2P report.
+(Worker pid=671) DEBUG 04-22 01:30:32 [distributed/device_communicators/custom_all_reduce.py:37] Skipping P2P check and trusting the driver's P2P report.
+(Worker pid=672) DEBUG 04-22 01:30:32 [distributed/device_communicators/custom_all_reduce.py:37] Skipping P2P check and trusting the driver's P2P report.
+(Worker pid=669) DEBUG 04-22 01:30:32 [distributed/device_communicators/custom_all_reduce.py:37] Skipping P2P check and trusting the driver's P2P report.
+(Worker pid=669) DEBUG 04-22 01:30:32 [distributed/device_communicators/shm_broadcast.py:390] Binding to ipc:///tmp/2470ef01-879c-4c68-8a4f-d117d276b4de
+(Worker pid=669) DEBUG 04-22 01:30:32 [distributed/device_communicators/shm_broadcast.py:443] vLLM message queue communication handle: Handle(local_reader_ranks=[1, 2, 3], buffer_handle=(3, 4194304, 6, 'psm_62c7f776'), local_subscribe_addr='ipc:///tmp/2470ef01-879c-4c68-8a4f-d117d276b4de', local_notify_addr='ipc:///tmp/7101c424-5035-49eb-b6bb-ea7d4a2f6f23', remote_subscribe_addr=None, remote_addr_ipv6=False)
+(Worker pid=671) DEBUG 04-22 01:30:32 [distributed/device_communicators/shm_broadcast.py:467] Connecting to ipc:///tmp/2470ef01-879c-4c68-8a4f-d117d276b4de
+(Worker pid=672) DEBUG 04-22 01:30:32 [distributed/device_communicators/shm_broadcast.py:467] Connecting to ipc:///tmp/2470ef01-879c-4c68-8a4f-d117d276b4de
+(Worker pid=670) DEBUG 04-22 01:30:32 [distributed/device_communicators/shm_broadcast.py:467] Connecting to ipc:///tmp/2470ef01-879c-4c68-8a4f-d117d276b4de
+[Gloo] Rank 0 is connected to 0 peer ranks. Expected number of connected peer ranks is : 0
+[Gloo] Rank 0 is connected to 0 peer ranks. Expected number of connected peer ranks is : 0
+[Gloo] Rank 0 is connected to 0 peer ranks. Expected number of connected peer ranks is : 0
+[Gloo] Rank 0 is connected to 0 peer ranks. Expected number of connected peer ranks is : 0
+[Gloo] Rank 0 is connected to 0 peer ranks. Expected number of connected peer ranks is : 0
+[Gloo] Rank 0 is connected to 0 peer ranks. Expected number of connected peer ranks is : 0
+[Gloo] Rank 0 is connected to 0 peer ranks. Expected number of connected peer ranks is : 0
+[Gloo] Rank 0 is connected to 0 peer ranks. Expected number of connected peer ranks is : 0
+[Gloo] Rank 0 is connected to 0 peer ranks. Expected number of connected peer ranks is : 0
+[Gloo] Rank 0 is connected to 0 peer ranks. Expected number of connected peer ranks is : 0
+[Gloo] Rank 0 is connected to 0 peer ranks. Expected number of connected peer ranks is : 0
+[Gloo] Rank 0 is connected to 0 peer ranks. Expected number of connected peer ranks is : 0
+[Gloo] Rank 0 is connected to 0 peer ranks. Expected number of connected peer ranks is : 0
+[Gloo] Rank 0 is connected to 0 peer ranks. Expected number of connected peer ranks is : 0
+[Gloo] Rank 0 is connected to 0 peer ranks. Expected number of connected peer ranks is : 0
+[Gloo] Rank 0 is connected to 0 peer ranks. Expected number of connected peer ranks is : 0
+[Gloo] Rank 0 is connected to 3 peer ranks. Expected number of connected peer ranks is : 3
+[Gloo] Rank 1 is connected to 3 peer ranks. Expected number of connected peer ranks is : 3
+[Gloo] Rank 3 is connected to 3 peer ranks. Expected number of connected peer ranks is : 3
+[Gloo] Rank 2 is connected to 3 peer ranks. Expected number of connected peer ranks is : 3
+(Worker pid=669) INFO 04-22 01:30:33 [distributed/parallel_state.py:1716] rank 0 in world size 4 is assigned as DP rank 0, PP rank 0, PCP rank 0, TP rank 0, EP rank 0, EPLB rank N/A
+(Worker pid=670) ERROR 04-22 01:30:33 [v1/executor/multiproc_executor.py:857] WorkerProc failed to start.
+(Worker pid=670) ERROR 04-22 01:30:33 [v1/executor/multiproc_executor.py:857] Traceback (most recent call last):
+(Worker pid=670) ERROR 04-22 01:30:33 [v1/executor/multiproc_executor.py:857]   File "/usr/local/lib/python3.12/dist-packages/vllm/v1/executor/multiproc_executor.py", line 826, in worker_main
+(Worker pid=670) ERROR 04-22 01:30:33 [v1/executor/multiproc_executor.py:857]     worker = WorkerProc(*args, **kwargs)
+(Worker pid=670) ERROR 04-22 01:30:33 [v1/executor/multiproc_executor.py:857]              ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(Worker pid=670) ERROR 04-22 01:30:33 [v1/executor/multiproc_executor.py:857]   File "/usr/local/lib/python3.12/dist-packages/vllm/tracing/otel.py", line 178, in sync_wrapper
+(Worker pid=670) ERROR 04-22 01:30:33 [v1/executor/multiproc_executor.py:857]     return func(*args, **kwargs)
+(Worker pid=670) ERROR 04-22 01:30:33 [v1/executor/multiproc_executor.py:857]            ^^^^^^^^^^^^^^^^^^^^^
+(Worker pid=670) ERROR 04-22 01:30:33 [v1/executor/multiproc_executor.py:857]   File "/usr/local/lib/python3.12/dist-packages/vllm/v1/executor/multiproc_executor.py", line 605, in __init__
+(Worker pid=670) ERROR 04-22 01:30:33 [v1/executor/multiproc_executor.py:857]     self.worker.init_device()
+(Worker pid=670) ERROR 04-22 01:30:33 [v1/executor/multiproc_executor.py:857]   File "/usr/local/lib/python3.12/dist-packages/vllm/v1/worker/worker_base.py", line 312, in init_device
+(Worker pid=670) ERROR 04-22 01:30:33 [v1/executor/multiproc_executor.py:857]     self.worker.init_device()  # type: ignore
+(Worker pid=670) ERROR 04-22 01:30:33 [v1/executor/multiproc_executor.py:857]     ^^^^^^^^^^^^^^^^^^^^^^^^^
+(Worker pid=670) ERROR 04-22 01:30:33 [v1/executor/multiproc_executor.py:857]   File "/usr/local/lib/python3.12/dist-packages/vllm/tracing/otel.py", line 178, in sync_wrapper
+(Worker pid=670) ERROR 04-22 01:30:33 [v1/executor/multiproc_executor.py:857]     return func(*args, **kwargs)
+(Worker pid=670) ERROR 04-22 01:30:33 [v1/executor/multiproc_executor.py:857]            ^^^^^^^^^^^^^^^^^^^^^
+(Worker pid=670) ERROR 04-22 01:30:33 [v1/executor/multiproc_executor.py:857]   File "/usr/local/lib/python3.12/dist-packages/vllm/v1/worker/gpu_worker.py", line 283, in init_device
+(Worker pid=670) ERROR 04-22 01:30:33 [v1/executor/multiproc_executor.py:857]     self.requested_memory = request_memory(init_snapshot, self.cache_config)
+(Worker pid=670) ERROR 04-22 01:30:33 [v1/executor/multiproc_executor.py:857]                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(Worker pid=670) ERROR 04-22 01:30:33 [v1/executor/multiproc_executor.py:857]   File "/usr/local/lib/python3.12/dist-packages/vllm/v1/worker/utils.py", line 413, in request_memory
+(Worker pid=670) ERROR 04-22 01:30:33 [v1/executor/multiproc_executor.py:857]     raise ValueError(
+(Worker pid=670) ERROR 04-22 01:30:33 [v1/executor/multiproc_executor.py:857] ValueError: Free memory on device cuda:1 (60.33/79.19 GiB) on startup is less than desired GPU memory utilization (0.95, 75.23 GiB). Decrease GPU memory utilization or reduce GPU memory used by other processes.
+(EngineCore pid=470) DEBUG 04-22 01:30:33 [v1/executor/multiproc_executor.py:419] Worker Termination: allow workers to gracefully shutdown
+(Worker pid=672) DEBUG 04-22 01:30:33 [v1/worker/gpu_worker.py:284] worker init memory snapshot: torch_peak=0.01GiB, free_memory=77.12GiB, total_memory=79.19GiB, cuda_memory=2.07GiB, torch_memory=0.02GiB, non_torch_memory=2.05GiB, timestamp=1776821433.6940672, auto_measure=True
+(Worker pid=672) DEBUG 04-22 01:30:33 [v1/worker/gpu_worker.py:285] worker requested memory: 75.23GiB
+(Worker pid=669) DEBUG 04-22 01:30:33 [v1/worker/gpu_worker.py:284] worker init memory snapshot: torch_peak=0.01GiB, free_memory=77.12GiB, total_memory=79.19GiB, cuda_memory=2.07GiB, torch_memory=0.02GiB, non_torch_memory=2.05GiB, timestamp=1776821433.7040389, auto_measure=True
+(Worker pid=669) DEBUG 04-22 01:30:33 [v1/worker/gpu_worker.py:285] worker requested memory: 75.23GiB
+(Worker pid=671) DEBUG 04-22 01:30:33 [v1/worker/gpu_worker.py:284] worker init memory snapshot: torch_peak=0.01GiB, free_memory=77.12GiB, total_memory=79.19GiB, cuda_memory=2.07GiB, torch_memory=0.02GiB, non_torch_memory=2.05GiB, timestamp=1776821433.7163646, auto_measure=True
+(Worker pid=671) DEBUG 04-22 01:30:33 [v1/worker/gpu_worker.py:285] worker requested memory: 75.23GiB
+(Worker pid=672) DEBUG 04-22 01:30:33 [compilation/decorators.py:213] Inferred dynamic dimensions for forward method of <class 'vllm.model_executor.models.deepseek_v2.DeepseekV2Model'>: ['input_ids', 'positions', 'intermediate_tensors', 'inputs_embeds']
+(Worker pid=672) DEBUG 04-22 01:30:33 [compilation/decorators.py:213] Inferred dynamic dimensions for forward method of <class 'vllm.model_executor.models.deepseek_eagle3.DeepseekV2Eagle3Model'>: ['input_ids', 'positions', 'hidden_states', 'input_embeds']
+(Worker pid=669) DEBUG 04-22 01:30:33 [compilation/decorators.py:213] Inferred dynamic dimensions for forward method of <class 'vllm.model_executor.models.deepseek_v2.DeepseekV2Model'>: ['input_ids', 'positions', 'intermediate_tensors', 'inputs_embeds']
+(Worker pid=669) DEBUG 04-22 01:30:33 [compilation/decorators.py:213] Inferred dynamic dimensions for forward method of <class 'vllm.model_executor.models.deepseek_eagle3.DeepseekV2Eagle3Model'>: ['input_ids', 'positions', 'hidden_states', 'input_embeds']
+(Worker pid=671) DEBUG 04-22 01:30:33 [compilation/decorators.py:213] Inferred dynamic dimensions for forward method of <class 'vllm.model_executor.models.deepseek_v2.DeepseekV2Model'>: ['input_ids', 'positions', 'intermediate_tensors', 'inputs_embeds']
+(Worker pid=671) DEBUG 04-22 01:30:33 [compilation/decorators.py:213] Inferred dynamic dimensions for forward method of <class 'vllm.model_executor.models.deepseek_eagle3.DeepseekV2Eagle3Model'>: ['input_ids', 'positions', 'hidden_states', 'input_embeds']
+(Worker pid=672) DEBUG 04-22 01:30:33 [compilation/decorators.py:213] Inferred dynamic dimensions for forward method of <class 'vllm.v1.spec_decode.ngram_proposer_gpu.NgramGPUKernel'>: ['num_tokens_no_spec', 'token_ids_gpu', 'combined_mask']
+(Worker pid=669) DEBUG 04-22 01:30:33 [compilation/decorators.py:213] Inferred dynamic dimensions for forward method of <class 'vllm.v1.spec_decode.ngram_proposer_gpu.NgramGPUKernel'>: ['num_tokens_no_spec', 'token_ids_gpu', 'combined_mask']
+(Worker pid=672) DEBUG 04-22 01:30:33 [v1/sample/logits_processor/__init__.py:65] No logitsprocs plugins installed (group vllm.logits_processors).
+(Worker pid=669) DEBUG 04-22 01:30:33 [v1/sample/ops/topk_topp_sampler.py:57] FlashInfer top-p/top-k sampling is available but disabled by default. Set VLLM_USE_FLASHINFER_SAMPLER=1 to opt in after verifying accuracy for your workloads.
+(Worker pid=671) DEBUG 04-22 01:30:33 [compilation/decorators.py:213] Inferred dynamic dimensions for forward method of <class 'vllm.v1.spec_decode.ngram_proposer_gpu.NgramGPUKernel'>: ['num_tokens_no_spec', 'token_ids_gpu', 'combined_mask']
+(Worker pid=669) DEBUG 04-22 01:30:33 [v1/sample/logits_processor/__init__.py:65] No logitsprocs plugins installed (group vllm.logits_processors).
+(Worker pid=671) DEBUG 04-22 01:30:33 [v1/sample/logits_processor/__init__.py:65] No logitsprocs plugins installed (group vllm.logits_processors).
+(EngineCore pid=470) DEBUG 04-22 01:30:37 [v1/executor/multiproc_executor.py:424] Worker Termination: workers still running sending SIGTERM
+(Worker pid=672) DEBUG 04-22 01:30:37 [v1/executor/multiproc_executor.py:794] WorkerProc handling signal 15, raising SystemExit
+(Worker pid=672) Exception ignored in: TypeError("'str' object cannot be converted to 'AddedToken'")
+(Worker pid=672) Traceback (most recent call last):
+(Worker pid=672)   File "/usr/local/lib/python3.12/dist-packages/vllm/v1/executor/multiproc_executor.py", line 797, in signal_handler
+(Worker pid=672)     raise SystemExit()
+(Worker pid=672) SystemExit: 
+(Worker pid=669) DEBUG 04-22 01:30:37 [v1/executor/multiproc_executor.py:794] WorkerProc handling signal 15, raising SystemExit
+(Worker pid=669) WARNING 04-22 01:30:37 [v1/executor/multiproc_executor.py:871] WorkerProc was terminated
+(Worker pid=671) DEBUG 04-22 01:30:37 [v1/executor/multiproc_executor.py:794] WorkerProc handling signal 15, raising SystemExit
+(Worker pid=671) WARNING 04-22 01:30:37 [v1/executor/multiproc_executor.py:871] WorkerProc was terminated
+[rank0]:[W422 01:30:38.196588814 ProcessGroupNCCL.cpp:1553] Warning: WARNING: destroy_process_group() was not called before program exit, which can leak resources. For more info, please see https://pytorch.org/docs/stable/distributed.html#shutdown (function operator())
+(APIServer pid=1) DEBUG 04-22 01:30:39 [v1/engine/utils.py:1047] Waiting for 1 local, 0 remote core engine proc(s) to start.
+[rank3]:[W422 01:30:39.076626420 TCPStore.cpp:125] [c10d] recvValue failed on SocketImpl(fd=71, addr=[localhost]:58688, remote=[localhost]:38185): Failed to recv, got 0 bytes. Connection was likely closed. Did the remote server shutdown or crash?
+Exception raised from recvBytes at /pytorch/torch/csrc/distributed/c10d/Utils.hpp:682 (most recent call first):
+frame #0: c10::Error::Error(c10::SourceLocation, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >) + 0x9d (0x7efc950ddfdd in /usr/local/lib/python3.12/dist-packages/torch/lib/libc10.so)
+frame #1: <unknown function> + 0x6a3325d (0x7efbaf67d25d in /usr/local/lib/python3.12/dist-packages/torch/lib/libtorch_cpu.so)
+frame #2: c10d::TCPStore::check(std::vector<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > const&) + 0x273 (0x7efbaf67b1f3 in /usr/local/lib/python3.12/dist-packages/torch/lib/libtorch_cpu.so)
+frame #3: c10d::ProcessGroupNCCL::HeartbeatMonitor::runLoop() + 0x44c (0x7efb50df79cc in /usr/local/lib/python3.12/dist-packages/torch/lib/libtorch_cuda.so)
+frame #4: <unknown function> + 0xdc253 (0x7efc564b0253 in /lib/x86_64-linux-gnu/libstdc++.so.6)
+frame #5: <unknown function> + 0x94ac3 (0x7efc95e39ac3 in /lib/x86_64-linux-gnu/libc.so.6)
+frame #6: clone + 0x44 (0x7efc95ecaa84 in /lib/x86_64-linux-gnu/libc.so.6)
+
+[rank3]:[W422 01:30:39.079729534 ProcessGroupNCCL.cpp:1802] [PG ID 0 PG GUID 0 Rank 3] Failed to check the "should dump" flag on TCPStore, (maybe TCPStore server has shut down too early), with error: Failed to recv, got 0 bytes. Connection was likely closed. Did the remote server shutdown or crash?
+[rank3]:[W422 01:30:40.079908370 TCPStore.cpp:106] [c10d] sendBytes failed on SocketImpl(fd=71, addr=[localhost]:58688, remote=[localhost]:38185): Broken pipe
+Exception raised from sendBytes at /pytorch/torch/csrc/distributed/c10d/Utils.hpp:653 (most recent call first):
+frame #0: c10::Error::Error(c10::SourceLocation, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >) + 0x9d (0x7efc950ddfdd in /usr/local/lib/python3.12/dist-packages/torch/lib/libc10.so)
+frame #1: <unknown function> + 0x6a326d1 (0x7efbaf67c6d1 in /usr/local/lib/python3.12/dist-packages/torch/lib/libtorch_cpu.so)
+frame #2: c10d::TCPStore::check(std::vector<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > const&) + 0x24d (0x7efbaf67b1cd in /usr/local/lib/python3.12/dist-packages/torch/lib/libtorch_cpu.so)
+frame #3: c10d::ProcessGroupNCCL::HeartbeatMonitor::runLoop() + 0x44c (0x7efb50df79cc in /usr/local/lib/python3.12/dist-packages/torch/lib/libtorch_cuda.so)
+frame #4: <unknown function> + 0xdc253 (0x7efc564b0253 in /lib/x86_64-linux-gnu/libstdc++.so.6)
+frame #5: <unknown function> + 0x94ac3 (0x7efc95e39ac3 in /lib/x86_64-linux-gnu/libc.so.6)
+frame #6: clone + 0x44 (0x7efc95ecaa84 in /lib/x86_64-linux-gnu/libc.so.6)
+
+[rank3]:[W422 01:30:40.084561021 ProcessGroupNCCL.cpp:1802] [PG ID 0 PG GUID 0 Rank 3] Failed to check the "should dump" flag on TCPStore, (maybe TCPStore server has shut down too early), with error: Broken pipe
+(Worker_TP3 pid=672) DEBUG 04-22 01:30:40 [compilation/backends.py:101] Using InductorStandaloneAdaptor
+(Worker_TP3 pid=672) DEBUG 04-22 01:30:40 [compilation/backends.py:101] Using InductorStandaloneAdaptor
+(Worker_TP3 pid=672) DEBUG 04-22 01:30:40 [config/compilation.py:1194] enabled custom ops: Counter({'mm_encoder_attn': 34})
+(Worker_TP3 pid=672) DEBUG 04-22 01:30:40 [config/compilation.py:1195] disabled custom ops: Counter({'rms_norm': 133, 'silu_and_mul': 48, 'fused_moe': 48, 'unquantized_fused_moe': 48, 'rotary_embedding': 2, 'apply_rotary_emb': 2, 'vocab_parallel_embedding': 1, 'parallel_lm_head': 1, 'logits_processor': 1})
+(Worker_TP3 pid=672) DEBUG 04-22 01:30:40 [config/compilation.py:1194] enabled custom ops: Counter({'mm_encoder_attn': 34})
+(Worker_TP3 pid=672) DEBUG 04-22 01:30:40 [config/compilation.py:1195] disabled custom ops: Counter({'rms_norm': 133, 'silu_and_mul': 48, 'fused_moe': 48, 'unquantized_fused_moe': 48, 'rotary_embedding': 2, 'apply_rotary_emb': 2, 'vocab_parallel_embedding': 1, 'parallel_lm_head': 1, 'logits_processor': 1})
+(Worker_TP3 pid=672) DEBUG 04-22 01:30:40 [model_executor/model_loader/base_loader.py:63] Loading weights on cuda ...
+(Worker_TP3 pid=672) DEBUG 04-22 01:30:41 [model_executor/model_loader/weight_utils.py:557] Using model weights format [['model-00050-of-00050.safetensors', 'model-00031-of-00050.safetensors', 'model-00029-of-00050.safetensors', 'model-00011-of-00050.safetensors', 'model-00048-of-00050.safetensors', 'model-00038-of-00050.safetensors', 'model-00010-of-00050.safetensors', 'model-00015-of-00050.safetensors', 'model-00045-of-00050.safetensors', 'model-00009-of-00050.safetensors', 'model-00016-of-00050.safetensors', 'model-00013-of-00050.safetensors', 'model-00025-of-00050.safetensors', 'model-00026-of-00050.safetensors', 'model-00018-of-00050.safetensors', 'model-00008-of-00050.safetensors', 'model-00037-of-00050.safetensors', 'model-00034-of-00050.safetensors', 'model-00005-of-00050.safetensors', 'model-00002-of-00050.safetensors', 'model-00006-of-00050.safetensors', 'model-00035-of-00050.safetensors', 'model-00003-of-00050.safetensors', 'model-00040-of-00050.safetensors', 'model-00012-of-00050.safetensors', 'model-00004-of-00050.safetensors', 'model-00020-of-00050.safetensors', 'model-00022-of-00050.safetensors', 'model-00047-of-00050.safetensors', 'model-00030-of-00050.safetensors', 'model-00039-of-00050.safetensors', 'model-00028-of-00050.safetensors', 'model-00032-of-00050.safetensors', 'model-00023-of-00050.safetensors', 'model-00041-of-00050.safetensors', 'model-00044-of-00050.safetensors', 'model-00017-of-00050.safetensors', 'model-00043-of-00050.safetensors', 'model-00049-of-00050.safetensors', 'model-00024-of-00050.safetensors', 'model-00046-of-00050.safetensors', 'model-00033-of-00050.safetensors', 'model-00019-of-00050.safetensors', 'model-00021-of-00050.safetensors', 'model-00007-of-00050.safetensors', 'model-00027-of-00050.safetensors', 'model-00036-of-00050.safetensors', 'model-00001-of-00050.safetensors', 'model-00042-of-00050.safetensors', 'model-00014-of-00050.safetensors']]
+[rank3]:[W422 01:30:41.084720813 TCPStore.cpp:106] [c10d] sendBytes failed on SocketImpl(fd=71, addr=[localhost]:58688, remote=[localhost]:38185): Broken pipe
+Exception raised from sendBytes at /pytorch/torch/csrc/distributed/c10d/Utils.hpp:653 (most recent call first):
+frame #0: c10::Error::Error(c10::SourceLocation, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >) + 0x9d (0x7efc950ddfdd in /usr/local/lib/python3.12/dist-packages/torch/lib/libc10.so)
+frame #1: <unknown function> + 0x6a326d1 (0x7efbaf67c6d1 in /usr/local/lib/python3.12/dist-packages/torch/lib/libtorch_cpu.so)
+frame #2: c10d::TCPStore::check(std::vector<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > const&) + 0x24d (0x7efbaf67b1cd in /usr/local/lib/python3.12/dist-packages/torch/lib/libtorch_cpu.so)
+frame #3: c10d::ProcessGroupNCCL::HeartbeatMonitor::runLoop() + 0x44c (0x7efb50df79cc in /usr/local/lib/python3.12/dist-packages/torch/lib/libtorch_cuda.so)
+frame #4: <unknown function> + 0xdc253 (0x7efc564b0253 in /lib/x86_64-linux-gnu/libstdc++.so.6)
+frame #5: <unknown function> + 0x94ac3 (0x7efc95e39ac3 in /lib/x86_64-linux-gnu/libc.so.6)
+frame #6: clone + 0x44 (0x7efc95ecaa84 in /lib/x86_64-linux-gnu/libc.so.6)
+
+[rank3]:[W422 01:30:41.087290159 ProcessGroupNCCL.cpp:1802] [PG ID 0 PG GUID 0 Rank 3] Failed to check the "should dump" flag on TCPStore, (maybe TCPStore server has shut down too early), with error: Broken pipe
+(EngineCore pid=470) DEBUG 04-22 01:30:41 [v1/executor/multiproc_executor.py:429] Worker Termination: resorting to SIGKILL to take down workers
+(EngineCore pid=470) ERROR 04-22 01:30:41 [v1/engine/core.py:1108] EngineCore failed to start.
+(EngineCore pid=470) ERROR 04-22 01:30:41 [v1/engine/core.py:1108] Traceback (most recent call last):
+(EngineCore pid=470) ERROR 04-22 01:30:41 [v1/engine/core.py:1108]   File "/usr/local/lib/python3.12/dist-packages/vllm/v1/engine/core.py", line 1082, in run_engine_core
+(EngineCore pid=470) ERROR 04-22 01:30:41 [v1/engine/core.py:1108]     engine_core = EngineCoreProc(*args, engine_index=dp_rank, **kwargs)
+(EngineCore pid=470) ERROR 04-22 01:30:41 [v1/engine/core.py:1108]                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(EngineCore pid=470) ERROR 04-22 01:30:41 [v1/engine/core.py:1108]   File "/usr/local/lib/python3.12/dist-packages/vllm/tracing/otel.py", line 178, in sync_wrapper
+(EngineCore pid=470) ERROR 04-22 01:30:41 [v1/engine/core.py:1108]     return func(*args, **kwargs)
+(EngineCore pid=470) ERROR 04-22 01:30:41 [v1/engine/core.py:1108]            ^^^^^^^^^^^^^^^^^^^^^
+(EngineCore pid=470) ERROR 04-22 01:30:41 [v1/engine/core.py:1108]   File "/usr/local/lib/python3.12/dist-packages/vllm/v1/engine/core.py", line 848, in __init__
+(EngineCore pid=470) ERROR 04-22 01:30:41 [v1/engine/core.py:1108]     super().__init__(
+(EngineCore pid=470) ERROR 04-22 01:30:41 [v1/engine/core.py:1108]   File "/usr/local/lib/python3.12/dist-packages/vllm/v1/engine/core.py", line 114, in __init__
+(EngineCore pid=470) ERROR 04-22 01:30:41 [v1/engine/core.py:1108]     self.model_executor = executor_class(vllm_config)
+(EngineCore pid=470) ERROR 04-22 01:30:41 [v1/engine/core.py:1108]                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(EngineCore pid=470) ERROR 04-22 01:30:41 [v1/engine/core.py:1108]   File "/usr/local/lib/python3.12/dist-packages/vllm/v1/executor/multiproc_executor.py", line 101, in __init__
+(EngineCore pid=470) ERROR 04-22 01:30:41 [v1/engine/core.py:1108]     super().__init__(vllm_config)
+(EngineCore pid=470) ERROR 04-22 01:30:41 [v1/engine/core.py:1108]   File "/usr/local/lib/python3.12/dist-packages/vllm/tracing/otel.py", line 178, in sync_wrapper
+(EngineCore pid=470) ERROR 04-22 01:30:41 [v1/engine/core.py:1108]     return func(*args, **kwargs)
+(EngineCore pid=470) ERROR 04-22 01:30:41 [v1/engine/core.py:1108]            ^^^^^^^^^^^^^^^^^^^^^
+(EngineCore pid=470) ERROR 04-22 01:30:41 [v1/engine/core.py:1108]   File "/usr/local/lib/python3.12/dist-packages/vllm/v1/executor/abstract.py", line 103, in __init__
+(EngineCore pid=470) ERROR 04-22 01:30:41 [v1/engine/core.py:1108]     self._init_executor()
+(EngineCore pid=470) ERROR 04-22 01:30:41 [v1/engine/core.py:1108]   File "/usr/local/lib/python3.12/dist-packages/vllm/v1/executor/multiproc_executor.py", line 190, in _init_executor
+(EngineCore pid=470) ERROR 04-22 01:30:41 [v1/engine/core.py:1108]     self.workers = WorkerProc.wait_for_ready(unready_workers)
+(EngineCore pid=470) ERROR 04-22 01:30:41 [v1/engine/core.py:1108]                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(EngineCore pid=470) ERROR 04-22 01:30:41 [v1/engine/core.py:1108]   File "/usr/local/lib/python3.12/dist-packages/vllm/v1/executor/multiproc_executor.py", line 736, in wait_for_ready
+(EngineCore pid=470) ERROR 04-22 01:30:41 [v1/engine/core.py:1108]     raise e from None
+(EngineCore pid=470) ERROR 04-22 01:30:41 [v1/engine/core.py:1108] Exception: WorkerProc initialization failed due to an exception in a background process. See stack trace for root cause.
+(EngineCore pid=470) Process EngineCore:
+(EngineCore pid=470) Traceback (most recent call last):
+(EngineCore pid=470)   File "/usr/lib/python3.12/multiprocessing/process.py", line 314, in _bootstrap
+(EngineCore pid=470)     self.run()
+(EngineCore pid=470)   File "/usr/lib/python3.12/multiprocessing/process.py", line 108, in run
+(EngineCore pid=470)     self._target(*self._args, **self._kwargs)
+(EngineCore pid=470)   File "/usr/local/lib/python3.12/dist-packages/vllm/v1/engine/core.py", line 1112, in run_engine_core
+(EngineCore pid=470)     raise e
+(EngineCore pid=470)   File "/usr/local/lib/python3.12/dist-packages/vllm/v1/engine/core.py", line 1082, in run_engine_core
+(EngineCore pid=470)     engine_core = EngineCoreProc(*args, engine_index=dp_rank, **kwargs)
+(EngineCore pid=470)                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(EngineCore pid=470)   File "/usr/local/lib/python3.12/dist-packages/vllm/tracing/otel.py", line 178, in sync_wrapper
+(EngineCore pid=470)     return func(*args, **kwargs)
+(EngineCore pid=470)            ^^^^^^^^^^^^^^^^^^^^^
+(EngineCore pid=470)   File "/usr/local/lib/python3.12/dist-packages/vllm/v1/engine/core.py", line 848, in __init__
+(EngineCore pid=470)     super().__init__(
+(EngineCore pid=470)   File "/usr/local/lib/python3.12/dist-packages/vllm/v1/engine/core.py", line 114, in __init__
+(EngineCore pid=470)     self.model_executor = executor_class(vllm_config)
+(EngineCore pid=470)                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(EngineCore pid=470)   File "/usr/local/lib/python3.12/dist-packages/vllm/v1/executor/multiproc_executor.py", line 101, in __init__
+(EngineCore pid=470)     super().__init__(vllm_config)
+(EngineCore pid=470)   File "/usr/local/lib/python3.12/dist-packages/vllm/tracing/otel.py", line 178, in sync_wrapper
+(EngineCore pid=470)     return func(*args, **kwargs)
+(EngineCore pid=470)            ^^^^^^^^^^^^^^^^^^^^^
+(EngineCore pid=470)   File "/usr/local/lib/python3.12/dist-packages/vllm/v1/executor/abstract.py", line 103, in __init__
+(EngineCore pid=470)     self._init_executor()
+(EngineCore pid=470)   File "/usr/local/lib/python3.12/dist-packages/vllm/v1/executor/multiproc_executor.py", line 190, in _init_executor
+(EngineCore pid=470)     self.workers = WorkerProc.wait_for_ready(unready_workers)
+(EngineCore pid=470)                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(EngineCore pid=470)   File "/usr/local/lib/python3.12/dist-packages/vllm/v1/executor/multiproc_executor.py", line 736, in wait_for_ready
+(EngineCore pid=470)     raise e from None
+(EngineCore pid=470) Exception: WorkerProc initialization failed due to an exception in a background process. See stack trace for root cause.
+(EngineCore pid=470) DEBUG 04-22 01:30:42 [v1/executor/multiproc_executor.py:438] Triggering shutdown of workers
+(APIServer pid=1) Traceback (most recent call last):
+(APIServer pid=1)   File "/usr/local/bin/vllm", line 10, in <module>
+(APIServer pid=1)     sys.exit(main())
+(APIServer pid=1)              ^^^^^^
+(APIServer pid=1)   File "/usr/local/lib/python3.12/dist-packages/vllm/entrypoints/cli/main.py", line 75, in main
+(APIServer pid=1)     args.dispatch_function(args)
+(APIServer pid=1)   File "/usr/local/lib/python3.12/dist-packages/vllm/entrypoints/cli/serve.py", line 122, in cmd
+(APIServer pid=1)     uvloop.run(run_server(args))
+(APIServer pid=1)   File "/usr/local/lib/python3.12/dist-packages/uvloop/__init__.py", line 96, in run
+(APIServer pid=1)     return __asyncio.run(
+(APIServer pid=1)            ^^^^^^^^^^^^^^
+(APIServer pid=1)   File "/usr/lib/python3.12/asyncio/runners.py", line 195, in run
+(APIServer pid=1)     return runner.run(main)
+(APIServer pid=1)            ^^^^^^^^^^^^^^^^
+(APIServer pid=1)   File "/usr/lib/python3.12/asyncio/runners.py", line 118, in run
+(APIServer pid=1)     return self._loop.run_until_complete(task)
+(APIServer pid=1)            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(APIServer pid=1)   File "uvloop/loop.pyx", line 1518, in uvloop.loop.Loop.run_until_complete
+(APIServer pid=1)   File "/usr/local/lib/python3.12/dist-packages/uvloop/__init__.py", line 48, in wrapper
+(APIServer pid=1)     return await main
+(APIServer pid=1)            ^^^^^^^^^^
+(APIServer pid=1)   File "/usr/local/lib/python3.12/dist-packages/vllm/entrypoints/openai/api_server.py", line 670, in run_server
+(APIServer pid=1)     await run_server_worker(listen_address, sock, args, **uvicorn_kwargs)
+(APIServer pid=1)   File "/usr/local/lib/python3.12/dist-packages/vllm/entrypoints/openai/api_server.py", line 684, in run_server_worker
+(APIServer pid=1)     async with build_async_engine_client(
+(APIServer pid=1)                ^^^^^^^^^^^^^^^^^^^^^^^^^^
+(APIServer pid=1)   File "/usr/lib/python3.12/contextlib.py", line 210, in __aenter__
+(APIServer pid=1)     return await anext(self.gen)
+(APIServer pid=1)            ^^^^^^^^^^^^^^^^^^^^^
+(APIServer pid=1)   File "/usr/local/lib/python3.12/dist-packages/vllm/entrypoints/openai/api_server.py", line 100, in build_async_engine_client
+(APIServer pid=1)     async with build_async_engine_client_from_engine_args(
+(APIServer pid=1)                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(APIServer pid=1)   File "/usr/lib/python3.12/contextlib.py", line 210, in __aenter__
+(APIServer pid=1)     return await anext(self.gen)
+(APIServer pid=1)            ^^^^^^^^^^^^^^^^^^^^^
+(APIServer pid=1)   File "/usr/local/lib/python3.12/dist-packages/vllm/entrypoints/openai/api_server.py", line 136, in build_async_engine_client_from_engine_args
+(APIServer pid=1)     async_llm = AsyncLLM.from_vllm_config(
+(APIServer pid=1)                 ^^^^^^^^^^^^^^^^^^^^^^^^^^
+(APIServer pid=1)   File "/usr/local/lib/python3.12/dist-packages/vllm/v1/engine/async_llm.py", line 225, in from_vllm_config
+(APIServer pid=1)     return cls(
+(APIServer pid=1)            ^^^^
+(APIServer pid=1)   File "/usr/local/lib/python3.12/dist-packages/vllm/v1/engine/async_llm.py", line 154, in __init__
+(APIServer pid=1)     self.engine_core = EngineCoreClient.make_async_mp_client(
+(APIServer pid=1)                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(APIServer pid=1)   File "/usr/local/lib/python3.12/dist-packages/vllm/tracing/otel.py", line 178, in sync_wrapper
+(APIServer pid=1)     return func(*args, **kwargs)
+(APIServer pid=1)            ^^^^^^^^^^^^^^^^^^^^^
+(APIServer pid=1)   File "/usr/local/lib/python3.12/dist-packages/vllm/v1/engine/core_client.py", line 130, in make_async_mp_client
+(APIServer pid=1)     return AsyncMPClient(*client_args)
+(APIServer pid=1)            ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(APIServer pid=1)   File "/usr/local/lib/python3.12/dist-packages/vllm/tracing/otel.py", line 178, in sync_wrapper
+(APIServer pid=1)     return func(*args, **kwargs)
+(APIServer pid=1)            ^^^^^^^^^^^^^^^^^^^^^
+(APIServer pid=1)   File "/usr/local/lib/python3.12/dist-packages/vllm/v1/engine/core_client.py", line 887, in __init__
+(APIServer pid=1)     super().__init__(
+(APIServer pid=1)   File "/usr/local/lib/python3.12/dist-packages/vllm/v1/engine/core_client.py", line 535, in __init__
+(APIServer pid=1)     with launch_core_engines(
+(APIServer pid=1)          ^^^^^^^^^^^^^^^^^^^^
+(APIServer pid=1)   File "/usr/lib/python3.12/contextlib.py", line 144, in __exit__
+(APIServer pid=1)     next(self.gen)
+(APIServer pid=1)   File "/usr/local/lib/python3.12/dist-packages/vllm/v1/engine/utils.py", line 998, in launch_core_engines
+(APIServer pid=1)     wait_for_engine_startup(
+(APIServer pid=1)   File "/usr/local/lib/python3.12/dist-packages/vllm/v1/engine/utils.py", line 1057, in wait_for_engine_startup
+(APIServer pid=1)     raise RuntimeError(
+(APIServer pid=1) RuntimeError: Engine core initialization failed. See root cause above. Failed core proc(s): {}
+/usr/lib/python3.12/multiprocessing/resource_tracker.py:279: UserWarning: resource_tracker: There appear to be 1 leaked semaphore objects to clean up at shutdown
+  warnings.warn('resource_tracker: There appear to be %d '
+/usr/lib/python3.12/multiprocessing/resource_tracker.py:279: UserWarning: resource_tracker: There appear to be 1 leaked shared_memory objects to clean up at shutdown
+  warnings.warn('resource_tracker: There appear to be %d '

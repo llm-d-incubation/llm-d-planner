@@ -1,0 +1,80 @@
+DEBUG 04-22 19:54:55 [plugins/__init__.py:36] No plugins for group vllm.platform_plugins found.
+DEBUG 04-22 19:54:55 [platforms/__init__.py:37] Checking if TPU platform is available.
+DEBUG 04-22 19:54:55 [platforms/__init__.py:56] TPU platform is not available because: No module named 'libtpu'
+DEBUG 04-22 19:54:55 [platforms/__init__.py:62] Checking if CUDA platform is available.
+DEBUG 04-22 19:54:55 [platforms/__init__.py:85] Confirmed CUDA platform is available.
+DEBUG 04-22 19:54:55 [platforms/__init__.py:113] Checking if ROCm platform is available.
+DEBUG 04-22 19:54:55 [platforms/__init__.py:127] ROCm platform is not available because: No module named 'amdsmi'
+DEBUG 04-22 19:54:55 [platforms/__init__.py:134] Checking if XPU platform is available.
+DEBUG 04-22 19:54:55 [platforms/__init__.py:165] Checking if CPU platform is available.
+DEBUG 04-22 19:54:55 [platforms/__init__.py:62] Checking if CUDA platform is available.
+DEBUG 04-22 19:54:55 [platforms/__init__.py:85] Confirmed CUDA platform is available.
+DEBUG 04-22 19:54:55 [platforms/__init__.py:247] Automatically detected platform cuda.
+DEBUG 04-22 19:55:00 [utils/import_utils.py:74] Loading module triton_kernels from /usr/local/lib/python3.12/dist-packages/vllm/third_party/triton_kernels/__init__.py.
+DEBUG 04-22 19:55:02 [entrypoints/utils.py:170] Setting VLLM_WORKER_MULTIPROC_METHOD to 'spawn'
+DEBUG 04-22 19:55:02 [plugins/__init__.py:44] Available plugins for group vllm.general_plugins:
+DEBUG 04-22 19:55:02 [plugins/__init__.py:46] - lora_filesystem_resolver -> vllm.plugins.lora_resolvers.filesystem_resolver:register_filesystem_resolver
+DEBUG 04-22 19:55:02 [plugins/__init__.py:46] - lora_hf_hub_resolver -> vllm.plugins.lora_resolvers.hf_hub_resolver:register_hf_hub_resolver
+DEBUG 04-22 19:55:02 [plugins/__init__.py:49] All plugins in this group will be loaded. Set `VLLM_PLUGINS` to control which plugins to load.
+(APIServer pid=1) INFO 04-22 19:55:02 [entrypoints/utils.py:299] 
+(APIServer pid=1) INFO 04-22 19:55:02 [entrypoints/utils.py:299]        █     █     █▄   ▄█
+(APIServer pid=1) INFO 04-22 19:55:02 [entrypoints/utils.py:299]  ▄▄ ▄█ █     █     █ ▀▄▀ █  version 0.19.0
+(APIServer pid=1) INFO 04-22 19:55:02 [entrypoints/utils.py:299]   █▄█▀ █     █     █     █  model   microsoft/phi-2
+(APIServer pid=1) INFO 04-22 19:55:02 [entrypoints/utils.py:299]    ▀▀  ▀▀▀▀▀ ▀▀▀▀▀ ▀     ▀
+(APIServer pid=1) INFO 04-22 19:55:02 [entrypoints/utils.py:299] 
+(APIServer pid=1) INFO 04-22 19:55:02 [entrypoints/utils.py:233] non-default args: {'model_tag': 'microsoft/phi-2', 'model': 'microsoft/phi-2', 'max_model_len': 8192, 'gpu_memory_utilization': 0.95, 'enable_prefix_caching': False}
+(APIServer pid=1) WARNING 04-22 19:55:02 [envs.py:1744] Unknown vLLM environment variable detected: VLLM_ATTENTION_BACKEND
+(APIServer pid=1) DEBUG 04-22 19:55:03 [model_executor/models/registry.py:774] Cached model info file for class vllm.model_executor.models.phi.PhiForCausalLM not found
+(APIServer pid=1) DEBUG 04-22 19:55:03 [model_executor/models/registry.py:834] Cache model info for class vllm.model_executor.models.phi.PhiForCausalLM miss. Loading model instead.
+(APIServer pid=1) DEBUG 04-22 19:55:14 [model_executor/models/registry.py:844] Loaded model info for class vllm.model_executor.models.phi.PhiForCausalLM
+(APIServer pid=1) DEBUG 04-22 19:55:14 [logging_utils/log_time.py:29] Registry inspect model class: Elapsed time 10.8903088 secs
+(APIServer pid=1) INFO 04-22 19:55:14 [config/model.py:549] Resolved architecture: PhiForCausalLM
+(APIServer pid=1) Traceback (most recent call last):
+(APIServer pid=1)   File "/usr/local/bin/vllm", line 10, in <module>
+(APIServer pid=1)     sys.exit(main())
+(APIServer pid=1)              ^^^^^^
+(APIServer pid=1)   File "/usr/local/lib/python3.12/dist-packages/vllm/entrypoints/cli/main.py", line 75, in main
+(APIServer pid=1)     args.dispatch_function(args)
+(APIServer pid=1)   File "/usr/local/lib/python3.12/dist-packages/vllm/entrypoints/cli/serve.py", line 122, in cmd
+(APIServer pid=1)     uvloop.run(run_server(args))
+(APIServer pid=1)   File "/usr/local/lib/python3.12/dist-packages/uvloop/__init__.py", line 96, in run
+(APIServer pid=1)     return __asyncio.run(
+(APIServer pid=1)            ^^^^^^^^^^^^^^
+(APIServer pid=1)   File "/usr/lib/python3.12/asyncio/runners.py", line 195, in run
+(APIServer pid=1)     return runner.run(main)
+(APIServer pid=1)            ^^^^^^^^^^^^^^^^
+(APIServer pid=1)   File "/usr/lib/python3.12/asyncio/runners.py", line 118, in run
+(APIServer pid=1)     return self._loop.run_until_complete(task)
+(APIServer pid=1)            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(APIServer pid=1)   File "uvloop/loop.pyx", line 1518, in uvloop.loop.Loop.run_until_complete
+(APIServer pid=1)   File "/usr/local/lib/python3.12/dist-packages/uvloop/__init__.py", line 48, in wrapper
+(APIServer pid=1)     return await main
+(APIServer pid=1)            ^^^^^^^^^^
+(APIServer pid=1)   File "/usr/local/lib/python3.12/dist-packages/vllm/entrypoints/openai/api_server.py", line 670, in run_server
+(APIServer pid=1)     await run_server_worker(listen_address, sock, args, **uvicorn_kwargs)
+(APIServer pid=1)   File "/usr/local/lib/python3.12/dist-packages/vllm/entrypoints/openai/api_server.py", line 684, in run_server_worker
+(APIServer pid=1)     async with build_async_engine_client(
+(APIServer pid=1)                ^^^^^^^^^^^^^^^^^^^^^^^^^^
+(APIServer pid=1)   File "/usr/lib/python3.12/contextlib.py", line 210, in __aenter__
+(APIServer pid=1)     return await anext(self.gen)
+(APIServer pid=1)            ^^^^^^^^^^^^^^^^^^^^^
+(APIServer pid=1)   File "/usr/local/lib/python3.12/dist-packages/vllm/entrypoints/openai/api_server.py", line 100, in build_async_engine_client
+(APIServer pid=1)     async with build_async_engine_client_from_engine_args(
+(APIServer pid=1)                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(APIServer pid=1)   File "/usr/lib/python3.12/contextlib.py", line 210, in __aenter__
+(APIServer pid=1)     return await anext(self.gen)
+(APIServer pid=1)            ^^^^^^^^^^^^^^^^^^^^^
+(APIServer pid=1)   File "/usr/local/lib/python3.12/dist-packages/vllm/entrypoints/openai/api_server.py", line 124, in build_async_engine_client_from_engine_args
+(APIServer pid=1)     vllm_config = engine_args.create_engine_config(usage_context=usage_context)
+(APIServer pid=1)                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(APIServer pid=1)   File "/usr/local/lib/python3.12/dist-packages/vllm/engine/arg_utils.py", line 1549, in create_engine_config
+(APIServer pid=1)     model_config = self.create_model_config()
+(APIServer pid=1)                    ^^^^^^^^^^^^^^^^^^^^^^^^^^
+(APIServer pid=1)   File "/usr/local/lib/python3.12/dist-packages/vllm/engine/arg_utils.py", line 1398, in create_model_config
+(APIServer pid=1)     return ModelConfig(
+(APIServer pid=1)            ^^^^^^^^^^^^
+(APIServer pid=1)   File "/usr/local/lib/python3.12/dist-packages/pydantic/_internal/_dataclasses.py", line 121, in __init__
+(APIServer pid=1)     s.__pydantic_validator__.validate_python(ArgsKwargs(args, kwargs), self_instance=s)
+(APIServer pid=1) pydantic_core._pydantic_core.ValidationError: 1 validation error for ModelConfig
+(APIServer pid=1)   Value error, User-specified max_model_len (8192) is greater than the derived max_model_len (max_position_embeddings=2048.0 or model_max_length=None in model's config.json). To allow overriding this maximum, set the env var VLLM_ALLOW_LONG_MAX_MODEL_LEN=1. VLLM_ALLOW_LONG_MAX_MODEL_LEN must be used with extreme caution. If the model uses relative position encoding (RoPE), positions exceeding derived_max_model_len lead to nan. If the model uses absolute position encoding, positions exceeding derived_max_model_len will cause a CUDA array out-of-bounds error. [type=value_error, input_value=ArgsKwargs((), {'model': ...nderer_num_workers': 1}), input_type=ArgsKwargs]
+(APIServer pid=1)     For further information visit https://errors.pydantic.dev/2.12/v/value_error

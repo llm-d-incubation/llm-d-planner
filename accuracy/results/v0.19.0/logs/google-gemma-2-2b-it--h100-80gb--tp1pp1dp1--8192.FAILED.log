@@ -1,0 +1,133 @@
+DEBUG 04-22 15:49:34 [plugins/__init__.py:36] No plugins for group vllm.platform_plugins found.
+DEBUG 04-22 15:49:34 [platforms/__init__.py:37] Checking if TPU platform is available.
+DEBUG 04-22 15:49:34 [platforms/__init__.py:56] TPU platform is not available because: No module named 'libtpu'
+DEBUG 04-22 15:49:34 [platforms/__init__.py:62] Checking if CUDA platform is available.
+DEBUG 04-22 15:49:34 [platforms/__init__.py:85] Confirmed CUDA platform is available.
+DEBUG 04-22 15:49:34 [platforms/__init__.py:113] Checking if ROCm platform is available.
+DEBUG 04-22 15:49:34 [platforms/__init__.py:127] ROCm platform is not available because: No module named 'amdsmi'
+DEBUG 04-22 15:49:34 [platforms/__init__.py:134] Checking if XPU platform is available.
+DEBUG 04-22 15:49:34 [platforms/__init__.py:165] Checking if CPU platform is available.
+DEBUG 04-22 15:49:34 [platforms/__init__.py:62] Checking if CUDA platform is available.
+DEBUG 04-22 15:49:34 [platforms/__init__.py:85] Confirmed CUDA platform is available.
+DEBUG 04-22 15:49:34 [platforms/__init__.py:247] Automatically detected platform cuda.
+DEBUG 04-22 15:49:38 [utils/import_utils.py:74] Loading module triton_kernels from /usr/local/lib/python3.12/dist-packages/vllm/third_party/triton_kernels/__init__.py.
+DEBUG 04-22 15:49:40 [entrypoints/utils.py:170] Setting VLLM_WORKER_MULTIPROC_METHOD to 'spawn'
+DEBUG 04-22 15:49:40 [plugins/__init__.py:44] Available plugins for group vllm.general_plugins:
+DEBUG 04-22 15:49:40 [plugins/__init__.py:46] - lora_filesystem_resolver -> vllm.plugins.lora_resolvers.filesystem_resolver:register_filesystem_resolver
+DEBUG 04-22 15:49:40 [plugins/__init__.py:46] - lora_hf_hub_resolver -> vllm.plugins.lora_resolvers.hf_hub_resolver:register_hf_hub_resolver
+DEBUG 04-22 15:49:40 [plugins/__init__.py:49] All plugins in this group will be loaded. Set `VLLM_PLUGINS` to control which plugins to load.
+(APIServer pid=1) INFO 04-22 15:49:40 [entrypoints/utils.py:299] 
+(APIServer pid=1) INFO 04-22 15:49:40 [entrypoints/utils.py:299]        █     █     █▄   ▄█
+(APIServer pid=1) INFO 04-22 15:49:40 [entrypoints/utils.py:299]  ▄▄ ▄█ █     █     █ ▀▄▀ █  version 0.19.0
+(APIServer pid=1) INFO 04-22 15:49:40 [entrypoints/utils.py:299]   █▄█▀ █     █     █     █  model   google/gemma-2-2b-it
+(APIServer pid=1) INFO 04-22 15:49:40 [entrypoints/utils.py:299]    ▀▀  ▀▀▀▀▀ ▀▀▀▀▀ ▀     ▀
+(APIServer pid=1) INFO 04-22 15:49:40 [entrypoints/utils.py:299] 
+(APIServer pid=1) INFO 04-22 15:49:40 [entrypoints/utils.py:233] non-default args: {'model_tag': 'google/gemma-2-2b-it', 'model': 'google/gemma-2-2b-it', 'max_model_len': 8192, 'gpu_memory_utilization': 0.95, 'enable_prefix_caching': False}
+(APIServer pid=1) WARNING 04-22 15:49:40 [envs.py:1744] Unknown vLLM environment variable detected: VLLM_ATTENTION_BACKEND
+(APIServer pid=1) Traceback (most recent call last):
+(APIServer pid=1)   File "/usr/local/lib/python3.12/dist-packages/huggingface_hub/utils/_http.py", line 403, in hf_raise_for_status
+(APIServer pid=1)     response.raise_for_status()
+(APIServer pid=1)   File "/usr/local/lib/python3.12/dist-packages/requests/models.py", line 1028, in raise_for_status
+(APIServer pid=1)     raise HTTPError(http_error_msg, response=self)
+(APIServer pid=1) requests.exceptions.HTTPError: 403 Client Error: Forbidden for url: https://huggingface.co/google/gemma-2-2b-it/resolve/main/config.json
+(APIServer pid=1) 
+(APIServer pid=1) The above exception was the direct cause of the following exception:
+(APIServer pid=1) 
+(APIServer pid=1) Traceback (most recent call last):
+(APIServer pid=1)   File "/usr/local/lib/python3.12/dist-packages/huggingface_hub/file_download.py", line 1550, in _get_metadata_or_catch_error
+(APIServer pid=1)     metadata = get_hf_file_metadata(
+(APIServer pid=1)                ^^^^^^^^^^^^^^^^^^^^^
+(APIServer pid=1)   File "/usr/local/lib/python3.12/dist-packages/huggingface_hub/utils/_validators.py", line 114, in _inner_fn
+(APIServer pid=1)     return fn(*args, **kwargs)
+(APIServer pid=1)            ^^^^^^^^^^^^^^^^^^^
+(APIServer pid=1)   File "/usr/local/lib/python3.12/dist-packages/huggingface_hub/file_download.py", line 1467, in get_hf_file_metadata
+(APIServer pid=1)     r = _request_wrapper(
+(APIServer pid=1)         ^^^^^^^^^^^^^^^^^
+(APIServer pid=1)   File "/usr/local/lib/python3.12/dist-packages/huggingface_hub/file_download.py", line 283, in _request_wrapper
+(APIServer pid=1)     response = _request_wrapper(
+(APIServer pid=1)                ^^^^^^^^^^^^^^^^^
+(APIServer pid=1)   File "/usr/local/lib/python3.12/dist-packages/huggingface_hub/file_download.py", line 307, in _request_wrapper
+(APIServer pid=1)     hf_raise_for_status(response)
+(APIServer pid=1)   File "/usr/local/lib/python3.12/dist-packages/huggingface_hub/utils/_http.py", line 467, in hf_raise_for_status
+(APIServer pid=1)     raise _format(HfHubHTTPError, message, response) from e
+(APIServer pid=1) huggingface_hub.errors.HfHubHTTPError: (Request ID: Root=1-69e8ee14-22d7cb9163602c5941ebd21d;57340d59-f182-4b7d-a919-4768efc8392f)
+(APIServer pid=1) 
+(APIServer pid=1) 403 Forbidden: Please enable access to public gated repositories in your fine-grained token settings to view this repository..
+(APIServer pid=1) Cannot access content at: https://huggingface.co/google/gemma-2-2b-it/resolve/main/config.json.
+(APIServer pid=1) Make sure your token has the correct permissions.
+(APIServer pid=1) 
+(APIServer pid=1) The above exception was the direct cause of the following exception:
+(APIServer pid=1) 
+(APIServer pid=1) Traceback (most recent call last):
+(APIServer pid=1)   File "/usr/local/lib/python3.12/dist-packages/transformers/utils/hub.py", line 479, in cached_files
+(APIServer pid=1)     hf_hub_download(
+(APIServer pid=1)   File "/usr/local/lib/python3.12/dist-packages/huggingface_hub/utils/_validators.py", line 114, in _inner_fn
+(APIServer pid=1)     return fn(*args, **kwargs)
+(APIServer pid=1)            ^^^^^^^^^^^^^^^^^^^
+(APIServer pid=1)   File "/usr/local/lib/python3.12/dist-packages/huggingface_hub/file_download.py", line 1014, in hf_hub_download
+(APIServer pid=1)     return _hf_hub_download_to_cache_dir(
+(APIServer pid=1)            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(APIServer pid=1)   File "/usr/local/lib/python3.12/dist-packages/huggingface_hub/file_download.py", line 1121, in _hf_hub_download_to_cache_dir
+(APIServer pid=1)     _raise_on_head_call_error(head_call_error, force_download, local_files_only)
+(APIServer pid=1)   File "/usr/local/lib/python3.12/dist-packages/huggingface_hub/file_download.py", line 1665, in _raise_on_head_call_error
+(APIServer pid=1)     raise LocalEntryNotFoundError(
+(APIServer pid=1) huggingface_hub.errors.LocalEntryNotFoundError: An error happened while trying to locate the file on the Hub and we cannot find the requested files in the local cache. Please check your connection and try again or make sure your Internet connection is on.
+(APIServer pid=1) 
+(APIServer pid=1) The above exception was the direct cause of the following exception:
+(APIServer pid=1) 
+(APIServer pid=1) Traceback (most recent call last):
+(APIServer pid=1)   File "/usr/local/bin/vllm", line 10, in <module>
+(APIServer pid=1)     sys.exit(main())
+(APIServer pid=1)              ^^^^^^
+(APIServer pid=1)   File "/usr/local/lib/python3.12/dist-packages/vllm/entrypoints/cli/main.py", line 75, in main
+(APIServer pid=1)     args.dispatch_function(args)
+(APIServer pid=1)   File "/usr/local/lib/python3.12/dist-packages/vllm/entrypoints/cli/serve.py", line 122, in cmd
+(APIServer pid=1)     uvloop.run(run_server(args))
+(APIServer pid=1)   File "/usr/local/lib/python3.12/dist-packages/uvloop/__init__.py", line 96, in run
+(APIServer pid=1)     return __asyncio.run(
+(APIServer pid=1)            ^^^^^^^^^^^^^^
+(APIServer pid=1)   File "/usr/lib/python3.12/asyncio/runners.py", line 195, in run
+(APIServer pid=1)     return runner.run(main)
+(APIServer pid=1)            ^^^^^^^^^^^^^^^^
+(APIServer pid=1)   File "/usr/lib/python3.12/asyncio/runners.py", line 118, in run
+(APIServer pid=1)     return self._loop.run_until_complete(task)
+(APIServer pid=1)            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(APIServer pid=1)   File "uvloop/loop.pyx", line 1518, in uvloop.loop.Loop.run_until_complete
+(APIServer pid=1)   File "/usr/local/lib/python3.12/dist-packages/uvloop/__init__.py", line 48, in wrapper
+(APIServer pid=1)     return await main
+(APIServer pid=1)            ^^^^^^^^^^
+(APIServer pid=1)   File "/usr/local/lib/python3.12/dist-packages/vllm/entrypoints/openai/api_server.py", line 670, in run_server
+(APIServer pid=1)     await run_server_worker(listen_address, sock, args, **uvicorn_kwargs)
+(APIServer pid=1)   File "/usr/local/lib/python3.12/dist-packages/vllm/entrypoints/openai/api_server.py", line 684, in run_server_worker
+(APIServer pid=1)     async with build_async_engine_client(
+(APIServer pid=1)                ^^^^^^^^^^^^^^^^^^^^^^^^^^
+(APIServer pid=1)   File "/usr/lib/python3.12/contextlib.py", line 210, in __aenter__
+(APIServer pid=1)     return await anext(self.gen)
+(APIServer pid=1)            ^^^^^^^^^^^^^^^^^^^^^
+(APIServer pid=1)   File "/usr/local/lib/python3.12/dist-packages/vllm/entrypoints/openai/api_server.py", line 100, in build_async_engine_client
+(APIServer pid=1)     async with build_async_engine_client_from_engine_args(
+(APIServer pid=1)                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(APIServer pid=1)   File "/usr/lib/python3.12/contextlib.py", line 210, in __aenter__
+(APIServer pid=1)     return await anext(self.gen)
+(APIServer pid=1)            ^^^^^^^^^^^^^^^^^^^^^
+(APIServer pid=1)   File "/usr/local/lib/python3.12/dist-packages/vllm/entrypoints/openai/api_server.py", line 124, in build_async_engine_client_from_engine_args
+(APIServer pid=1)     vllm_config = engine_args.create_engine_config(usage_context=usage_context)
+(APIServer pid=1)                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(APIServer pid=1)   File "/usr/local/lib/python3.12/dist-packages/vllm/engine/arg_utils.py", line 1539, in create_engine_config
+(APIServer pid=1)     maybe_override_with_speculators(
+(APIServer pid=1)   File "/usr/local/lib/python3.12/dist-packages/vllm/transformers_utils/config.py", line 583, in maybe_override_with_speculators
+(APIServer pid=1)     config_dict, _ = PretrainedConfig.get_config_dict(
+(APIServer pid=1)                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(APIServer pid=1)   File "/usr/local/lib/python3.12/dist-packages/transformers/configuration_utils.py", line 662, in get_config_dict
+(APIServer pid=1)     config_dict, kwargs = cls._get_config_dict(pretrained_model_name_or_path, **kwargs)
+(APIServer pid=1)                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(APIServer pid=1)   File "/usr/local/lib/python3.12/dist-packages/transformers/configuration_utils.py", line 721, in _get_config_dict
+(APIServer pid=1)     resolved_config_file = cached_file(
+(APIServer pid=1)                            ^^^^^^^^^^^^
+(APIServer pid=1)   File "/usr/local/lib/python3.12/dist-packages/transformers/utils/hub.py", line 322, in cached_file
+(APIServer pid=1)     file = cached_files(path_or_repo_id=path_or_repo_id, filenames=[filename], **kwargs)
+(APIServer pid=1)            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+(APIServer pid=1)   File "/usr/local/lib/python3.12/dist-packages/transformers/utils/hub.py", line 553, in cached_files
+(APIServer pid=1)     raise OSError(
+(APIServer pid=1) OSError: We couldn't connect to 'https://huggingface.co' to load the files, and couldn't find them in the cached files.
+(APIServer pid=1) Check your internet connection or see how to run the library in offline mode at 'https://huggingface.co/docs/transformers/installation#offline-mode'.
