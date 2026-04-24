@@ -113,24 +113,22 @@ on resubmit.
 Pull logs and JSON results from the cluster PVC to your local machine:
 
 ```bash
-python accuracy/scripts/collect.py
-# Results land in: data/benchmarks/memory/v0.19.0/runs/ and .../logs/
+uv run python accuracy/scripts/collect.py --out accuracy/results/
+# Results land in: accuracy/results/v0.19.0/runs/ and .../logs/
 ```
 
-Copy the new run JSONs into `accuracy/results/v0.19.0/runs/` (this directory is gitignored), then generate the report.
-`analyze.py` calls the capacity planner directly to compute predictions — no separate
-calibration step needed. For gated models pass `--hf-token <token>` (only fetches
-`config.json`, not model weights):
+Then run the three-step pipeline to generate the report:
 
 ```bash
-python accuracy/scripts/analyze.py \
-  --runs accuracy/results/v0.19.0/runs/ \
-  --out  accuracy/results/v0.19.0/report.md \
-  --csv  accuracy/results/v0.19.0/results.csv
+# Step 1: parse vLLM startup logs → results_raw.csv
+uv run python accuracy/scripts/parse_logs.py
 
-python accuracy/scripts/deep_analysis.py \
-  --csv accuracy/results/v0.19.0/results.csv \
-  --out accuracy/results/v0.19.0/deep_analysis.md
+# Step 2: run capacity planner predictions → results_predicted.csv
+# Gated models (google/gemma-*) require an HF token that has been granted access:
+HF_TOKEN=hf_YOUR_TOKEN_HERE uv run python accuracy/scripts/predict_capacity.py
+
+# Step 3: compute error statistics → accuracy/results/v0.19.0/accuracy_report.md
+uv run python accuracy/scripts/analyze.py
 ```
 
 ## Reproducing from existing results (no cluster needed)
@@ -140,17 +138,19 @@ Download the `results/` folder from Google Drive and place it at `accuracy/resul
 
 **[Download results/ from Google Drive](https://drive.google.com/drive/folders/1a0y2gdhcpKcFxm4RsqXUKWW40Gpd2Kx5?usp=sharing)**
 
-Once downloaded, regenerate the report and analysis locally:
+Once downloaded, place the `results/` folder at `accuracy/results/` and regenerate the
+report locally (no cluster or HF token needed — the Drive folder includes pre-computed CSVs):
 
 ```bash
-uv run python accuracy/scripts/analyze.py \
-  --runs accuracy/results/v0.19.0/runs/ \
-  --out  accuracy/results/v0.19.0/report.md \
-  --csv  accuracy/results/v0.19.0/results.csv
+# Re-parse logs into results_raw.csv (optional — Drive copy is already up to date)
+uv run python accuracy/scripts/parse_logs.py
 
-uv run python accuracy/scripts/deep_analysis.py \
-  --csv accuracy/results/v0.19.0/results.csv \
-  --out accuracy/results/v0.19.0/deep_analysis.md
+# Regenerate predictions (optional — requires HF_TOKEN for gated Gemma models)
+HF_TOKEN=hf_YOUR_TOKEN_HERE uv run python accuracy/scripts/predict_capacity.py
+
+# Re-generate the accuracy report from the CSVs
+uv run python accuracy/scripts/analyze.py
+# Output: accuracy/results/v0.19.0/accuracy_report.md
 ```
 
 ## Troubleshooting
