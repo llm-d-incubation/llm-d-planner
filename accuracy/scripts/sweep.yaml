@@ -1,6 +1,10 @@
-# Canonical run matrix for the vLLM memory validation campaign.
+# Canonical run matrix — vLLM v0.19.0 / H100-80GB
+# 57 successful runs across 34 models. See accuracy/accuracy_report.md for results.
+# Version sensitivity (Part 2 — Qwen3-14B across v0.15.0–v0.18.0): see sweep-versions.yaml.
+#
 # Edit defaults.node_selector to match your cluster's GPU node label.
 # Run `kubectl get nodes --show-labels` to find the right label.
+
 defaults:
   gpu: H100-80GB
   gpu_memory_utilization: "0.95"
@@ -22,27 +26,44 @@ defaults:
 
 runs:
   # ── Core model coverage ───────────────────────────────────────────────────
-  # One run per model at the minimum feasible TP. TP sensitivity is captured
-  # separately in the "Argument sensitivity: tensor parallelism" section below.
-
-  # DONE: moonshotai/Kimi-VL-A3B-Instruct tp=1
-  # - model: moonshotai/Kimi-VL-A3B-Instruct  # 16B total, 3B active MoE, vision-language
-  #   tp: 1
-  #   trust_remote_code: true
-
-  # DONE: moonshotai/Kimi-Dev-72B tp=2
-  # - model: moonshotai/Kimi-Dev-72B           # 72B dense, Qwen2 architecture
-  #   tp: 2                                    # tp=1 OOM: ~144 GiB weights exceed single H100 80GB
-  #   trust_remote_code: true
+  # One run per model at the minimum feasible TP (baseline: tp=pp=dp=1, len=8192, bf16).
+  # Llama-3.1-8B-Instruct and Qwen2.5-7B-Instruct baselines are in the TP section below.
 
   - model: codellama/CodeLlama-7b-hf           # 7B dense; LlamaForCausalLM architecture
     tp: 1
+  # codellama/CodeLlama-34b-hf tp=2 failed: GPU contention at runtime
 
-  - model: codellama/CodeLlama-34b-hf          # 34B dense; ~65 GiB bf16; tp=1 OOM risk, using tp=2
-    tp: 2
-
-  - model: deepseek-ai/DeepSeek-V2-Lite-Chat  # 16B total, 2.4B active MoE; DeepSeekV2 arch
+  - model: deepseek-ai/DeepSeek-V2-Lite-Chat   # 16B total, 2.4B active MoE; DeepSeekV2 architecture
     tp: 1
+
+  - model: google/gemma-7b                     # 7B dense; Gemma architecture (gated)
+    tp: 1
+    hf_token_secret: hf-token-gemma
+
+  - model: google/gemma-2-2b-it                # 2.6B dense; Gemma2 architecture
+    tp: 1
+    hf_token_secret: hf-token-gemma
+
+  - model: google/gemma-2-9b-it                # 9.2B dense; Gemma2 architecture
+    tp: 1
+    hf_token_secret: hf-token-gemma
+
+  - model: google/gemma-2-27b-it               # 27.2B dense; ~54 GiB bf16; fits H100 80GB at tp=1
+    tp: 1
+    hf_token_secret: hf-token-gemma
+
+  - model: google/gemma-3-4b-it                # 4B dense; Gemma3 architecture
+    tp: 1
+    hf_token_secret: hf-token-gemma
+
+  - model: google/gemma-3-12b-it               # 12B dense; Gemma3 architecture
+    tp: 1
+    hf_token_secret: hf-token-gemma
+
+  - model: google/gemma-3-27b-it               # 27B dense; Gemma3 architecture
+    tp: 1
+    hf_token_secret: hf-token-gemma
+  # google/gemma-4-E4B-it unsupported: Gemma4 arch not in transformers bundled with vLLM v0.19.0
 
   - model: ibm-granite/granite-3.1-2b-instruct
     tp: 1
@@ -50,242 +71,164 @@ runs:
 
   - model: ibm-granite/granite-3.1-8b-instruct
     tp: 1
-    _label: granite-3-1-8b
 
   - model: ibm-granite/granite-3.3-8b-instruct
     tp: 1
 
-  - model: ibm-granite/granite-vision-3.3-2b  # vision-language; GraniteSpeechEncoderModel arch
+  - model: ibm-granite/granite-vision-3.3-2b   # vision-language; LlavaNext architecture
     tp: 1
 
-  - model: microsoft/phi-4                    # 14B dense; Phi3 architecture
+  - model: meta-llama/Llama-4-Scout-17B-16E-Instruct  # 109B total, 17B active MoE (16 experts); tp=1 OOM (~212 GiB), tp=2 OOM (~106 GiB)
+    tp: 4
+
+  - model: microsoft/phi-2                     # 2.7B dense; Phi architecture; max_position_embeddings=2048
+    tp: 1
+    max_model_len: 2048
+
+  - model: microsoft/phi-4                     # 14B dense; Phi3 architecture
     tp: 1
 
   - model: mistralai/Mistral-Small-3.1-24B-Instruct-2503  # 24B dense; Mistral3 architecture
     tp: 1
 
-  - model: mistralai/Mixtral-8x7B-Instruct-v0.1  # 56B total, 14B active MoE
-    tp: 2  # tp=1 OOM: ~87 GiB weights exceed single H100 80GB
-
-  - model: openai/gpt-oss-20b                # 20B dense; sampler warmup needs ~786 MiB/GPU beyond KV; gmu=0.90 leaves headroom
+  - model: mistralai/Mixtral-8x7B-Instruct-v0.1  # 56B total, 14B active MoE; tp=1 OOM (~87 GiB weights)
     tp: 2
-    gpu_memory_utilization: "0.90"
-  # gpt-oss-120b skipped — OOM or infra unavailability at all tested tp values
 
-  - model: microsoft/phi-2                  # 2.7B dense; Phi architecture; max ctx = 2048
+  - model: moonshotai/Kimi-VL-A3B-Instruct     # 16B total, 3B active MoE; vision-language; KimiVL architecture
     tp: 1
-    max_model_len: 2048
+    trust_remote_code: true
 
-  - model: google/gemma-7b                  # 7B dense; Gemma architecture (gated)
-    tp: 1
-    hf_token_secret: hf-token-gemma
+  - model: moonshotai/Kimi-Dev-72B             # 72B dense; Qwen2 architecture; tp=1 OOM (~144 GiB weights)
+    tp: 2
+    trust_remote_code: true
 
-  - model: Qwen/Qwen2.5-7B-Instruct          # 7B dense; reference model for sensitivity sweeps
-    tp: 1
+  - model: openai/gpt-oss-20b                  # 20B dense; GptOss architecture; mxfp4 quant from model config; sampler warmup needs ~786 MiB/GPU beyond KV
+    tp: 2
+    gpu_memory_utilization: "0.90"             # gmu=0.95 fails (OOM during sampler warmup); 0.90 frees ~4 GiB/GPU headroom
+  # openai/gpt-oss-120b skipped: OOM at all tested tp values
 
-  - model: Qwen/Qwen2.5-72B-Instruct         # 72B dense
-    tp: 2  # tp=1 OOM: ~144 GiB weights exceed single H100 80GB
-
-  - model: Qwen/Qwen3-8B                     # 8B dense; Qwen3 architecture
+  - model: Qwen/Qwen1.5-MoE-A2.7B             # 14.3B total, 2.7B active MoE; Qwen2Moe architecture
     tp: 1
 
-  - model: Qwen/Qwen3-30B-A3B               # 30B total, 3B active MoE; Qwen3Moe architecture
+  - model: Qwen/Qwen2.5-72B-Instruct           # 72B dense; tp=1 OOM (~144 GiB weights)
+    tp: 2
+
+  - model: Qwen/Qwen3-8B                       # 8B dense; Qwen3 architecture
     tp: 1
 
-  - model: meta-llama/Llama-4-Scout-17B-16E-Instruct  # 109B total, 17B active MoE (16 experts)
-    tp: 4  # tp=1 OOM (~212 GiB total), tp=2 OOM (~106 GiB total)
-
-  # DONE: Qwen/Qwen1.5-MoE-A2.7B tp=1
-  # - model: Qwen/Qwen1.5-MoE-A2.7B               # 14.3B total, 2.7B active MoE; Qwen2Moe architecture
-  #   tp: 1
-
-  # UNSUPPORTED: gemma4 arch not in transformers bundled with vLLM v0.19.0
-  # - model: google/gemma-4-E4B-it              # MoE; Gemma4 architecture (gated)
-  #   tp: 1
-  #   hf_token_secret: hf-token-gemma
-
-  # ── Gemma models ──────────────────────────────────────────────────────────
-  # Requires hf-token-gemma secret (separate from hf-token; Gemma repos are gated).
-  - model: google/gemma-2-2b-it              # 2.6B dense; Gemma2 architecture
+  - model: Qwen/Qwen3-30B-A3B                  # 30B total, 3B active MoE; Qwen3Moe architecture
     tp: 1
-    hf_token_secret: hf-token-gemma
 
-  - model: google/gemma-2-9b-it              # 9.2B dense; Gemma2 architecture
-    tp: 1
-    hf_token_secret: hf-token-gemma
+  # ── Sensitivity: tensor parallelism ─────────────────────────────────────
+  # Llama-3.1-8B: 32 attention heads; tp=3 invalid (32 % 3 ≠ 0).
+  - model: meta-llama/Llama-3.1-8B-Instruct
+    tp: [1, 2, 4]
+    _sweep_dim: tp
 
-  - model: google/gemma-2-27b-it             # 27.2B dense; fits H100 80GB at bf16 (~54 GiB weights)
-    tp: 1
-    hf_token_secret: hf-token-gemma
+  # Qwen2.5-7B: 28 attention heads; valid tp: 1, 2, 4, 7, 14, 28.
+  - model: Qwen/Qwen2.5-7B-Instruct
+    tp: [1, 2, 4]
+    _sweep_dim: tp
 
-  - model: google/gemma-3-4b-it              # 4B dense; Gemma3 architecture
-    tp: 1
-    hf_token_secret: hf-token-gemma
+  - model: moonshotai/Kimi-VL-A3B-Instruct     # baseline at tp=1 in core section above
+    tp: 2
+    trust_remote_code: true
+    _sweep_dim: tp
 
-  - model: google/gemma-3-12b-it             # 12B dense; Gemma3 architecture
-    tp: 1
-    hf_token_secret: hf-token-gemma
-
-  - model: google/gemma-3-27b-it             # 27B dense; Gemma3 architecture
-    tp: 1
-    hf_token_secret: hf-token-gemma
-
-  # ── Kimi Dev 72B TP sensitivity (retry tp=4; tp=2 succeeded) ─────────────
-  - model: moonshotai/Kimi-Dev-72B
+  - model: moonshotai/Kimi-Dev-72B             # baseline at tp=2 in core section above
     tp: 4
     trust_remote_code: true
     _sweep_dim: tp
 
-  # ── Argument sensitivity: tensor parallelism ─────────────────────────────
-  # Llama-3.1-8B has 32 attention heads; tp=3 is invalid (32 % 3 ≠ 0).
-  - model: meta-llama/Llama-3.1-8B-Instruct
-    tp: [1, 2, 4]
-    _sweep_dim: tp
-
-  - model: Qwen/Qwen2.5-7B-Instruct          # 28 attention heads; valid tp: 1, 2, 4, 7, 14, 28
-    tp: [1, 2, 4]
-    _sweep_dim: tp
-
-  # ── Argument sensitivity: data parallelism ────────────────────────────────
-  - model: meta-llama/Llama-3.1-8B-Instruct
-    tp: 1
-    dp: [1, 2]
-    _sweep_dim: dp
-
-  # ── Argument sensitivity: pipeline parallelism ───────────────────────────
+  # ── Sensitivity: pipeline parallelism ───────────────────────────────────
+  # pp=1 baseline is covered by Llama-3.1-8B-Instruct tp=1 entry above.
   - model: meta-llama/Llama-3.1-8B-Instruct
     tp: 1
     pp: [2, 4]
     _sweep_dim: pp
 
-  # ── Argument sensitivity: --max-model-len ────────────────────────────────
+  # ── Sensitivity: context length (max_model_len) ─────────────────────────
+  # len=8192 baseline is covered by the tp sweep entries above.
+  # KV pool (GiB) is independent of max_model_len; only token count changes.
   - model: meta-llama/Llama-3.1-8B-Instruct
     tp: 1
-    max_model_len: [2048, 4096, 8192, 16384, 32768]
+    max_model_len: [2048, 4096, 16384, 32768]
     _sweep_dim: max_model_len
 
   - model: Qwen/Qwen2.5-7B-Instruct
     tp: 1
-    max_model_len: [2048, 4096, 8192, 16384, 32768]
+    max_model_len: [2048, 4096, 16384, 32768]
     _sweep_dim: max_model_len
 
-  # ── Argument sensitivity: --dtype ─────────────────────────────────────────
-  # DONE: all three dtype values completed
-  # - model: meta-llama/Llama-3.1-8B-Instruct
-  #   tp: 1
-  #   dtype: [float16, bfloat16, float32]
-  #   kv_cache_dtype: auto
-  #   _sweep_dim: dtype
-
-  # ── Argument sensitivity: --kv-cache-dtype ────────────────────────────────
-  # DONE: both auto and fp8 completed
-  # - model: meta-llama/Llama-3.1-8B-Instruct
-  #   tp: 1
-  #   dtype: bfloat16
-  #   kv_cache_dtype: [auto, fp8]
-  #   _sweep_dim: kv_cache_dtype
-
-  # DONE: both auto and fp8 completed
-  # - model: Qwen/Qwen2.5-7B-Instruct
-  #   tp: 1
-  #   dtype: bfloat16
-  #   kv_cache_dtype: [auto, fp8]
-  #   _sweep_dim: kv_cache_dtype
-
-  # ── Argument sensitivity: non-power-of-2 tp ──────────────────────────────
-  # INVALID: Qwen3-14B vocab_size=151936 is not divisible by 5 (vLLM enforces
-  # vocab sharding). num_attention_heads=40 supports tp=5, but vocab does not.
-  # Valid tp values: divisors of gcd(40, 151936)=8 → {1,2,4,8}.
-  # - model: Qwen/Qwen3-14B
-  #   tp: 5
-  #   _sweep_dim: tp_odd
-
-  # ── Argument sensitivity: --quantization ──────────────────────────────────
-  # DONE: FP16 baseline (same run_id as dtype=float16 above)
-  # - model: meta-llama/Llama-3.1-8B-Instruct   # FP16 baseline
-  #   tp: 1
-  #   dtype: float16
-  #   kv_cache_dtype: auto
-  #   quantization: null
-  #   _sweep_dim: quantization
-
-  # runtime fp8 quantization — not yet done
+  # ── Sensitivity: --dtype ─────────────────────────────────────────────────
+  # bfloat16 baseline is covered by the tp sweep entries above.
   - model: meta-llama/Llama-3.1-8B-Instruct
+    tp: 1
+    dtype: float16
+    kv_cache_dtype: auto
+    _sweep_dim: dtype
+
+  - model: meta-llama/Llama-3.1-8B-Instruct
+    tp: 1
+    dtype: float32
+    kv_cache_dtype: auto
+    _sweep_dim: dtype
+
+  # ── Sensitivity: --kv-cache-dtype ────────────────────────────────────────
+  # kv_cache_dtype=auto baseline is covered by the tp sweep entries above.
+  - model: meta-llama/Llama-3.1-8B-Instruct
+    tp: 1
+    dtype: bfloat16
+    kv_cache_dtype: fp8
+    _sweep_dim: kv_cache_dtype
+
+  - model: Qwen/Qwen2.5-7B-Instruct
+    tp: 1
+    dtype: bfloat16
+    kv_cache_dtype: fp8
+    _sweep_dim: kv_cache_dtype
+
+  # ── Sensitivity: runtime --quantization ──────────────────────────────────
+  # quantization=null baseline is covered by the tp sweep entries above.
+  - model: meta-llama/Llama-3.1-8B-Instruct    # runtime fp8 inline quantization (not pre-quantized weights)
     tp: 1
     quantization: fp8
     _sweep_dim: quantization
 
-  # DONE: w8a8
-  # - model: RedHatAI/Meta-Llama-3.1-8B-Instruct-quantized.w8a8
-  #   tp: 1
-  #   dtype: float16
-  #   kv_cache_dtype: auto
-  #   quantization: null
-  #   _label: w8a8-redhatai-llama-3-1-8b
-  #   _sweep_dim: quantization
+  # Invalid: Qwen3-14B tp=5 rejected by vLLM — vocab_size=151936 not divisible by 5.
+  # Valid tp for Qwen3-14B: divisors of gcd(num_attention_heads=40, vocab_size=151936)=8 → {1,2,4,8}.
 
-  # DONE: w4a16
-  # - model: RedHatAI/Meta-Llama-3.1-8B-Instruct-quantized.w4a16
-  #   tp: 1
-  #   dtype: float16
-  #   kv_cache_dtype: auto
-  #   quantization: null
-  #   _label: w4a16-redhatai-llama-3-1-8b
-  #   _sweep_dim: quantization
+  # ── Pre-quantized models (RedHat) ─────────────────────────────────────────
+  # Quantization is auto-detected from the model's quantization_config in the HF repo.
+  - model: RedHatAI/Llama-3.3-70B-Instruct-fp8-dynamic  # fp8-dynamic weights; compressed-tensors
+    tp: 2
+    _label: fp8dyn-llama-3-3-70b-tp2
 
-  # DONE: w8a8 Mistral (tp=1 and tp=2)
-  # - model: RedHatAI/Mistral-Small-3.1-24B-Instruct-2503-quantized.w8a8
-  #   tp: 1
-  #   _label: w8a8-mistral-small-24b
-  #   _sweep_dim: quantization
+  - model: RedHatAI/Llama-3.3-70B-Instruct-fp8-dynamic
+    tp: 4
+    _label: fp8dyn-llama-3-3-70b-tp4
 
-  # DONE: fp8-dynamic (tp=2 and tp=4)
-  # - model: RedHatAI/Llama-3.3-70B-Instruct-fp8-dynamic
-  #   tp: 2  # tp=1 OOM: ~65 GiB fp8 weights leave <5 GiB KV on single H100
-  #   _label: fp8dyn-llama-3-3-70b
-  #   _sweep_dim: quantization
+  - model: redhatai/Llama-3.3-70B-Instruct-quantized.w8a8  # w8a8 weights; compressed-tensors
+    tp: 2
 
-  - model: redhatai/Llama-3.3-70B-Instruct-quantized.w8a8
-    tp: 2  # tp=1 OOM for same reason
-    _sweep_dim: quantization
+  - model: RedHatAI/Meta-Llama-3.1-8B-Instruct-quantized.w4a16  # w4a16 weights; gptq_marlin
+    tp: 1
+    dtype: float16
+    _label: w4a16-redhatai-llama-3-1-8b
 
-  # DONE: w8a8 Qwen2.5 7B
-  # - model: RedHatAI/Qwen2.5-7B-Instruct-quantized.w8a8
-  #   tp: 1
-  #   _label: w8a8-redhatai-qwen2-5-7b
-  #   _sweep_dim: quantization
+  - model: RedHatAI/Meta-Llama-3.1-8B-Instruct-quantized.w8a8   # w8a8 weights; compressed-tensors
+    tp: 1
+    dtype: float16
+    _label: w8a8-redhatai-llama-3-1-8b
 
-  # DONE: fp8-dynamic Qwen2.5 7B
-  # - model: RedHatAI/Qwen2.5-7B-Instruct-fp8-dynamic
-  #   tp: 1
-  #   _label: fp8dyn-redhatai-qwen2-5-7b
-  #   _sweep_dim: quantization
+  - model: RedHatAI/Mistral-Small-3.1-24B-Instruct-2503-quantized.w8a8  # w8a8 weights; compressed-tensors
+    tp: [1, 2]
+    _sweep_dim: tp
 
-  # ── vLLM version sensitivity: activation memory across releases ───────────
-  # Goal: validate whether activation constants change across vLLM versions.
-  # Model: Qwen3-14B (tp=1, ~28 GiB bf16; tp=5 invalid — vocab not divisible).
-  # See sweep-versions.yaml to run these; results go in results/v<X>/
-  # DONE: v0.15.0
-  # - model: Qwen/Qwen3-14B
-  #   tp: 1
-  #   vllm_image: vllm/vllm-openai:v0.15.0
-  #   _label: qwen3-14b-vllm-v0.15.0
-  #   _sweep_dim: vllm_version
-  # DONE: v0.16.0
-  # - model: Qwen/Qwen3-14B
-  #   tp: 1
-  #   vllm_image: vllm/vllm-openai:v0.16.0
-  #   _label: qwen3-14b-vllm-v0.16.0
-  #   _sweep_dim: vllm_version
-  # DONE: v0.17.0
-  # - model: Qwen/Qwen3-14B
-  #   tp: 1
-  #   vllm_image: vllm/vllm-openai:v0.17.0
-  #   _label: qwen3-14b-vllm-v0.17.0
-  #   _sweep_dim: vllm_version
-  # DONE: v0.18.0
-  # - model: Qwen/Qwen3-14B
-  #   tp: 1
-  #   vllm_image: vllm/vllm-openai:v0.18.0
-  #   _label: qwen3-14b-vllm-v0.18.0
-  #   _sweep_dim: vllm_version
+  - model: RedHatAI/Qwen2.5-7B-Instruct-fp8-dynamic  # fp8-dynamic weights; compressed-tensors
+    tp: 1
+    _label: fp8dyn-redhatai-qwen2-5-7b
+
+  - model: RedHatAI/Qwen2.5-7B-Instruct-quantized.w8a8  # w8a8 weights; compressed-tensors
+    tp: 1
+    _label: w8a8-redhatai-qwen2-5-7b

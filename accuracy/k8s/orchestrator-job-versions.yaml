@@ -1,13 +1,13 @@
-# Submit with: kubectl apply -f accuracy/k8s/orchestrator-job-gemma.yaml
-# Monitor with: kubectl logs -f job/vllm-mem-orchestrator-gemma -n llmdplanner
+# Submit with: kubectl apply -f accuracy/k8s/orchestrator-job-versions.yaml
+# Monitor with: kubectl logs -f job/vllm-mem-orchestrator-versions -n llmdplanner
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: vllm-mem-orchestrator-gemma
+  name: vllm-mem-orchestrator-versions
   namespace: llmdplanner
 spec:
   backoffLimit: 0
-  activeDeadlineSeconds: 28800    # 8-hour cap for 6-model run
+  activeDeadlineSeconds: 14400    # 4-hour cap for 4-run sweep
   template:
     spec:
       serviceAccountName: vllm-mem-orchestrator
@@ -22,7 +22,7 @@ spec:
             defaultMode: 0755
         - name: sweep
           configMap:
-            name: vllm-mem-sweep-gemma
+            name: vllm-mem-sweep-versions
       containers:
         - name: orchestrator
           image: python:3.11-slim
@@ -31,8 +31,8 @@ spec:
             - |
               pip install pyyaml kubernetes --quiet --no-cache-dir &&
               python /scripts/sweep_runner.py \
-                --config /sweep/sweep-gemma.yaml \
-                --results /data/results/
+                --config /sweep/sweep-versions.yaml \
+                --results /data/results/version-sweep
           volumeMounts:
             - name: data
               mountPath: /data
