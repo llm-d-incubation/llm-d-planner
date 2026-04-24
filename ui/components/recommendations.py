@@ -132,47 +132,42 @@ def _render_category_card(title, recs_list, highlight_field, category_key, col):
             unsafe_allow_html=True,
         )
 
-        # Prev/Next navigation (circular) - compact centered layout
+        # Prev/Next navigation (circular) - simplified responsive layout
         if len(recs_list) > 1:
             last = len(recs_list) - 1
 
-            # Use narrow columns for compact centered navigation
-            spacer_l, nav_area, spacer_r = st.columns([0.3, 0.4, 0.3])
-            with nav_area:
-                btn_prev, counter, btn_next = st.columns([1, 1.5, 1])
-                with btn_prev:
-                    # Right-align the prev button using nested columns
-                    empty, btn = st.columns([0.3, 0.7])
-                    with btn:
-                        if st.button("◀", key=f"prev_{category_key}"):
-                            st.session_state[idx_key] = last if idx == 0 else idx - 1
-                            st.session_state.deployment_selected_config = None
-                            st.session_state.deployment_selected_category = None
-                            st.session_state.deployment_yaml_generated = False
-                            st.session_state.deployment_yaml_files = {}
-                            st.session_state.deployment_id = None
-                            st.session_state.deployment_error = None
-                            st.session_state.deployed_to_cluster = False
-                            st.rerun()
-                with counter:
-                    st.markdown(
-                        f"<div style='text-align: center; line-height: 2.4; font-size: 0.85rem;'>#{idx + 1} of {len(recs_list)}</div>",
-                        unsafe_allow_html=True,
-                    )
-                with btn_next:
-                    # Left-align but add spacing with nested columns
-                    btn, empty = st.columns([0.7, 0.3])
-                    with btn:
-                        if st.button("▶", key=f"next_{category_key}"):
-                            st.session_state[idx_key] = 0 if idx == last else idx + 1
-                            st.session_state.deployment_selected_config = None
-                            st.session_state.deployment_selected_category = None
-                            st.session_state.deployment_yaml_generated = False
-                            st.session_state.deployment_yaml_files = {}
-                            st.session_state.deployment_id = None
-                            st.session_state.deployment_error = None
-                            st.session_state.deployed_to_cluster = False
-                            st.rerun()
+            # Simple 3-column layout that works on all screen sizes
+            btn_prev, counter, btn_next = st.columns([1, 2, 1])
+
+            with btn_prev:
+                if st.button("◀", key=f"prev_{category_key}", use_container_width=True):
+                    st.session_state[idx_key] = last if idx == 0 else idx - 1
+                    st.session_state.deployment_selected_config = None
+                    st.session_state.deployment_selected_category = None
+                    st.session_state.deployment_yaml_generated = False
+                    st.session_state.deployment_yaml_files = {}
+                    st.session_state.deployment_id = None
+                    st.session_state.deployment_error = None
+                    st.session_state.deployed_to_cluster = False
+                    st.rerun()
+
+            with counter:
+                st.markdown(
+                    f"<div style='text-align: center; line-height: 2.4; font-size: 0.85rem;'>#{idx + 1} of {len(recs_list)}</div>",
+                    unsafe_allow_html=True,
+                )
+
+            with btn_next:
+                if st.button("▶", key=f"next_{category_key}", use_container_width=True):
+                    st.session_state[idx_key] = 0 if idx == last else idx + 1
+                    st.session_state.deployment_selected_config = None
+                    st.session_state.deployment_selected_category = None
+                    st.session_state.deployment_yaml_generated = False
+                    st.session_state.deployment_yaml_files = {}
+                    st.session_state.deployment_id = None
+                    st.session_state.deployment_error = None
+                    st.session_state.deployed_to_cluster = False
+                    st.rerun()
 
         selected_category = st.session_state.get("deployment_selected_category")
         is_selected = selected_category == category_key
