@@ -57,6 +57,29 @@ st.markdown(
     .block-container { padding-top: 0 !important; }
     /* Transparent header so menu appears inline with content */
     header[data-testid="stHeader"] { background: transparent; }
+    /* Hero: logo stays 48px; column ratios were shrinking the image with the window */
+    .planner-hero-title-row {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        flex-wrap: nowrap;
+    }
+    .planner-hero-title-row img {
+        width: 48px !important;
+        height: 48px !important;
+        max-width: 48px !important;
+        min-width: 48px !important;
+        flex-shrink: 0 !important;
+        object-fit: contain;
+    }
+    .planner-hero-title-row h1 {
+        margin: 0;
+        padding: 0;
+        font-size: 2.75rem;
+        font-weight: 600;
+        line-height: 1.15;
+        border: none;
+    }
 </style>
 """,
     unsafe_allow_html=True,
@@ -74,12 +97,20 @@ init_session_state()
 
 
 def render_hero():
-    """Render compact hero section with logo."""
-    logo_col, title_col = st.columns([0.4, 11.6], vertical_alignment="center", gap="small")
-    with logo_col:
-        st.image("ui/static/planner-logo.png", width=48)
-    with title_col:
-        st.title("Planner")
+    """Render compact hero section with logo.
+
+    Logo uses /app/static/ (see .streamlit/config.toml enableStaticServing) so it
+    stays a fixed 48px; st.columns + st.image was scaling the image with viewport.
+    """
+    st.markdown(
+        """
+<div class="planner-hero-title-row">
+    <img src="/app/static/planner-logo.png" width="48" height="48" alt="Planner logo" />
+    <h1>Planner</h1>
+</div>
+""",
+        unsafe_allow_html=True,
+    )
     st.caption(
         "AI-Powered LLM Deployment Recommendations — From Natural Language to Production in Seconds"
     )

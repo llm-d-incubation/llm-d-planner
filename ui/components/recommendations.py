@@ -132,31 +132,48 @@ def _render_category_card(title, recs_list, highlight_field, category_key, col):
             unsafe_allow_html=True,
         )
 
-        # Prev/Next navigation (circular) - compact horizontal layout for all screen sizes
+        # Prev/Next navigation (circular) - force horizontal layout on all screen sizes
         if len(recs_list) > 1:
             last = len(recs_list) - 1
 
-            # CSS to prevent columns from stacking on mobile
+            # Unique class for scoping CSS to just this navigation section
+            nav_class = f"nav-row-{category_key}"
+
+            # Maximum specificity CSS with media query override
             st.markdown(
-                """
+                f"""
                 <style>
-                /* Prevent column stacking on mobile for navigation */
-                @media (max-width: 768px) {
-                    [data-testid="stHorizontalBlock"] {
+                /* Ultra-high specificity to override Streamlit mobile styles */
+                div.{nav_class} [data-testid="stHorizontalBlock"] {{
+                    display: flex !important;
+                    flex-direction: row !important;
+                    flex-wrap: nowrap !important;
+                    gap: 0.5rem !important;
+                }}
+                div.{nav_class} [data-testid="column"] {{
+                    flex: 1 1 0 !important;
+                    min-width: 50px !important;
+                }}
+                /* Explicitly override mobile breakpoint */
+                @media only screen and (max-width: 640px) {{
+                    div.{nav_class} [data-testid="stHorizontalBlock"] {{
+                        display: flex !important;
+                        flex-direction: row !important;
                         flex-wrap: nowrap !important;
-                    }
-                    [data-testid="column"] {
-                        min-width: 0 !important;
-                        flex-shrink: 1 !important;
-                    }
-                }
+                    }}
+                    div.{nav_class} [data-testid="column"] {{
+                        width: auto !important;
+                        min-width: 50px !important;
+                    }}
+                }}
                 </style>
+                <div class="{nav_class}">
                 """,
                 unsafe_allow_html=True,
             )
 
-            # Compact button row
-            col1, col2, col3 = st.columns([0.8, 1.4, 0.8])
+            # Simple 3-column layout
+            col1, col2, col3 = st.columns([1, 1.5, 1])
 
             with col1:
                 if st.button("◀", key=f"prev_{category_key}", use_container_width=True):
@@ -187,6 +204,9 @@ def _render_category_card(title, recs_list, highlight_field, category_key, col):
                     st.session_state.deployment_error = None
                     st.session_state.deployed_to_cluster = False
                     st.rerun()
+
+            # Close navigation wrapper div
+            st.markdown("</div>", unsafe_allow_html=True)
 
         selected_category = st.session_state.get("deployment_selected_category")
         is_selected = selected_category == category_key
