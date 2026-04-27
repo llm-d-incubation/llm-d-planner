@@ -102,22 +102,22 @@ def simple_recommend(
                     recommendation=recommendation, namespace="default"
                 )
                 deployment_id = yaml_result["deployment_id"]
-                yaml_files: dict = yaml_result["files"]
+                yaml_contents: dict = yaml_result["contents"]
                 logger.info(
-                    f"Auto-generated YAML files for {deployment_id}: {list(yaml_files.keys())}"
+                    f"Auto-generated YAML for {deployment_id}: {list(yaml_contents.keys())}"
                 )
                 yaml_generated = True
             except Exception as yaml_error:
                 logger.warning(f"Failed to auto-generate YAML: {yaml_error}")
                 deployment_id = None
-                yaml_files = {}
+                yaml_contents = {}
                 yaml_generated = False
 
             # Return recommendation as dict with YAML info
             result = recommendation.model_dump()
             result["deployment_id"] = deployment_id
             result["yaml_generated"] = yaml_generated
-            result["yaml_files"] = list(yaml_files.keys()) if yaml_files else []
+            result["yaml_files"] = yaml_contents
 
             return result
 
@@ -147,7 +147,7 @@ def simple_recommend(
             result = partial_recommendation.model_dump()
             result["deployment_id"] = None
             result["yaml_generated"] = False
-            result["yaml_files"] = []
+            result["yaml_files"] = {}
 
             return result
 

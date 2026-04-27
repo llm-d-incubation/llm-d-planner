@@ -431,9 +431,9 @@ def extract_business_context(user_input: str) -> dict | None:
 
 
 def deploy_and_generate_yaml(recommendation: dict) -> dict | None:
-    """Deploy a recommendation and fetch generated YAML files.
+    """Deploy a recommendation and return generated YAML contents.
 
-    Returns dict with deployment_id, files, and success status, or None on error.
+    Returns dict with deployment_id, files (YAML contents), and success status, or None on error.
     """
     try:
         response = requests.post(
@@ -444,17 +444,10 @@ def deploy_and_generate_yaml(recommendation: dict) -> dict | None:
         response.raise_for_status()
         result = response.json()
         if result.get("success"):
-            deployment_id = result.get("deployment_id")
-            yaml_response = requests.get(
-                f"{API_BASE_URL}/api/v1/deployments/{deployment_id}/yaml",
-                timeout=DEFAULT_TIMEOUT,
-            )
-            yaml_response.raise_for_status()
-            yaml_data = yaml_response.json()
             return {
                 "success": True,
-                "deployment_id": deployment_id,
-                "files": yaml_data.get("files", {}),
+                "deployment_id": result.get("deployment_id"),
+                "files": result.get("files", {}),
             }
         else:
             return {"success": False, "message": result.get("message", "Unknown error")}

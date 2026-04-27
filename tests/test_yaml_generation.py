@@ -91,6 +91,13 @@ def test_yaml_generation():
     assert result is not None
     assert "deployment_id" in result
     assert "files" in result
+    assert "contents" in result
+
+    # Verify contents keys match files keys and contain YAML strings
+    assert set(result["contents"]) == set(result["files"])
+    for config_type, content in result["contents"].items():
+        assert isinstance(content, str), f"Expected string content for {config_type}"
+        assert len(content) > 0, f"Empty YAML content for {config_type}"
 
     # Step 3: Validate generated YAMLs
     validator = YAMLValidator()
