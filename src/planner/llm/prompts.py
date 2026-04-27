@@ -63,10 +63,12 @@ USE CASE:
 * If the message mentions "summarization" => summarization_short
 * If the message mentions "RAG", "retrieval", "knowledge base", "document Q&A", or "document analysis" => document_analysis_rag
 
-USER COUNT:
+USER COUNT (number of people who will use the system):
 
+* Count people, teams, employees, developers, attorneys, analysts, etc.
 * Use explicit number if present.
 * Otherwise estimate an integer.
+* Must be >= 1.
 
 DOMAIN:
 
@@ -78,14 +80,16 @@ DOMAIN:
 
 GPUs:
 
+* Valid GPU names: L4, A100-40, A100-80, H100, H200, B200.
 * Extract only if explicitly mentioned.
-* "A100" => ["A100-80", "A100-40"].
-* Otherwise => [].
+* "A100" (unspecified variant) => ["A100-80", "A100-40"].
+* If no GPU is explicitly mentioned => [].
 
 MODELS:
 
+* GPU names (L4, A100, H100, H200, B200) are NOT models. Never put them in preferred_models.
+* A Hugging Face model ID has the format "org/model-name" (e.g., "meta-llama/Llama-3.1-8B-Instruct").
 * Extract only if explicitly mentioned.
-* A Hugging Face model ID such as "org/model-name" is an explicit model mention.
 * If the message contains a Hugging Face model ID, copy it exactly into preferred_models.
 * If no model is explicitly mentioned => [].
 

@@ -261,6 +261,12 @@ class IntentExtractor:
                         f"Could not parse user_count from '{user_count_str}', defaulting to 1000"
                     )
 
+        # Guard against user_count=0 (the schema default the LLM echoes when
+        # it fails to extract): 0 users is never meaningful.
+        if cleaned.get("user_count", 1) <= 0:
+            cleaned["user_count"] = 100
+            logger.warning("user_count was <= 0, defaulting to 100")
+
         # Ensure domain_specialization is a list with lowercase values
         if "domain_specialization" in cleaned:
             if isinstance(cleaned["domain_specialization"], str):
