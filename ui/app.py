@@ -57,6 +57,29 @@ st.markdown(
     .block-container { padding-top: 0 !important; }
     /* Transparent header so menu appears inline with content */
     header[data-testid="stHeader"] { background: transparent; }
+    /* Hero: logo stays 48px; column ratios were shrinking the image with the window */
+    .planner-hero-title-row {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        flex-wrap: nowrap;
+    }
+    .planner-hero-title-row img {
+        width: 48px !important;
+        height: 48px !important;
+        max-width: 48px !important;
+        min-width: 48px !important;
+        flex-shrink: 0 !important;
+        object-fit: contain;
+    }
+    .planner-hero-title-row h1 {
+        margin: 0;
+        padding: 0;
+        font-size: 2rem;
+        font-weight: 600;
+        line-height: 1.15;
+        border: none;
+    }
 </style>
 """,
     unsafe_allow_html=True,
@@ -74,12 +97,20 @@ init_session_state()
 
 
 def render_hero():
-    """Render compact hero section with logo."""
-    logo_col, title_col = st.columns([1, 11], vertical_alignment="center")
-    with logo_col:
-        st.image("ui/static/planner-logo.png", width=48)
-    with title_col:
-        st.title("Planner")
+    """Render compact hero section with logo.
+
+    Logo uses /app/static/ (see .streamlit/config.toml enableStaticServing) so it
+    stays a fixed 48px; st.columns + st.image was scaling the image with viewport.
+    """
+    st.markdown(
+        """
+<div class="planner-hero-title-row">
+    <img src="/app/static/planner-logo.png" width="48" height="48" alt="Planner logo" />
+    <h1>Planner</h1>
+</div>
+""",
+        unsafe_allow_html=True,
+    )
     st.caption(
         "AI-Powered LLM Deployment Recommendations — From Natural Language to Production in Seconds"
     )
@@ -118,7 +149,7 @@ def render_use_case_input_tab(priority: str, models_df: pd.DataFrame):
     )
 
     # Row 1: 5 task buttons
-    col1, col2, col3, col4, col5 = st.columns(5)
+    col1, col2, col3, col4, col5 = st.columns(5, gap="medium")
 
     with col1:
         if st.button("Chat Completion", width="stretch", key="task_chat"):
@@ -157,7 +188,7 @@ def render_use_case_input_tab(priority: str, models_df: pd.DataFrame):
             st.rerun()
 
     # Row 2: 4 more task buttons
-    col6, col7, col8, col9 = st.columns(4)
+    col6, col7, col8, col9 = st.columns(4, gap="medium")
 
     with col6:
         if st.button("Translation", width="stretch", key="task_trans"):
@@ -198,7 +229,7 @@ def render_use_case_input_tab(priority: str, models_df: pd.DataFrame):
         unsafe_allow_html=True,
     )
 
-    col1, col2, col3 = st.columns([1.5, 1, 2])
+    col1, col2, col3 = st.columns([1.5, 1, 2], gap="medium")
     with col1:
         analyze_disabled = (
             len(st.session_state.user_input.strip()) < 10 if st.session_state.user_input else True

@@ -36,6 +36,12 @@ uv.lock
 *~
 .DS_Store
 
+# Design context, rationale, and history
+.design/
+
+# Repo-specific rules and skills
+.agents/
+
 # Testing
 .pytest_cache/
 .coverage
