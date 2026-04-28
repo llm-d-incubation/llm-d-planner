@@ -10,18 +10,18 @@
 
 ## Part 1: Accuracy Evaluation — vLLM v0.19.0
 
-Covers 53 runs across 34 models using only parameters the planner currently accepts as inputs. Excludes runs with `--dtype float32`, runtime `--quantization fp8`, and `--kv-cache-dtype fp8` (see Part 3).
+Covers 54 runs across 35 models using only parameters the planner currently accepts as inputs. Excludes runs with `--dtype float32`, runtime `--quantization fp8`, and `--kv-cache-dtype fp8` (see Part 3).
 
 ### Summary
 
 | Metric | Mean error | Mean abs error | n |
 |--------|:----------:|:--------------:|:-:|
-| KV cache memory (all runs) | +0.34% | +6.62% | 52 |
-| KV cache memory (baseline: tp=pp=dp=1, len=8192, no quant) | -5.12% | — | 21 |
-| Weight memory | -0.89% | +0.89% | 52 |
-| Activation memory | +195.12% | +195.12% | 52 |
-| Non-torch overhead | -44.08% | — | 52 |
-| Max concurrency | +3.34% | +15.34% | 52 |
+| KV cache memory (all runs) | +0.34% | +6.62% | 53 |
+| KV cache memory (baseline: tp=pp=dp=1, len=8192, no quant) | -5.12% | — | 22 |
+| Weight memory | -0.89% | +0.89% | 53 |
+| Activation memory | +195.12% | +195.12% | 53 |
+| Non-torch overhead | -44.08% | — | 53 |
+| Max concurrency | +3.34% | +15.34% | 53 |
 
 **Key findings**:
 
@@ -55,6 +55,7 @@ Covers 53 runs across 34 models using only parameters the planner currently acce
 | Mistral-Small-3.1-24B-Instruct-2503 | Mistral3* | -0.08% | +23.15% | -40.00% | +1.54% | +1.55% |
 | Qwen1.5-MoE-A2.7B | Qwen2Moe | -0.02% | +223.89% | -40.00% | -10.14% | -10.12% |
 | Kimi-VL-A3B-Instruct | KimiVL* | -0.58% | +173.97% | -40.00% | -9.76% | -87.31% |
+| MiMo-VL-7B-SFT | Qwen2_5_VL* | -0.82% | +120.88% | -40.00% | -3.54% | -3.54% |
 
 ### Sensitivity: Tensor Parallelism (TP)
 
@@ -126,6 +127,7 @@ The planner uses fixed constants per architecture calibrated against vLLM v0.16.
 | Phi | 5.50 | 0.79 | +596.20% |
 | Qwen2 | 5.60 | 2.21–2.29 | +144.54% to +153.39% |
 | Qwen3 | 5.60 | 2.21 | +153.39% |
+| Qwen2_5_VL* | 5.50 | 2.49 | +120.88% |
 | Qwen2Moe | 8.00 | 2.47 | +223.89% |
 | Qwen3Moe | 8.00 | 2.68 | +198.51% |
 
@@ -243,11 +245,11 @@ Runtime `--quantization fp8` compresses weights on-the-fly. vLLM logs the post-c
 
 ## Run Matrix — vLLM v0.19.0 / H100-80GB
 
-**57 successful runs, 7 failed runs.**
+**58 successful runs, 7 failed runs.**
 
 Quantization abbreviations: `ct` = compressed-tensors, `gptq` = gptq_marlin, `fp8` = fp8 inline, `mxfp4` = mx-format fp4, `—` = none.
 
-Vision/multi-modal models in this sweep: `moonshotai/Kimi-VL-A3B-Instruct` (vision-language MoE), `ibm-granite/granite-vision-3.3-2b` (vision-language), `google/gemma-3-{4b,12b,27b}-it` (vision-language), `meta-llama/Llama-4-Scout-17B-16E-Instruct` (vision+text MoE).
+Vision/multi-modal models in this sweep: `moonshotai/Kimi-VL-A3B-Instruct` (vision-language MoE), `ibm-granite/granite-vision-3.3-2b` (vision-language), `google/gemma-3-{4b,12b,27b}-it` (vision-language), `meta-llama/Llama-4-Scout-17B-16E-Instruct` (vision+text MoE), `XiaomiMiMo/MiMo-VL-7B-SFT` (vision-language).
 
 `Qwen/Qwen1.5-MoE-A2.7B` uses the Qwen2Moe architecture (14.3B total, 2.7B active). Its activation memory (2.47 GiB) is much lower than the generic MoE constant (8.0 GiB) used by the planner, similar to the pattern observed for Qwen3Moe, Mixtral, and Llama4.
 
@@ -312,6 +314,7 @@ Vision/multi-modal models in this sweep: `moonshotai/Kimi-VL-A3B-Instruct` (visi
 | RedHatAI/Mistral-Small-3.1-24B-Instruct-2503-quantized.w8a8 | 2 | 1 | 1 | 8192 | bf16 | ct | auto | -0.8% | +23.2% | -71.0% | +5.3% |
 | RedHatAI/Qwen2.5-7B-Instruct-fp8-dynamic | 1 | 1 | 1 | 8192 | bf16 | ct | auto | -0.4% | +153.4% | -37.5% | -3.9% |
 | RedHatAI/Qwen2.5-7B-Instruct-quantized.w8a8 | 1 | 1 | 1 | 8192 | bf16 | ct | auto | -0.4% | +153.4% | -40.0% | -3.9% |
+| XiaomiMiMo/MiMo-VL-7B-SFT | 1 | 1 | 1 | 8192 | bf16 | — | auto | -0.8% | +120.9% | -40.0% | -3.5% |
 
 ### Failed Runs
 

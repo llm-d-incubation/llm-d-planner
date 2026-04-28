@@ -1,0 +1,65 @@
+# New model sweep — April 2026 / vLLM v0.19.0 / H100-80GB
+# 8 models: zai-org (GLM-5, GLM-5-FP8, GLM-OCR, GLM-4.5), XiaomiMiMo (MiMo-V2-Flash, MiMo-VL-7B-SFT, MiMo-V2.5), moonshotai (Kimi-K2.5)
+# All large MoE models use fp8 inline quantization; gmu=0.85 where HF recommends it.
+# Kimi-K2.5 (tp=8, 1T MoE): fp8 still ~125 GiB/GPU — OOM expected, pending resource availability.
+# GLM-5/FP8 (tp=8): fp8 ~93 GiB/GPU — may still OOM; startup logs will tell.
+#
+# Edit defaults.node_selector to match your cluster's GPU node label.
+
+defaults:
+  gpu: H100-80GB
+  gpu_memory_utilization: "0.95"
+  max_model_len: 8192
+  pp: 1
+  dp: 1
+  dtype: auto
+  kv_cache_dtype: auto
+  quantization: null
+  vllm_image: vllm/vllm-openai:v0.19.0
+  namespace: llmdplanner
+  results_pvc: vllm-mem-data
+  node_selector:
+    nvidia.com/gpu.product: NVIDIA-H100-80GB-HBM3
+
+runs:
+  # ── ZhipuAI / zai-org models ──────────────────────────────────────────────
+  # tp=8 — skipped: cluster fully allocated, no 8-GPU node available
+  # - model: zai-org/GLM-5                    # 744B total, 40B active MoE; fp8 → ~93 GiB/GPU @ tp=8; may still OOM (weights > 80 GiB)
+  #   tp: 8
+  #   gpu_memory_utilization: "0.85"
+  #   quantization: fp8
+  #   trust_remote_code: true
+
+  # - model: zai-org/GLM-5-FP8               # 754B total, 40B active MoE; pre-quantized FP8 (auto-detected)
+  #   tp: 8
+  #   gpu_memory_utilization: "0.85"
+  #   trust_remote_code: true
+
+  - model: zai-org/GLM-OCR                   # 0.9B dense vision-language OCR; CogViT + GLM-0.5B decoder
+    tp: 1
+    trust_remote_code: true
+
+  # - model: zai-org/GLM-4.5                 # 355B total, 32B active MoE; fp8 → ~44 GiB/GPU @ tp=8; should fit
+  #   tp: 8
+  #   quantization: fp8
+  #   trust_remote_code: true
+
+  # ── XiaomiMiMo models ─────────────────────────────────────────────────────
+  - model: XiaomiMiMo/MiMo-V2-Flash          # 309B total, 15B active MoE; fp8 → ~77 GiB/GPU @ tp=4; minimal KV cache expected
+    tp: 4
+    quantization: fp8
+    trust_remote_code: true
+
+  - model: XiaomiMiMo/MiMo-VL-7B-SFT        # 7B dense vision-language; tp=1, no quantization needed
+    tp: 1
+    trust_remote_code: true
+
+  - model: XiaomiMiMo/MiMo-V2.5             # 310B total, 15B active MoE; fp8 → ~77 GiB/GPU @ tp=4; minimal KV cache expected
+    tp: 4
+    quantization: fp8
+    trust_remote_code: true
+
+  # ── moonshotai ────────────────────────────────────────────────────────────
+  # - model: moonshotai/Kimi-K2.5            # 1T total, 32B active MoE; fp8 still ~125 GiB/GPU @ tp=8; OOM expected (pending)
+  #   tp: 8
+  #   trust_remote_code: true

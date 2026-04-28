@@ -232,3 +232,7 @@ runs:
   - model: RedHatAI/Qwen2.5-7B-Instruct-quantized.w8a8  # w8a8 weights; compressed-tensors
     tp: 1
     _label: w8a8-redhatai-qwen2-5-7b
+
+  - model: XiaomiMiMo/MiMo-VL-7B-SFT        # 7B dense vision-language; tp=1
+    tp: 1
+    trust_remote_code: true

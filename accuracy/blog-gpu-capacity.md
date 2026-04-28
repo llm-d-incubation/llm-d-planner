@@ -1,6 +1,6 @@
-# 57 Experiments Later: What We Learned About LLM Memory Prediction
+# 58 Experiments Later: What We Learned About LLM Memory Prediction
 
-*GPU memory planning for LLM deployments is still mostly guesswork. Here's what we learned from measuring it empirically across 34 architectures.*
+*GPU memory planning for LLM deployments is still mostly guesswork. Here's what we learned from measuring it empirically across 35 architectures.*
 
 ---
 
@@ -10,7 +10,7 @@ In all of these cases, the question is the same: **how much GPU memory will this
 
 Most teams answer it by copying what someone else deployed, or by spinning up the pod, watching it OOM, and doubling the resources. This works, but it gets harder as models grow larger and serving configurations more complex. Tensor parallelism, pipeline parallelism, quantization, and long-context windows all change the memory footprint in non-obvious ways.
 
-[llm-d-planner](https://github.com/llm-d-incubation/llm-d-planner) is an open-source library that guides LLM deployments from concept to production. One of its core submodules is a capacity planner built to answer this question before you deploy. To make sure it wasn't just replacing guesswork with a false sense of precision, we ran 57 experiments on H100 GPUs to validate its predictions against reality. Here's what we found, and why we're asking the community to help make it even better.
+[llm-d-planner](https://github.com/llm-d-incubation/llm-d-planner) is an open-source library that guides LLM deployments from concept to production. One of its core submodules is a capacity planner built to answer this question before you deploy. To make sure it wasn't just replacing guesswork with a false sense of precision, we ran 58 experiments on H100 GPUs to validate its predictions against reality. Here's what we found, and why we're asking the community to help make it even better.
 
 ---
 
@@ -24,9 +24,9 @@ It breaks memory into four components: weights, KV cache, activation memory, and
 
 ## The Experiment: Trusting but Verifying
 
-Claiming a tool is accurate is easy. Measuring it is harder. We launched vLLM servers across 57 configurations on H100-80GB GPUs, captured the full startup logs for each, and parsed the actual memory measurements reported by vLLM at initialization. We then compared those measurements against llm-d-planner's predictions for every configuration. The sweep covered:
+Claiming a tool is accurate is easy. Measuring it is harder. We launched vLLM servers across 58 configurations on H100-80GB GPUs, captured the full startup logs for each, and parsed the actual memory measurements reported by vLLM at initialization. We then compared those measurements against llm-d-planner's predictions for every configuration. The sweep covered:
 
-- **34 model architectures**: Llama, Qwen, Gemma, Granite, Mistral, DeepSeek, Phi, Mixtral, and multimodal models including LLaVA and Kimi-VL
+- **35 model architectures**: Llama, Qwen, Gemma, Granite, Mistral, DeepSeek, Phi, Mixtral, and multimodal models including LLaVA, Kimi-VL, and MiMo
 - **Tensor parallelism** (TP 1, 2, 4) and **pipeline parallelism** (PP 1, 2, 4)
 - **Context lengths** from 2,048 to 32,768 tokens
 - **Dtype and quantization variants**: bfloat16, float16; compressed-tensors, GPTQ
@@ -40,9 +40,9 @@ For each run, we compared predicted values against the four measured memory comp
 
 ### The headline: accurate where it counts most
 
-**Weight memory: 0.89% mean absolute error** across 53 of the 57 runs. (The remaining 4 used parameters the planner doesn't yet model, float32 dtype and runtime fp8 quantization, and are discussed below.) This is the single largest memory component; for a model like Llama-3.1-8B at TP=1, weights consume about 15 GiB of the 79 GiB available. It's also the hardest to get right across a diverse model set.
+**Weight memory: 0.89% mean absolute error** across 54 of the 58 runs. (The remaining 4 used parameters the planner doesn't yet model, float32 dtype and runtime fp8 quantization, and are discussed below.) This is the single largest memory component; for a model like Llama-3.1-8B at TP=1, weights consume about 15 GiB of the 79 GiB available. It's also the hardest to get right across a diverse model set.
 
-Weight prediction is harder than it looks: dense, MoE, multi-head latent attention, and vision-language models all organize parameters differently, quantization changes the bytes-per-parameter, and TP sharding depends on how dimensions divide across ranks. The formula handles all of this by reading `config.json` for architecture parameters and safetensor headers for exact tensor shapes, giving precise counts without downloading the full model and making it generalizable to any model on HuggingFace beyond the 34 we explicitly tested. Across dense, MoE, multimodal, and quantized architectures, it held to under 1% error.
+Weight prediction is harder than it looks: dense, MoE, multi-head latent attention, and vision-language models all organize parameters differently, quantization changes the bytes-per-parameter, and TP sharding depends on how dimensions divide across ranks. The formula handles all of this by reading `config.json` for architecture parameters and safetensor headers for exact tensor shapes, giving precise counts without downloading the full model and making it generalizable to any model on HuggingFace beyond the 35 we explicitly tested. Across dense, MoE, multimodal, and quantized architectures, it held to under 1% error.
 
 **KV cache memory: 0.34% mean error** across all runs. This is the component that matters most for capacity planning, as it determines your maximum concurrent token budget. For Llama-3.1-8B at TP=1 with 8K context, that's roughly 58 GiB of KV pool, and we're within half a GiB across every context length we tested.
 
@@ -80,7 +80,7 @@ There are a few configurations the experiment didn't cover that the planner does
 
 ## Join the Community
 
-We covered 34 architectures. The LLM landscape releases more every week, and vLLM will keep evolving. Accuracy at a point in time isn't enough; what matters is having a community that keeps the constants current as things change.
+We covered 35 architectures. The LLM landscape releases more every week, and vLLM will keep evolving. Accuracy at a point in time isn't enough; what matters is having a community that keeps the constants current as things change.
 
 **If your model isn't covered, or a new architecture ships with memory optimizations** (a new attention variant, a custom KV cache layout, or a novel quantization scheme), llm-d-planner should be where those updated constants land first. The sweep runner in `accuracy/` is fully documented and self-contained; run it against your own cluster, submit the results as a PR, and everyone who installs the library gets the improvement.
 
