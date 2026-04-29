@@ -54,13 +54,6 @@ class DeploymentIntent(BaseModel):
     latency_priority: Literal["low", "medium", "high"] = Field(
         default="medium", description="Latency importance"
     )
-    complexity_priority: Literal["low", "medium", "high"] = Field(
-        default="medium", description="Preference for simpler deployments"
-    )
-
-    additional_context: str | None = Field(
-        None, description="Any other relevant details from conversation"
-    )
 
 
 class ConversationMessage(BaseModel):

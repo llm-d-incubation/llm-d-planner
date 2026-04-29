@@ -34,7 +34,6 @@ def create_test_recommendation() -> DeploymentRecommendation:
         experience_class="conversational",
         user_count=5000,
         domain_specialization=["general"],
-        additional_context=None,
     )
 
     traffic_profile = TrafficProfile(prompt_tokens=512, output_tokens=256, expected_qps=50.0)

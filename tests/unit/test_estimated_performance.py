@@ -25,7 +25,6 @@ def _make_intent(
         user_count=100,
         preferred_gpu_types=preferred_gpu_types or [],
         preferred_models=preferred_models or [],
-        additional_context=None,
     )
 
 

@@ -52,7 +52,6 @@ def _make_intent(use_case: str = "chatbot_conversational") -> DeploymentIntent:
         use_case=use_case,  # type: ignore[arg-type]
         user_count=100,
         experience_class="conversational",
-        additional_context=None,
     )
 
 

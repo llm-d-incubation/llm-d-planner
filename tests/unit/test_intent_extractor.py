@@ -21,7 +21,6 @@ def _base_intent(**overrides) -> dict:
         "accuracy_priority": "medium",
         "cost_priority": "medium",
         "latency_priority": "medium",
-        "complexity_priority": "medium",
     }
     data.update(overrides)
     return data
@@ -100,6 +99,26 @@ def test_clean_llm_output_fuzzy_matches_close_typos(extractor, typo, expected):
     assert cleaned["use_case"] == expected
 
 
+# --- Case-insensitive normalization ---
+
+
+@pytest.mark.unit
+@pytest.mark.parametrize(
+    "mixed_case, expected",
+    [
+        ("Text_Summarization", "summarization_short"),
+        ("CHATBOT", "chatbot_conversational"),
+        ("Code_Completion", "code_completion"),
+        ("DOCUMENT_ANALYSIS_RAG", "document_analysis_rag"),
+    ],
+)
+def test_clean_llm_output_handles_case_insensitive(extractor, mixed_case, expected):
+    """Mixed-case use_case values are lowercased before alias/fuzzy matching."""
+    raw = _base_intent(use_case=mixed_case)
+    cleaned = extractor._clean_llm_output(raw)
+    assert cleaned["use_case"] == expected
+
+
 # --- Garbage values are NOT matched ---
 
 
@@ -110,6 +129,153 @@ def test_clean_llm_output_does_not_match_garbage(extractor, garbage):
     raw = _base_intent(use_case=garbage)
     cleaned = extractor._clean_llm_output(raw)
     assert cleaned["use_case"] == garbage
+
+
+# --- *_mentioned gating of priorities ---
+
+
+@pytest.mark.unit
+@pytest.mark.parametrize("prefix", ["accuracy", "cost", "latency"])
+def test_mentioned_true_preserves_priority(extractor, prefix):
+    """When *_mentioned is true, the LLM's priority is kept."""
+    raw = _base_intent(
+        **{
+            f"{prefix}_priority": "high",
+            f"{prefix}_mentioned": True,
+        }
+    )
+    cleaned = extractor._clean_llm_output(raw)
+    assert cleaned[f"{prefix}_priority"] == "high"
+
+
+@pytest.mark.unit
+@pytest.mark.parametrize("prefix", ["accuracy", "cost", "latency"])
+def test_mentioned_false_resets_non_medium_priority(extractor, prefix):
+    """When *_mentioned is false, a non-medium priority is forced to medium."""
+    raw = _base_intent(
+        **{
+            f"{prefix}_priority": "high",
+            f"{prefix}_mentioned": False,
+        }
+    )
+    cleaned = extractor._clean_llm_output(raw)
+    assert cleaned[f"{prefix}_priority"] == "medium"
+
+
+@pytest.mark.unit
+@pytest.mark.parametrize("prefix", ["accuracy", "cost", "latency"])
+def test_mentioned_false_keeps_medium_priority(extractor, prefix):
+    """When *_mentioned is false but priority is already medium, no change needed."""
+    raw = _base_intent(
+        **{
+            f"{prefix}_priority": "medium",
+            f"{prefix}_mentioned": False,
+        }
+    )
+    cleaned = extractor._clean_llm_output(raw)
+    assert cleaned[f"{prefix}_priority"] == "medium"
+
+
+@pytest.mark.unit
+@pytest.mark.parametrize("prefix", ["accuracy", "cost", "latency"])
+def test_mentioned_missing_defaults_to_trust(extractor, prefix):
+    """When *_mentioned is absent, the priority is trusted (default True)."""
+    raw = _base_intent(**{f"{prefix}_priority": "high"})
+    assert f"{prefix}_mentioned" not in raw
+    cleaned = extractor._clean_llm_output(raw)
+    assert cleaned[f"{prefix}_priority"] == "high"
+
+
+@pytest.mark.unit
+@pytest.mark.parametrize("prefix", ["accuracy", "cost", "latency"])
+def test_mentioned_string_true_preserves_priority(extractor, prefix):
+    """String 'true' is parsed correctly as truthy."""
+    raw = _base_intent(
+        **{
+            f"{prefix}_priority": "high",
+            f"{prefix}_mentioned": "true",
+        }
+    )
+    cleaned = extractor._clean_llm_output(raw)
+    assert cleaned[f"{prefix}_priority"] == "high"
+
+
+@pytest.mark.unit
+@pytest.mark.parametrize("prefix", ["accuracy", "cost", "latency"])
+def test_mentioned_string_false_resets_priority(extractor, prefix):
+    """String 'false' is parsed correctly as falsy."""
+    raw = _base_intent(
+        **{
+            f"{prefix}_priority": "high",
+            f"{prefix}_mentioned": "false",
+        }
+    )
+    cleaned = extractor._clean_llm_output(raw)
+    assert cleaned[f"{prefix}_priority"] == "medium"
+
+
+@pytest.mark.unit
+@pytest.mark.parametrize("prefix", ["accuracy", "cost", "latency"])
+def test_mentioned_string_False_case_insensitive(extractor, prefix):
+    """String 'False' (capitalized) is treated as falsy."""
+    raw = _base_intent(
+        **{
+            f"{prefix}_priority": "low",
+            f"{prefix}_mentioned": "False",
+        }
+    )
+    cleaned = extractor._clean_llm_output(raw)
+    assert cleaned[f"{prefix}_priority"] == "medium"
+
+
+@pytest.mark.unit
+def test_mentioned_fields_not_in_cleaned_output(extractor):
+    """*_mentioned fields are consumed and not passed through to the final dict."""
+    raw = _base_intent(
+        accuracy_mentioned=True,
+        cost_mentioned=False,
+        latency_mentioned=True,
+    )
+    cleaned = extractor._clean_llm_output(raw)
+    for prefix in ("accuracy", "cost", "latency"):
+        assert f"{prefix}_mentioned" not in cleaned
+
+
+@pytest.mark.unit
+def test_mentioned_false_resets_multiple_priorities(extractor):
+    """All three priorities can be independently gated by their *_mentioned flags."""
+    raw = _base_intent(
+        accuracy_priority="high",
+        accuracy_mentioned=True,
+        cost_priority="low",
+        cost_mentioned=False,
+        latency_priority="high",
+        latency_mentioned=False,
+    )
+    cleaned = extractor._clean_llm_output(raw)
+    assert cleaned["accuracy_priority"] == "high"
+    assert cleaned["cost_priority"] == "medium"
+    assert cleaned["latency_priority"] == "medium"
+
+
+# --- user_count=0 guard ---
+
+
+@pytest.mark.unit
+@pytest.mark.parametrize("bad_count", [0, -1, -100])
+def test_user_count_zero_or_negative_defaults_to_1000(extractor, bad_count):
+    """user_count <= 0 (LLM schema default echo) is replaced with 100."""
+    raw = _base_intent(user_count=bad_count)
+    cleaned = extractor._clean_llm_output(raw)
+    assert cleaned["user_count"] == 100
+
+
+@pytest.mark.unit
+def test_user_count_positive_preserved(extractor):
+    """A valid positive user_count is kept as-is."""
+    raw = _base_intent(user_count=10)
+    cleaned = extractor._clean_llm_output(raw)
+    assert cleaned["user_count"] == 10
 
 
 # --- Integration: full parse with mocked hallucinated value ---

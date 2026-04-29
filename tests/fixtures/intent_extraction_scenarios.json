@@ -1,0 +1,557 @@
+{
+  "scenarios": [
+    {
+      "id": "uc-chatbot",
+      "description": "Basic chatbot use case",
+      "user_message": "I need a customer service chatbot for 1000 users",
+      "conversation_history": null,
+      "expected": {
+        "use_case": "chatbot_conversational",
+        "experience_class": {"one_of": ["conversational", "interactive"]},
+        "user_count": {"min": 500, "max": 5000},
+        "preferred_gpu_types": {"exact": []},
+        "preferred_models": {"exact": []},
+        "accuracy_priority": {"one_of": ["medium"]},
+        "cost_priority": {"one_of": ["medium"]},
+        "latency_priority": {"one_of": ["medium"]}
+      }
+    },
+    {
+      "id": "uc-code-completion",
+      "description": "Code completion use case",
+      "user_message": "Fast code completion for 200 developers in their IDE",
+      "conversation_history": null,
+      "expected": {
+        "use_case": "code_completion",
+        "experience_class": "instant",
+        "user_count": {"min": 100, "max": 500},
+        "domain_specialization": {"contains": ["code"]},
+        "preferred_gpu_types": {"exact": []},
+        "preferred_models": {"exact": []}
+      }
+    },
+    {
+      "id": "uc-code-gen",
+      "description": "Detailed code generation (natural language)",
+      "user_message": "I need a tool that writes complete functions and classes with full docstrings and explanations for 50 engineers. Not autocomplete — we want it to generate entire modules from a description.",
+      "conversation_history": null,
+      "expected": {
+        "use_case": "code_generation_detailed",
+        "experience_class": {"one_of": ["conversational", "interactive"]},
+        "user_count": {"min": 20, "max": 200},
+        "domain_specialization": {"contains": ["code"]},
+        "preferred_gpu_types": {"exact": []},
+        "preferred_models": {"exact": []}
+      }
+    },
+    {
+      "id": "uc-code-gen-explicit",
+      "description": "Detailed code generation (explicit enum — sanity test)",
+      "user_message": "I need a code generation tool that produces detailed code with full explanations and documentation for 50 engineers. This is not code completion or autocomplete, it is full code_generation_detailed with long outputs.",
+      "conversation_history": null,
+      "expected": {
+        "use_case": "code_generation_detailed",
+        "experience_class": {"one_of": ["conversational", "interactive"]},
+        "user_count": {"min": 20, "max": 200},
+        "domain_specialization": {"contains": ["code"]},
+        "preferred_gpu_types": {"exact": []},
+        "preferred_models": {"exact": []}
+      }
+    },
+    {
+      "id": "uc-translation",
+      "description": "Translation use case",
+      "user_message": "Translation service for 300 users translating text between English, Spanish, and French",
+      "conversation_history": null,
+      "expected": {
+        "use_case": "translation",
+        "experience_class": {"one_of": ["conversational", "interactive"]},
+        "user_count": {"min": 100, "max": 1000},
+        "preferred_gpu_types": {"exact": []},
+        "preferred_models": {"exact": []}
+      }
+    },
+    {
+      "id": "uc-content-gen",
+      "description": "Content generation use case",
+      "user_message": "Marketing content generation for a team of 20 content writers",
+      "conversation_history": null,
+      "expected": {
+        "use_case": "content_generation",
+        "experience_class": {"one_of": ["conversational", "interactive"]},
+        "user_count": {"min": 10, "max": 100},
+        "preferred_gpu_types": {"exact": []},
+        "preferred_models": {"exact": []}
+      }
+    },
+    {
+      "id": "uc-summarization",
+      "description": "Short summarization (natural language)",
+      "user_message": "We need to summarize short news articles and blog posts into a few bullet points for 500 users. Articles are typically under a page long and we want quick, concise summaries.",
+      "conversation_history": null,
+      "expected": {
+        "use_case": "summarization_short",
+        "experience_class": {"one_of": ["conversational", "interactive", "deferred"]},
+        "user_count": {"min": 200, "max": 2000},
+        "preferred_gpu_types": {"exact": []},
+        "preferred_models": {"exact": []}
+      }
+    },
+    {
+      "id": "uc-summarization-explicit",
+      "description": "Short summarization (explicit enum — sanity test)",
+      "user_message": "I need short document summarization for 500 users. They will submit brief articles under 4000 tokens and need concise summaries. This is summarization_short, not a chatbot.",
+      "conversation_history": null,
+      "expected": {
+        "use_case": "summarization_short",
+        "experience_class": {"one_of": ["conversational", "interactive", "deferred"]},
+        "user_count": {"min": 200, "max": 2000},
+        "preferred_gpu_types": {"exact": []},
+        "preferred_models": {"exact": []}
+      }
+    },
+    {
+      "id": "uc-doc-rag",
+      "description": "Document analysis with RAG use case",
+      "user_message": "Document Q&A system with RAG for our knowledge base, 200 users",
+      "conversation_history": null,
+      "expected": {
+        "use_case": "document_analysis_rag",
+        "experience_class": "interactive",
+        "user_count": {"min": 100, "max": 500},
+        "preferred_gpu_types": {"exact": []},
+        "preferred_models": {"exact": []}
+      }
+    },
+    {
+      "id": "uc-long-summary",
+      "description": "Long document summarization (natural language)",
+      "user_message": "Our 30 analysts need to condense lengthy research reports and white papers — often 50+ pages — into comprehensive executive summaries. Thoroughness matters more than speed.",
+      "conversation_history": null,
+      "expected": {
+        "use_case": "long_document_summarization",
+        "experience_class": {"one_of": ["deferred", "interactive", "batch"]},
+        "user_count": {"min": 10, "max": 100},
+        "preferred_gpu_types": {"exact": []},
+        "preferred_models": {"exact": []}
+      }
+    },
+    {
+      "id": "uc-long-summary-explicit",
+      "description": "Long document summarization (explicit enum — sanity test)",
+      "user_message": "I need long document summarization for 30 analysts. They submit very long documents over 10000 tokens and need detailed summaries. Quality over speed, this is long_document_summarization not RAG.",
+      "conversation_history": null,
+      "expected": {
+        "use_case": "long_document_summarization",
+        "experience_class": {"one_of": ["deferred", "interactive", "batch"]},
+        "user_count": {"min": 10, "max": 100},
+        "preferred_gpu_types": {"exact": []},
+        "preferred_models": {"exact": []}
+      }
+    },
+    {
+      "id": "uc-research",
+      "description": "Research and legal analysis (natural language)",
+      "user_message": "Our legal team of 10 attorneys needs to analyze lengthy regulatory filings and case law to extract relevant precedents and compliance requirements. They process very large documents and can wait for results.",
+      "conversation_history": null,
+      "expected": {
+        "use_case": "research_legal_analysis",
+        "experience_class": {"one_of": ["batch", "deferred", "interactive"]},
+        "user_count": {"min": 5, "max": 50},
+        "preferred_gpu_types": {"exact": []},
+        "preferred_models": {"exact": []}
+      }
+    },
+    {
+      "id": "uc-research-explicit",
+      "description": "Research and legal analysis (explicit enum — sanity test)",
+      "user_message": "Research and legal analysis of regulatory documents for 10 lawyers. This is research_legal_analysis with batch processing of very long documents over 10000 tokens.",
+      "conversation_history": null,
+      "expected": {
+        "use_case": "research_legal_analysis",
+        "experience_class": {"one_of": ["batch", "deferred", "interactive"]},
+        "user_count": {"min": 5, "max": 50},
+        "preferred_gpu_types": {"exact": []},
+        "preferred_models": {"exact": []}
+      }
+    },
+    {
+      "id": "gpu-h100",
+      "description": "H100 GPU extraction",
+      "user_message": "Deploy a chatbot for 500 users on H100 GPUs",
+      "conversation_history": null,
+      "expected": {
+        "use_case": "chatbot_conversational",
+        "user_count": {"min": 200, "max": 2000},
+        "preferred_gpu_types": {"contains": ["H100"]}
+      }
+    },
+    {
+      "id": "gpu-a100",
+      "description": "A100 GPU extraction (unspecified variant)",
+      "user_message": "Code completion on A100 GPUs for 100 developers",
+      "conversation_history": null,
+      "expected": {
+        "use_case": "code_completion",
+        "user_count": {"min": 50, "max": 500},
+        "preferred_gpu_types": {"contains_any": ["A100-40", "A100-80"]}
+      }
+    },
+    {
+      "id": "gpu-a100-80",
+      "description": "A100-80GB specific extraction",
+      "user_message": "Chatbot using A100-80GB for 200 users",
+      "conversation_history": null,
+      "expected": {
+        "use_case": "chatbot_conversational",
+        "user_count": {"min": 100, "max": 500},
+        "preferred_gpu_types": {"contains": ["A100-80"]}
+      }
+    },
+    {
+      "id": "gpu-l4",
+      "description": "L4 GPU extraction",
+      "user_message": "Content generation on L4 GPUs, 50 users",
+      "conversation_history": null,
+      "expected": {
+        "use_case": "content_generation",
+        "user_count": {"min": 20, "max": 200},
+        "preferred_gpu_types": {"contains": ["L4"]}
+      }
+    },
+    {
+      "id": "gpu-multi",
+      "description": "Multiple GPU types extraction",
+      "user_message": "Document analysis on H100 or H200, 100 users",
+      "conversation_history": null,
+      "expected": {
+        "use_case": "document_analysis_rag",
+        "user_count": {"min": 50, "max": 500},
+        "preferred_gpu_types": {"contains": ["H100", "H200"]}
+      }
+    },
+    {
+      "id": "gpu-none",
+      "description": "No GPU preference",
+      "user_message": "I need a chatbot for 300 users",
+      "conversation_history": null,
+      "expected": {
+        "use_case": "chatbot_conversational",
+        "user_count": {"min": 100, "max": 1000},
+        "preferred_gpu_types": {"exact": []}
+      }
+    },
+    {
+      "id": "model-llama",
+      "description": "Llama model extraction",
+      "user_message": "Deploy Llama 3.3 70B for chatbot with 500 users",
+      "conversation_history": null,
+      "expected": {
+        "use_case": "chatbot_conversational",
+        "user_count": {"min": 200, "max": 2000},
+        "preferred_models": {"contains_any_partial": ["llama"]}
+      }
+    },
+    {
+      "id": "model-qwen",
+      "description": "Qwen model extraction",
+      "user_message": "Use Qwen 32B for detailed code generation with explanations, 100 developers",
+      "conversation_history": null,
+      "expected": {
+        "use_case": {"one_of": ["code_generation_detailed", "code_completion"]},
+        "user_count": {"min": 50, "max": 500},
+        "preferred_models": {"contains_any_partial": ["qwen"]}
+      }
+    },
+    {
+      "id": "model-granite",
+      "description": "IBM Granite model extraction",
+      "user_message": "Deploy ibm-granite/granite-3.1-8b-instruct for document analysis, 200 users",
+      "conversation_history": null,
+      "expected": {
+        "use_case": "document_analysis_rag",
+        "user_count": {"min": 100, "max": 500},
+        "preferred_models": {"contains_any_partial": ["granite"]}
+      }
+    },
+    {
+      "id": "model-none",
+      "description": "No model preference",
+      "user_message": "I need a chatbot for 300 users",
+      "conversation_history": null,
+      "expected": {
+        "use_case": "chatbot_conversational",
+        "user_count": {"min": 100, "max": 1000},
+        "preferred_models": {"exact": []}
+      }
+    },
+    {
+      "id": "priority-cost-high",
+      "description": "Explicit high cost priority",
+      "user_message": "Cost-effective chatbot solution for 500 users, budget is tight",
+      "conversation_history": null,
+      "expected": {
+        "use_case": "chatbot_conversational",
+        "user_count": {"min": 200, "max": 2000},
+        "cost_priority": {"one_of": ["high"]}
+      }
+    },
+    {
+      "id": "priority-latency-high",
+      "description": "Explicit high latency priority",
+      "user_message": "Chatbot for 300 users, low latency is critical for us",
+      "conversation_history": null,
+      "expected": {
+        "use_case": "chatbot_conversational",
+        "user_count": {"min": 100, "max": 1000},
+        "latency_priority": {"one_of": ["high"]}
+      }
+    },
+    {
+      "id": "priority-accuracy-high",
+      "description": "Explicit high accuracy priority",
+      "user_message": "I need a chatbot for 500 users, accuracy is paramount and quality must be the best possible",
+      "conversation_history": null,
+      "expected": {
+        "use_case": "chatbot_conversational",
+        "user_count": {"min": 200, "max": 2000},
+        "accuracy_priority": {"one_of": ["high"]}
+      }
+    },
+    {
+      "id": "priority-defaults",
+      "description": "No explicit priorities - all should default to medium",
+      "user_message": "I need a chatbot for 200 users",
+      "conversation_history": null,
+      "expected": {
+        "use_case": "chatbot_conversational",
+        "user_count": {"min": 100, "max": 500},
+        "accuracy_priority": {"one_of": ["medium"]},
+        "cost_priority": {"one_of": ["medium"]},
+        "latency_priority": {"one_of": ["medium"]}
+      }
+    },
+    {
+      "id": "priority-mixed",
+      "description": "Multiple explicit priorities",
+      "user_message": "Cost-effective chatbot for 1000 users, but low latency is important too",
+      "conversation_history": null,
+      "expected": {
+        "use_case": "chatbot_conversational",
+        "user_count": {"min": 500, "max": 5000},
+        "cost_priority": {"one_of": ["high"]},
+        "latency_priority": {"one_of": ["high", "medium"]}
+      }
+    },
+    {
+      "id": "count-exact",
+      "description": "Exact user count",
+      "user_message": "Chatbot for exactly 500 users",
+      "conversation_history": null,
+      "expected": {
+        "use_case": "chatbot_conversational",
+        "user_count": {"min": 400, "max": 600}
+      }
+    },
+    {
+      "id": "count-vague",
+      "description": "Vague user count (thousands)",
+      "user_message": "Chatbot for thousands of users",
+      "conversation_history": null,
+      "expected": {
+        "use_case": "chatbot_conversational",
+        "user_count": {"min": 1000, "max": 10000}
+      }
+    },
+    {
+      "id": "count-small",
+      "description": "Small team user count",
+      "user_message": "Code completion for exactly 5 developers",
+      "conversation_history": null,
+      "expected": {
+        "use_case": "code_completion",
+        "user_count": {"min": 1, "max": 100}
+      }
+    },
+    {
+      "id": "history-gpu-refinement",
+      "description": "GPU preference from conversation history",
+      "user_message": "Use H100 GPUs",
+      "conversation_history": [
+        {"role": "user", "content": "I need a chatbot for 500 users"},
+        {"role": "assistant", "content": "I can help with that. Do you have a GPU preference?"}
+      ],
+      "expected": {
+        "use_case": "chatbot_conversational",
+        "user_count": {"min": 200, "max": 2000},
+        "preferred_gpu_types": {"contains": ["H100"]}
+      }
+    },
+    {
+      "id": "history-context",
+      "description": "Use case from conversation history context",
+      "user_message": "It needs to do fast completions for 200 devs",
+      "conversation_history": [
+        {"role": "user", "content": "I'm building a code tool for my engineering team"},
+        {"role": "assistant", "content": "Great! Tell me more about what kind of code tool you need."}
+      ],
+      "expected": {
+        "use_case": "code_completion",
+        "user_count": {"min": 100, "max": 500}
+      }
+    },
+    {
+      "id": "edge-ambiguous",
+      "description": "Ambiguous request - should still return valid intent",
+      "user_message": "I need an AI system for my team of 50",
+      "conversation_history": null,
+      "expected": {
+        "user_count": {"min": 20, "max": 200}
+      }
+    },
+    {
+      "id": "ui-btn-chat-completion",
+      "description": "UI task button: Chat Completion",
+      "user_message": "Customer service chatbot for 30 users.",
+      "conversation_history": null,
+      "expected": {
+        "use_case": "chatbot_conversational",
+        "experience_class": {"one_of": ["conversational", "interactive"]},
+        "user_count": {"min": 10, "max": 100},
+        "preferred_gpu_types": {"exact": []},
+        "preferred_models": {"exact": []},
+        "accuracy_priority": {"one_of": ["medium"]},
+        "cost_priority": {"one_of": ["medium"]},
+        "latency_priority": {"one_of": ["medium"]}
+      }
+    },
+    {
+      "id": "ui-btn-code-completion",
+      "description": "UI task button: Code Completion",
+      "user_message": "IDE code completion tool for 300 developers.",
+      "conversation_history": null,
+      "expected": {
+        "use_case": "code_completion",
+        "experience_class": {"one_of": ["instant", "conversational"]},
+        "user_count": {"min": 100, "max": 1000},
+        "domain_specialization": {"contains": ["code"]},
+        "preferred_gpu_types": {"exact": []},
+        "preferred_models": {"exact": []},
+        "accuracy_priority": {"one_of": ["medium"]},
+        "cost_priority": {"one_of": ["medium"]},
+        "latency_priority": {"one_of": ["medium"]}
+      }
+    },
+    {
+      "id": "ui-btn-doc-qa",
+      "description": "UI task button: Document Q&A",
+      "user_message": "Document Q&A system for enterprise knowledge base, 300 users.",
+      "conversation_history": null,
+      "expected": {
+        "use_case": "document_analysis_rag",
+        "experience_class": {"one_of": ["interactive", "conversational"]},
+        "user_count": {"min": 100, "max": 1000},
+        "preferred_gpu_types": {"exact": []},
+        "preferred_models": {"exact": []},
+        "accuracy_priority": {"one_of": ["medium"]},
+        "cost_priority": {"one_of": ["medium"]},
+        "latency_priority": {"one_of": ["medium"]}
+      }
+    },
+    {
+      "id": "ui-btn-summarization",
+      "description": "UI task button: Summarization (explicit cost priority)",
+      "user_message": "News article summarization for 300 users, cost-effective solution preferred.",
+      "conversation_history": null,
+      "expected": {
+        "use_case": "summarization_short",
+        "experience_class": {"one_of": ["conversational", "interactive"]},
+        "user_count": {"min": 100, "max": 1000},
+        "preferred_gpu_types": {"exact": []},
+        "preferred_models": {"exact": []},
+        "cost_priority": {"one_of": ["high"]},
+        "accuracy_priority": {"one_of": ["medium"]},
+        "latency_priority": {"one_of": ["medium"]}
+      }
+    },
+    {
+      "id": "ui-btn-legal-analysis",
+      "description": "UI task button: Legal Analysis (explicit accuracy priority)",
+      "user_message": "Legal document analysis for 300 lawyers, accuracy is critical.",
+      "conversation_history": null,
+      "expected": {
+        "use_case": "research_legal_analysis",
+        "experience_class": {"one_of": ["batch", "deferred", "interactive"]},
+        "user_count": {"min": 100, "max": 1000},
+        "preferred_gpu_types": {"exact": []},
+        "preferred_models": {"exact": []},
+        "accuracy_priority": {"one_of": ["high"]},
+        "cost_priority": {"one_of": ["medium"]},
+        "latency_priority": {"one_of": ["medium"]}
+      }
+    },
+    {
+      "id": "ui-btn-translation",
+      "description": "UI task button: Translation",
+      "user_message": "Multi-language translation service for 300 users.",
+      "conversation_history": null,
+      "expected": {
+        "use_case": "translation",
+        "experience_class": {"one_of": ["conversational", "interactive"]},
+        "user_count": {"min": 100, "max": 1000},
+        "preferred_gpu_types": {"exact": []},
+        "preferred_models": {"exact": []},
+        "accuracy_priority": {"one_of": ["medium"]},
+        "cost_priority": {"one_of": ["medium"]},
+        "latency_priority": {"one_of": ["medium"]}
+      }
+    },
+    {
+      "id": "ui-btn-content-generation",
+      "description": "UI task button: Content Generation",
+      "user_message": "Content generation tool for marketing team, 300 users.",
+      "conversation_history": null,
+      "expected": {
+        "use_case": "content_generation",
+        "experience_class": {"one_of": ["conversational", "interactive"]},
+        "user_count": {"min": 100, "max": 1000},
+        "preferred_gpu_types": {"exact": []},
+        "preferred_models": {"exact": []},
+        "accuracy_priority": {"one_of": ["medium"]},
+        "cost_priority": {"one_of": ["medium"]},
+        "latency_priority": {"one_of": ["medium"]}
+      }
+    },
+    {
+      "id": "ui-btn-long-doc-summary",
+      "description": "UI task button: Long Doc Summary (explicit accuracy priority)",
+      "user_message": "Long document summarization for research papers, 30 researchers, accuracy matters.",
+      "conversation_history": null,
+      "expected": {
+        "use_case": "long_document_summarization",
+        "experience_class": {"one_of": ["deferred", "interactive", "batch"]},
+        "user_count": {"min": 10, "max": 100},
+        "preferred_gpu_types": {"exact": []},
+        "preferred_models": {"exact": []},
+        "accuracy_priority": {"one_of": ["high"]},
+        "cost_priority": {"one_of": ["medium"]},
+        "latency_priority": {"one_of": ["medium"]}
+      }
+    },
+    {
+      "id": "ui-btn-code-generation",
+      "description": "UI task button: Code Generation",
+      "user_message": "Full code generation tool for implementing features, 30 developers.",
+      "conversation_history": null,
+      "expected": {
+        "use_case": "code_generation_detailed",
+        "experience_class": {"one_of": ["conversational", "interactive"]},
+        "user_count": {"min": 10, "max": 5000},
+        "domain_specialization": {"contains": ["code"]},
+        "accuracy_priority": {"one_of": ["medium"]},
+        "cost_priority": {"one_of": ["medium", "high"]},
+        "latency_priority": {"one_of": ["medium"]}
+      }
+    }
+  ]
+}
