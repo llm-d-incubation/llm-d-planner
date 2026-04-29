@@ -1,4 +1,4 @@
-# 58 Experiments Later: What We Learned About LLM Memory Prediction
+# 60 Experiments Later: What We Learned About LLM Memory Prediction
 
 *GPU memory planning for LLM deployments is still mostly guesswork. Here's what we learned from measuring it empirically across 35 architectures.*
 
@@ -10,7 +10,7 @@ In all of these cases, the question is the same: **how much GPU memory will this
 
 Most teams answer it by copying what someone else deployed, or by spinning up the pod, watching it OOM, and doubling the resources. This works, but it gets harder as models grow larger and serving configurations more complex. Tensor parallelism, pipeline parallelism, quantization, and long-context windows all change the memory footprint in non-obvious ways.
 
-[llm-d-planner](https://github.com/llm-d-incubation/llm-d-planner) is an open-source library that guides LLM deployments from concept to production. One of its core submodules is a capacity planner built to answer this question before you deploy. To make sure it wasn't just replacing guesswork with a false sense of precision, we ran 58 experiments on H100 GPUs to validate its predictions against reality. Here's what we found, and why we're asking the community to help make it even better.
+[llm-d-planner](https://github.com/llm-d-incubation/llm-d-planner) is an open-source library that guides LLM deployments from concept to production. One of its core submodules is a capacity planner built to answer this question before you deploy. To make sure it wasn't just replacing guesswork with a false sense of precision, we ran 60 experiments on H100 GPUs to validate its predictions against reality. Here's what we found, and why we're asking the community to help make it even better.
 
 ---
 
@@ -20,11 +20,13 @@ llm-d-planner guides LLM deployments from concept to production: conversational 
 
 It breaks memory into four components: weights, KV cache, activation memory, and non-torch overhead (CUDA runtime and NCCL buffers for multi-GPU). Each scales differently with tensor parallelism, context length, and quantization, so knowing which component is driving your footprint tells you what to actually change. For each component, the planner anchors to a source of truth wherever one exists: `config.json` and safetensor file headers for weights, vLLM's allocation strategy for KV cache, and empirically measured constants for things that can't be derived analytically, like activation memory. The experiment in this post is how those constants are kept honest.
 
+Accurate memory prediction is also the prerequisite for any infrastructure decision: choosing a deployment topology, sizing a cluster, or selecting between serving strategies. For users of [llm-d](https://llm-d.ai), for example, it's the step that narrows down which well-lit path is appropriate for a given use case before any hardware is provisioned.
+
 ---
 
 ## The Experiment: Trusting but Verifying
 
-Claiming a tool is accurate is easy. Measuring it is harder. We launched vLLM servers across 58 configurations on H100-80GB GPUs, captured the full startup logs for each, and parsed the actual memory measurements reported by vLLM at initialization. We then compared those measurements against llm-d-planner's predictions for every configuration. The sweep covered:
+Claiming a tool is accurate is easy. Measuring it is harder. We launched vLLM servers across 60 configurations on H100-80GB GPUs, captured the full startup logs for each, and parsed the actual memory measurements reported by vLLM at initialization. We then compared those measurements against llm-d-planner's predictions for every configuration. The sweep covered:
 
 - **35 model architectures**: Llama, Qwen, Gemma, Granite, Mistral, DeepSeek, Phi, Mixtral, and multimodal models including LLaVA, Kimi-VL, and MiMo
 - **Tensor parallelism** (TP 1, 2, 4) and **pipeline parallelism** (PP 1, 2, 4)
@@ -32,7 +34,7 @@ Claiming a tool is accurate is easy. Measuring it is harder. We launched vLLM se
 - **Dtype and quantization variants**: bfloat16, float16; compressed-tensors, GPTQ
 - **vLLM version sensitivity**: Qwen3-14B across v0.15.0 through v0.19.0 to track how memory behavior changes across releases
 
-For each run, we compared predicted values against the four measured memory components independently. The [raw results and all run JSON files](https://github.com/llm-d-incubation/llm-d-planner/tree/main/accuracy/results) are committed to the repository, and the analysis is fully reproducible locally without cluster access.
+For each run, we compared predicted values against the four measured memory components independently. The [raw logs and run JSON files](https://drive.google.com/drive/folders/1a0y2gdhcpKcFxm4RsqXUKWW40Gpd2Kx5) are published for reference, and the analysis is fully reproducible locally without cluster access.
 
 ---
 
@@ -40,11 +42,11 @@ For each run, we compared predicted values against the four measured memory comp
 
 ### The headline: accurate where it counts most
 
-**Weight memory: 0.89% mean absolute error** across 54 of the 58 runs. (The remaining 4 used parameters the planner doesn't yet model, float32 dtype and runtime fp8 quantization, and are discussed below.) This is the single largest memory component; for a model like Llama-3.1-8B at TP=1, weights consume about 15 GiB of the 79 GiB available. It's also the hardest to get right across a diverse model set.
+**Weight memory: 0.84% mean absolute error** across 49 of the 60 runs. (The remaining 11 used parameters the planner doesn't yet model—float32 dtype, runtime fp8 quantization, and fp8 KV cache dtype—and are discussed below.) This is the single largest memory component; for a model like Llama-3.1-8B at TP=1, weights consume about 15 GiB of the 79 GiB available. It's also the hardest to get right across a diverse model set.
 
 Weight prediction is harder than it looks: dense, MoE, multi-head latent attention, and vision-language models all organize parameters differently, quantization changes the bytes-per-parameter, and TP sharding depends on how dimensions divide across ranks. The formula handles all of this by reading `config.json` for architecture parameters and safetensor headers for exact tensor shapes, giving precise counts without downloading the full model and making it generalizable to any model on HuggingFace beyond the 35 we explicitly tested. Across dense, MoE, multimodal, and quantized architectures, it held to under 1% error.
 
-**KV cache memory: 0.34% mean error** across all runs. This is the component that matters most for capacity planning, as it determines your maximum concurrent token budget. For Llama-3.1-8B at TP=1 with 8K context, that's roughly 58 GiB of KV pool, and we're within half a GiB across every context length we tested.
+**KV cache memory: 0.89% mean error** across all runs, and −6.96% at baseline (TP=PP=DP=1, 8K context, no quantization). This is the component that matters most for capacity planning, as it determines your maximum concurrent token budget. For Llama-3.1-8B at TP=1 with 8K context, that's roughly 58 GiB of KV pool, and we're within a few percent across every context length we tested.
 
 One insight worth pausing on: the KV pool size is *independent* of `max_model_len`. vLLM sizes the pool from whatever memory remains after weights and activation are allocated, then figures out how many tokens fit given the per-token KV size for that architecture. This means setting a longer context window doesn't shrink your KV pool; it just means each request can use a larger share of it, leaving less headroom for concurrent requests at the maximum context length. Tools that pre-allocate based on `max_model_len` will over-estimate memory for long-context configs and leave capacity on the table.
 
@@ -52,7 +54,7 @@ These two components together typically account for 90%+ of total GPU memory con
 
 ### The honest part: smaller components, real errors
 
-**Activation memory** showed a mean error of +195%. That sounds alarming, so let's ground it in absolute numbers. For Llama-3.1-8B at TP=1, our formula predicted 4.80 GiB; vLLM v0.19.0 actually used 1.89 GiB, an over-estimate of about 2.9 GiB. On a GPU with 79 GiB of VRAM where weights alone consume 15 GiB and the KV pool takes 58 GiB, a 2.9 GiB error in a smaller component is meaningful but bounded.
+**Activation memory** showed a mean error of +212.88%. That sounds alarming, so let's ground it in absolute numbers. For Llama-3.1-8B at TP=1, our formula predicted 4.80 GiB; vLLM v0.19.0 actually used 1.89 GiB, an over-estimate of about 2.9 GiB. On a GPU with 79 GiB of VRAM where weights alone consume 15 GiB and the KV pool takes 58 GiB, a 2.9 GiB error in a smaller component is meaningful but bounded.
 
 The root cause is more interesting than the magnitude: **vLLM v0.17.0 quietly reduced activation memory by ~60%, and we didn't notice.**
 
