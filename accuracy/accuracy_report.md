@@ -10,25 +10,25 @@
 
 ## Part 1: Accuracy Evaluation — vLLM v0.19.0
 
-Covers 54 runs across 35 models using only parameters the planner currently accepts as inputs. Excludes runs with `--dtype float32`, runtime `--quantization fp8`, and `--kv-cache-dtype fp8` (see Part 3).
+Covers 49 runs across 28 models using only parameters the planner currently accepts as inputs. Excludes runs with `--dtype float32`, runtime `--quantization fp8`, and `--kv-cache-dtype fp8` (see Part 3). Additional models appear in the per-model and run matrix tables below but are not included in aggregate statistics because predictions have not yet been generated for them.
 
 ### Summary
 
 | Metric | Mean error | Mean abs error | n |
 |--------|:----------:|:--------------:|:-:|
-| KV cache memory (all runs) | +0.34% | +6.62% | 53 |
-| KV cache memory (baseline: tp=pp=dp=1, len=8192, no quant) | -5.12% | — | 22 |
-| Weight memory | -0.89% | +0.89% | 53 |
-| Activation memory | +195.12% | +195.12% | 53 |
-| Non-torch overhead | -44.08% | — | 53 |
-| Max concurrency | +3.34% | +15.34% | 53 |
+| KV cache memory (all runs) | +0.89% | +7.82% | 49 |
+| KV cache memory (baseline: tp=pp=dp=1, len=8192, no quant) | -6.96% | — | 15 |
+| Weight memory | -0.84% | +0.84% | 49 |
+| Activation memory | +212.88% | +212.88% | 49 |
+| Non-torch overhead | -44.81% | — | 49 |
+| Max concurrency | +3.68% | +16.65% | 49 |
 
 **Key findings**:
 
-- **Weight memory is accurate**: mean abs error +0.89%, computed directly from safetensors parameter counts.
-- **KV cache memory is close**: +0.34% mean error across all runs; -5.12% at baseline. Errors are small and consistent.
-- **Activation is the dominant error source**: mean +195.12% (over-estimate). The planner uses empirical constants calibrated against vLLM v0.16.0 or earlier; v0.17.0 introduced a ~60% reduction in reported activation overhead that persists through v0.19.0. See Part 2.
-- **Max concurrency tracks KV accuracy**: +3.34% mean error; deviations come from the per-token KV formula, not the pool size prediction.
+- **Weight memory is accurate**: mean abs error +0.84%, computed directly from safetensors parameter counts.
+- **KV cache memory is close**: +0.89% mean error across all runs; -6.96% at baseline. Errors are small and consistent.
+- **Activation is the dominant error source**: mean +212.88% (over-estimate). The planner uses empirical constants calibrated against vLLM v0.16.0 or earlier; v0.17.0 introduced a ~60% reduction in reported activation overhead that persists through v0.19.0. See Part 2.
+- **Max concurrency tracks KV accuracy**: +3.68% mean error; deviations come from the per-token KV formula, not the pool size prediction.
 
 ### Per-Model Results — Baseline (TP=1, PP=1, DP=1, len=8192, no quantization)
 
@@ -245,7 +245,7 @@ Runtime `--quantization fp8` compresses weights on-the-fly. vLLM logs the post-c
 
 ## Run Matrix — vLLM v0.19.0 / H100-80GB
 
-**58 successful runs, 7 failed runs.**
+**60 successful runs, 15 failed runs.**
 
 Quantization abbreviations: `ct` = compressed-tensors, `gptq` = gptq_marlin, `fp8` = fp8 inline, `mxfp4` = mx-format fp4, `—` = none.
 
