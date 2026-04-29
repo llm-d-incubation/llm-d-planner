@@ -29,7 +29,7 @@ dependencies = [
 
 [project.optional-dependencies]
 ui = [
-    "streamlit==1.56.0",
+    "streamlit==1.57.0",
     "plotly>=6.3.0",
     "matplotlib>=3.10.8",
 ]
