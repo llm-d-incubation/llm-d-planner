@@ -1,6 +1,6 @@
-# 61 Experiments Later: What We Learned About LLM Memory Prediction
+# 61 Experiments Later: What We Learned About LLM Memory Estimation
 
-*GPU memory estimation for LLM deployments is still mostly guesswork, and it's the step you have to get right before anything else. Here's what we learned from measuring it empirically across 35 architectures.*
+*GPU memory estimation for LLM deployments is still mostly guesswork. llm-d-planner is designed to solve it. Here's what validating its estimates against 61 experiments across 35 architectures taught us, and why empirical grounding is what separates a useful tool from a confident guess.*
 
 ---
 
@@ -8,7 +8,7 @@ You're planning a benchmark suite and need to know how many GPUs each model requ
 
 The question is the same: **how much GPU memory will this actually need?**
 
-Memory is the first gate. Either the model fits or it doesn't, and the only way to find out without a prediction tool is to spin up a vLLM server and see if it OOMs. Tensor parallelism, pipeline parallelism, quantization, and long-context windows all change the footprint in non-obvious ways, which makes trial-and-error expensive. This post is about memory estimation specifically: not throughput, latency, or any other performance metric. Those questions are downstream; this one comes first.
+Memory is the first gate. Either the model fits or it doesn't, and the only way to find out without a memory planning tool is to spin up a vLLM server and see if it OOMs. Tensor parallelism, pipeline parallelism, quantization, and long-context windows all change the footprint in non-obvious ways, which makes trial-and-error expensive. This post is about memory estimation specifically: not throughput, latency, or any other performance metric. Before you can answer any question about performance, you need to answer this one: does the model fit?
 
 [llm-d-planner](https://github.com/llm-d-incubation/llm-d-planner) includes a pip-installable capacity planner that answers this question before you touch a cluster, using only model config files and safetensor headers. To verify it wasn't replacing guesswork with false precision, we ran 61 experiments on H100 GPUs. Here's what we found.
 
@@ -16,15 +16,15 @@ Memory is the first gate. Either the model fits or it doesn't, and the only way 
 
 ## How the Planner Works
 
-Memory breaks into four components: weights, KV cache, activation memory, and non-torch overhead (CUDA runtime + NCCL buffers for multi-GPU). The planner reads `config.json` and safetensor headers for weights, reverse-engineers vLLM's KV cache allocation strategy, and uses empirically measured per-architecture constants for activation memory. No GPU required.
+Memory breaks into four components: weights, KV cache, activation memory, and non-torch overhead (CUDA runtime + NCCL buffers for multi-GPU). The theoretical approach is standard: weight memory from parameter counts and dtype, KV cache from attention head dimensions and context length. Any careful engineer would use the same formulas. What makes this different is that we measured actual vLLM behavior across 61 configurations to validate the constants and catch where theory diverges from reality. The result: **weight and KV cache errors under 1%** across standard bfloat16/float16 configurations on H100-80GB. These two components account for 90%+ of total GPU memory. No GPU is required at planning time; all constants are derived from prior empirical measurements on real hardware.
 
-**Known gaps:** fp8 KV cache dtype and runtime fp8 quantization are not yet modeled. These can cut memory by 40-50%, so the planner will over-estimate for those configurations without issuing a warning. Float32 dtype overrides are also unsupported. If you're running fp8-quantized models today, treat the output as a baseline upper bound.
+> **Current limitations:** All constants are calibrated on H100-80GB; other GPU types may differ, especially in non-torch overhead. fp8 KV cache dtype and runtime fp8 quantization are not yet modeled and can cut memory by 40-50%, so the planner will over-estimate for those configurations without warning. Float32 dtype overrides are also unsupported. Contributions covering additional GPU types or missing quantization modes are welcome.
 
 ---
 
 ## The Experiment
 
-We launched vLLM servers across 61 configurations on H100-80GB GPUs, captured startup logs, and compared measured memory against predictions per component. The sweep covered:
+We launched vLLM servers across 61 configurations on H100-80GB GPUs, captured startup logs, and compared measured memory against estimates per component. The sweep covered:
 
 - **35 model architectures**: Llama, Qwen, Gemma, Granite, Mistral, DeepSeek, Phi, Mixtral, multimodal models (LLaVA, Kimi-VL, MiMo)
 - **Tensor parallelism** (TP 1, 2, 4) and **pipeline parallelism** (PP 1, 2, 3, 4)
@@ -52,13 +52,13 @@ We launched vLLM servers across 61 configurations on H100-80GB GPUs, captured st
 | v0.18.0 | 2.23 GiB |
 | v0.19.0 | ~2.21 GiB |
 
-Our constants were calibrated against v0.16.0 and never updated. Re-calibrating against v0.19.0 is the highest-priority fix; contributions are welcome. The planner is not version-aware for older releases; if you're running an earlier vLLM in production, expect activation estimates to diverge.
+Our constants reflected v0.16.0 behavior and weren't updated when vLLM changed. The v0.17.0 optimization is exactly the kind of significant change that warrants revisiting the model, not as a routine calibration exercise, but because the underlying behavior shifted materially. The longer-term goal is to derive activation memory from first principles so estimates don't depend on vLLM version at all. If you're running an earlier vLLM release, expect activation estimates to diverge from current behavior.
 
-**Non-torch overhead** was under-estimated by 44% on average: small at TP=1 (~0.25 GiB actual vs 0.15 GiB predicted), more meaningful at TP>=2 (~2.1 GiB actual vs 0.60 GiB predicted).
+**Non-torch overhead** was under-estimated by 44% on average: small at TP=1 (~0.25 GiB actual vs 0.15 GiB predicted), more meaningful at TP>=2 (~2.1 GiB actual vs 0.60 GiB estimated).
 
 Additional findings:
 
-- **Activation error varies by architecture.** Granite was +633%, Mistral3 was only +23%. The v0.17.0 reduction wasn't uniform; per-architecture constants need to be re-measured individually.
+- **Activation error varies by architecture.** Granite was +633%, Mistral3 was only +23%. The v0.17.0 reduction wasn't uniform, which points to architecture-specific behavior that a stronger theoretical model should account for directly rather than through per-family constants.
 - **Valid TP must divide both `num_attention_heads` and `vocab_size`.** Qwen3-14B has 40 attention heads, making TP=5 look valid, but `vocab_size=151936` is not divisible by 5 and vLLM rejects it at startup. The planner was only checking attention heads; the fix is to return divisors of `gcd(num_attention_heads, vocab_size)`.
 - **`kv_cache_dtype fp8` doubles token capacity but leaves the KV pool in GiB unchanged.** fp8 halves per-token storage, so twice as many tokens fit in the same pool. The planner doesn't yet model this, so it under-estimates token count by ~2x for fp8 KV configurations while getting the GiB right.
 
@@ -68,10 +68,10 @@ For the complete per-model breakdown, see the [full accuracy report](https://git
 
 ## Join the Community
 
-We covered 35 architectures. The LLM landscape ships new ones every week, and vLLM keeps evolving. The sweep runner in `accuracy/` is self-contained; run it against your cluster, submit a PR, and everyone gets the improvement.
+We covered 35 architectures. The sweep wasn't about generating constants to maintain; it was about verifying that the theoretical formulas hold and finding where they don't. If you hit a model family or configuration not covered here, or if a future vLLM release introduces a significant memory optimization, the sweep runner in `accuracy/` is self-contained and can be run to validate the current estimates against new behavior.
 
 - [GitHub: llm-d-incubation/llm-d-planner](https://github.com/llm-d-incubation/llm-d-planner)
 - [Full accuracy report with per-model tables](https://github.com/llm-d-incubation/llm-d-planner/blob/main/accuracy/accuracy_report.md)
-- [Run the sweep on your own cluster](https://github.com/llm-d-incubation/llm-d-planner/blob/main/accuracy/README.md)
 
-No one should have to guess how many GPUs they need.
+The broader goal is infrastructure planning at day 0. Before you provision hardware, you should know whether your model fits, in what configuration, and whether your expected workload (concurrency, context length, number of replicas) is supportable on the hardware you're considering. Memory estimation is what makes that possible. The alternative is discovering at deployment time that your hardware can't support the workload you designed for, which is an expensive place to find out. Get these answers before you deploy.
+
