@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: vllm-mem-data
+  namespace: llmdplanner
+spec:
+  accessModes:
+    - ReadWriteMany   # ReadWriteOnce also works if sub-jobs run sequentially on the same node
+  resources:
+    requests:
+      storage: 500Gi
+  # storageClassName is intentionally omitted to use the cluster's default.
+  # To use a specific class: uncomment and set below.
+  # storageClassName: standard

@@ -1,0 +1,71 @@
+# REFERENCE ONLY — not applied directly. The orchestrator builds equivalent Job
+# objects at runtime using the kubernetes Python client.
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: "vllm-mem-<RUN_ID>"           # e.g., vllm-mem-llama3-1-8b--h100-80gb--tp1pp1dp1--8192
+  namespace: llmdplanner
+  labels:
+    app: vllm-mem-validation
+    run-id: "<RUN_ID>"
+spec:
+  backoffLimit: 0                      # no retries — failures need investigation
+  activeDeadlineSeconds: 3600          # 1-hour hard timeout per run
+  template:
+    metadata:
+      labels:
+        app: vllm-mem-validation
+        run-id: "<RUN_ID>"
+    spec:
+      restartPolicy: Never
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: vllm-mem-data
+      containers:
+        - name: vllm
+          image: vllm/vllm-openai:v0.19.0
+          command: ["vllm", "serve", "<MODEL>"]
+          args:
+            - "--tensor-parallel-size=<TP>"
+            - "--pipeline-parallel-size=<PP>"
+            - "--data-parallel-size=<DP>"
+            - "--gpu-memory-utilization=0.95"
+            - "--max-model-len=<MAX_MODEL_LEN>"
+            - "--no-enable-prefix-caching"
+            - "--disable-log-requests"
+          env:
+            - name: HF_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: hf-token
+                  key: token
+            - name: HF_HOME
+              value: /data/models            # reuse cached weights across runs
+          resources:
+            limits:
+              nvidia.com/gpu: <NUM_GPUS>     # = TP × PP
+            requests:
+              nvidia.com/gpu: <NUM_GPUS>
+          volumeMounts:
+            - name: data
+              mountPath: /data
+          # startupProbe: polls /health until vLLM is ready to serve.
+          # The orchestrator watches for this to pass (container.ready = True)
+          # then fetches the full pod log and deletes the Job.
+          # failureThreshold × periodSeconds = 30 min max startup window.
+          startupProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 60       # vLLM needs at least ~60s to begin loading
+            periodSeconds: 10
+            failureThreshold: 180         # 180 × 10s = 30 minutes
+            successThreshold: 1
+      nodeSelector:
+        # CHANGE THIS to match your cluster's GPU node label.
+        nvidia.com/gpu.product: NVIDIA-H100-80GB-HBM3
+      tolerations:
+        - key: nvidia.com/gpu
+          operator: Exists
+          effect: NoSchedule

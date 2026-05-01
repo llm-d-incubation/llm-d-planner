@@ -1,0 +1,15 @@
+# accuracy/k8s/configmap-sweep.yaml
+# Generated from accuracy/scripts/sweep.yaml.
+# Sync with: kubectl create configmap vllm-mem-sweep \
+#              --from-file=sweep.yaml=accuracy/scripts/sweep.yaml \
+#              --namespace llmdplanner --dry-run=client -o yaml \
+#            | kubectl apply -f -
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: vllm-mem-sweep
+  namespace: llmdplanner
+data:
+  sweep.yaml: |
+    # Contents of accuracy/scripts/sweep.yaml go here.
+    # Use the kubectl command above to generate and keep in sync.
