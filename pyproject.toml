@@ -8,19 +8,19 @@ dependencies = [
     # Core dependencies
     "fastapi>=0.136.1",
     "uvicorn[standard]==0.46.0",
-    "pydantic==2.13.3",
-    "pydantic-settings==2.14.0",
+    "pydantic==2.13.4",
+    "pydantic-settings==2.14.1",
     # LLM integration
     "ollama==0.6.2",
     # Data handling
-    "pandas==3.0.2",
+    "pandas==3.0.3",
     # PostgreSQL
     "psycopg2-binary==2.9.12",
     # YAML generation
     "jinja2==3.1.6",
     "pyyaml==6.0.3",
     # HTTP client
-    "requests==2.33.1",
+    "requests==2.34.0",
     "huggingface_hub>=1.13.0",
     "transformers>=5.7.0",
     "llm-optimizer @ git+https://github.com/bentoml/llm-optimizer.git",
