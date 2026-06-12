@@ -14,6 +14,7 @@ configuration, and workload characteristics.
 import contextlib
 import io
 import json
+import logging
 import math
 import os
 import re
@@ -28,6 +29,8 @@ from huggingface_hub.hf_api import ModelInfo, SafetensorsRepoMetadata
 with contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(io.StringIO()):
     from transformers import AutoConfig
 
+_logger = logging.getLogger(__name__)
+
 # Memory Overhead Constants (in GiB)
 # Loaded from data/configuration/vllm_memory_constants.json (calibrated against
 # vLLM v0.19.0 on H100-80GB, 49 runs across 28 models).
@@ -36,17 +39,51 @@ _CONSTANTS_PATH = os.path.join(
     os.path.dirname(__file__), "..", "..", "data", "configuration", "vllm_memory_constants.json"
 )
 
+_EXPECTED_ACTIVATION_BASE_KEYS = {"dense", "moe", "multimodal"}
+_EXPECTED_NON_TORCH_KEYS = {"tp1_pp1", "tp1_ppN", "tpN_pp1", "tpN_ppN"}
+
 
 def _load_memory_constants() -> dict[str, Any]:
     try:
         with open(_CONSTANTS_PATH) as f:
             data: dict[str, Any] = json.load(f)
             return data
-    except (FileNotFoundError, json.JSONDecodeError):
+    except FileNotFoundError:
+        _logger.warning(
+            "Memory constants file not found at %s — using built-in defaults", _CONSTANTS_PATH
+        )
+        return {}
+    except json.JSONDecodeError as e:
+        _logger.warning(
+            "Failed to parse memory constants file %s: %s — using built-in defaults",
+            _CONSTANTS_PATH,
+            e,
+        )
         return {}
 
 
+def _validate_constants(constants: dict[str, Any]) -> None:
+    if not constants:
+        return
+
+    activation_base = constants.get("activation_base_gib")
+    if activation_base is None:
+        _logger.warning("Memory constants file missing 'activation_base_gib' section")
+    elif missing := _EXPECTED_ACTIVATION_BASE_KEYS - set(activation_base):
+        _logger.warning("activation_base_gib missing keys: %s", missing)
+
+    non_torch = constants.get("non_torch_overhead_gib")
+    if non_torch is None:
+        _logger.warning("Memory constants file missing 'non_torch_overhead_gib' section")
+    elif missing := _EXPECTED_NON_TORCH_KEYS - set(non_torch):
+        _logger.warning("non_torch_overhead_gib missing keys: %s", missing)
+
+    if "activation_profiles" not in constants:
+        _logger.warning("Memory constants file missing 'activation_profiles' section")
+
+
 _CONSTANTS = _load_memory_constants()
+_validate_constants(_CONSTANTS)
 _ACTIVATION_BASE = _CONSTANTS.get("activation_base_gib", {})
 _NON_TORCH = _CONSTANTS.get("non_torch_overhead_gib", {})
 
@@ -58,7 +95,7 @@ VLLM_NON_TORCH_MEMORY_TP1_PPN_GIB: float = _NON_TORCH.get("tp1_ppN", 0.07)
 VLLM_NON_TORCH_MEMORY_TPN_GIB: float = _NON_TORCH.get("tpN_pp1", 2.10)
 VLLM_NON_TORCH_MEMORY_TP1_GIB = VLLM_NON_TORCH_MEMORY_TP1_PP1_GIB
 
-# Tier 1: Per-architecture activation profiles loaded from the constants file.
+# Per-architecture activation profiles loaded from the constants file.
 # Falls back to base constants (dense/moe/multimodal) for unknown architectures.
 VALIDATED_ACTIVATION_PROFILES: dict[str, float] = _CONSTANTS.get("activation_profiles", {})
 
