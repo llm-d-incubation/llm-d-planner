@@ -1,0 +1,36 @@
+{
+  "vllm_calibration_version": "0.19.0",
+  "hardware": "H100-80GB",
+  "source": "docs/accuracy/vllm-v0.19.0-accuracy-report.md",
+
+  "activation_profiles": {
+    "LlamaForCausalLM":                   1.89,
+    "Qwen2ForCausalLM":                   2.25,
+    "Qwen3ForCausalLM":                   2.21,
+    "Mistral3ForConditionalGeneration":    2.10,
+    "PixtralForConditionalGeneration":     2.10,
+    "DeepseekV2ForCausalLM":              1.93,
+    "GraniteForCausalLM":                  0.85,
+    "LlavaNextForConditionalGeneration":   0.79,
+    "MixtralForCausalLM":                  1.21,
+    "Phi3ForCausalLM":                     1.52,
+    "Qwen2MoeForCausalLM":                2.47,
+    "Qwen3MoeForCausalLM":                2.68,
+    "Gemma2ForCausalLM":                   3.65,
+    "Gemma3ForCausalLM":                   3.94,
+    "GemmaForCausalLM":                    3.63
+  },
+
+  "activation_base_gib": {
+    "dense":      2.00,
+    "moe":        2.50,
+    "multimodal": 2.00
+  },
+
+  "non_torch_overhead_gib": {
+    "tp1_pp1": 0.27,
+    "tp1_ppN": 0.07,
+    "tpN_pp1": 2.10,
+    "tpN_ppN": 2.10
+  }
+}

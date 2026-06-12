@@ -27,29 +27,38 @@ with contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(io.St
     from transformers import AutoConfig
 
 # Memory Overhead Constants (in GiB)
-# Empirically validated against vLLM on H100 GPUs with seq_len=16000, batch_size=1
-# Source: empirical-test/analysis-results.md
-# Test environment: H100 (79.18 GiB), vLLM with FlashAttention, max_model_len=16000
-ACTIVATION_MEMORY_BASE_DENSE_GIB = (
-    5.5  # Dense models: Qwen3-0.6B (5.56), Llama-8B (4.76), Llama-70B/TP2 (4.84)
-)
-ACTIVATION_MEMORY_BASE_MOE_GIB = 8.0  # MoE models: gpt-oss-20b (7.38)
-ACTIVATION_MEMORY_BASE_MULTIMODAL_GIB = 2.5  # Multimodal models: Mistral-Small-3.2-24B (2.12)
-ACTIVATION_REFERENCE_SEQ_LEN = 16000  # Reference sequence length for empirical measurements
-VLLM_NON_TORCH_MEMORY_TP1_GIB = 0.15  # TP=1: empirical range 0.13-0.14 GiB
-VLLM_NON_TORCH_MEMORY_TPN_GIB = 0.6  # TP≥2: empirical 0.55 GiB (TP=2)
+# Calibrated against vLLM v0.19.0 on H100-80GB (physical 79.19 GiB)
+# Source: accuracy/results/v0.19.0/accuracy_report.md (49 runs, 28 models)
+ACTIVATION_MEMORY_BASE_DENSE_GIB = 2.00  # v0.19.0 observed range: 1.89–3.99 GiB
+ACTIVATION_MEMORY_BASE_MOE_GIB = 2.50  # v0.19.0 observed: Qwen2Moe 2.47, Qwen3Moe 2.68
+ACTIVATION_MEMORY_BASE_MULTIMODAL_GIB = 2.00  # v0.19.0 observed: LlavaNext 0.79, Mistral3 2.10
+VLLM_NON_TORCH_MEMORY_TP1_PP1_GIB = 0.27  # v0.19.0 observed mean at TP=1,PP=1
+VLLM_NON_TORCH_MEMORY_TP1_PPN_GIB = 0.07  # v0.19.0 observed at TP=1,PP≥2 (P2P buffers only)
+VLLM_NON_TORCH_MEMORY_TPN_GIB = 2.10  # v0.19.0 observed mean at TP≥2 (NCCL all-reduce)
+# Legacy aliases for backward compatibility
+VLLM_NON_TORCH_MEMORY_TP1_GIB = VLLM_NON_TORCH_MEMORY_TP1_PP1_GIB
 # Note: CUDA graph memory is included in activation memory profiling, not a separate constant
 
-# Tier 1: Validated activation profiles from empirical vLLM measurements on H100.
+# Tier 1: Validated activation profiles from vLLM v0.19.0 measurements on H100-80GB.
 # Key = architecture string from model_config.architectures[0]
-# Value = activation memory in GiB (torch peak memory increase from vLLM profiling)
-# Source: config_explorer/empirical-vllm-memory-results.md
+# Value = activation memory in GiB (torch peak memory from vLLM profiling)
+# Source: accuracy/results/v0.19.0/ (run JSONs)
 VALIDATED_ACTIVATION_PROFILES = {
-    "LlamaForCausalLM": 4.8,  # Empirical: Llama-8B (4.76), Llama-70B/TP2 (4.84)
-    "Qwen2ForCausalLM": 5.6,  # Empirical: same family as Qwen3
-    "Qwen3ForCausalLM": 5.6,  # Empirical: Qwen3-0.6B (5.56), Qwen3-32B (5.64)
-    "PixtralForConditionalGeneration": 2.5,  # Empirical: Mistral-Small-3.2-24B (2.12)
-    "Mistral3ForConditionalGeneration": 2.5,  # Same architecture family as Pixtral
+    "LlamaForCausalLM": 1.89,  # v0.19.0: Llama-3.1-8B 1.89, CodeLlama-7b 0.77
+    "Qwen2ForCausalLM": 2.25,  # v0.19.0: Qwen2.5-7B 2.21, Qwen2.5-7B-TP2 2.29
+    "Qwen3ForCausalLM": 2.21,  # v0.19.0: Qwen3-8B 2.21
+    "Qwen2MoeForCausalLM": 2.47,  # v0.19.0: Qwen1.5-MoE-A2.7B 2.47
+    "Qwen3MoeForCausalLM": 2.68,  # v0.19.0: Qwen3-30B-A3B 2.68
+    "DeepseekV2ForCausalLM": 1.93,  # v0.19.0: DeepSeek-V2-Lite-Chat 1.93
+    "GraniteForCausalLM": 0.85,  # v0.19.0: granite-3.1-8b 0.85, granite-3.1-2b 0.75
+    "Gemma2ForCausalLM": 3.65,  # v0.19.0: Gemma-2-9B 3.65, Gemma-2-27B 3.66, Gemma-2-2B 3.62
+    "Gemma3ForCausalLM": 3.94,  # v0.19.0: Gemma-3-12B 3.94, Gemma-3-27B 3.99, Gemma-3-4B 3.89
+    "GemmaForCausalLM": 3.63,  # v0.19.0: Gemma-7B 3.63
+    "MixtralForCausalLM": 1.21,  # v0.19.0: Mixtral 1.21
+    "Phi3ForCausalLM": 1.52,  # v0.19.0: phi-4 1.52
+    "LlavaNextForConditionalGeneration": 0.79,  # v0.19.0: granite-vision-3.3-2b 0.79
+    "Mistral3ForConditionalGeneration": 2.10,  # v0.19.0: Mistral-Small-3.1-24B 2.03–2.18
+    "PixtralForConditionalGeneration": 2.10,  # Same architecture family as Mistral3
 }
 
 # Tier 2: Multimodal architectures typically have lower activation memory
@@ -348,19 +357,27 @@ def max_context_len(model_config: AutoConfig) -> int:
     return int(text_config.max_position_embeddings)
 
 
-def estimate_vllm_non_torch_memory(tp: int = 1) -> float:
+def estimate_vllm_non_torch_memory(tp: int = 1, pp: int = 1) -> float:
     """
-    Estimate non-torch memory (CUDA runtime, Python interpreter) in GiB.
+    Estimate non-torch memory (CUDA runtime, Python interpreter) in GiB per GPU.
 
-    Non-torch memory increases with TP due to NCCL/communication overhead.
+    Non-torch memory varies with parallelism strategy:
+    - TP=1, PP=1: minimal overhead (0.27 GiB)
+    - TP=1, PP≥2: P2P send/receive buffers only (0.07 GiB)
+    - TP≥2: NCCL all-reduce buffers dominate (~2.10 GiB)
 
     Args:
         tp: Tensor parallelism degree
+        pp: Pipeline parallelism degree
 
     Returns:
         Non-torch memory in GiB per GPU
     """
-    return VLLM_NON_TORCH_MEMORY_TP1_GIB if tp == 1 else VLLM_NON_TORCH_MEMORY_TPN_GIB
+    if tp >= 2:
+        return VLLM_NON_TORCH_MEMORY_TPN_GIB
+    if pp >= 2:
+        return VLLM_NON_TORCH_MEMORY_TP1_PPN_GIB
+    return VLLM_NON_TORCH_MEMORY_TP1_PP1_GIB
 
 
 def estimate_vllm_cuda_graph_memory() -> float:
@@ -385,32 +402,16 @@ def estimate_vllm_activation_memory(config: AutoConfig, tp: int = 1) -> float:
     1. Validated profiles: exact empirical measurements for known architectures
     2. Model type fallback: constants for MoE, multimodal, or dense models
 
-    CRITICAL: Activation memory is CONSTANT per model type, NOT dependent on
-    max_model_len or batch_size. This was empirically validated:
-    - Qwen3-0.6B at max_model_len=16000: 5.56 GiB
-    - Qwen3-0.6B at max_model_len=32000: 5.56 GiB (SAME!)
+    Activation memory is CONSTANT per model type, NOT dependent on
+    max_model_len or batch_size. Empirically validated across context lengths
+    2048–32768 with identical results.
 
-    The activation memory represents FIXED overhead from:
-    - CUDA graph compilation and capture (fixed batch sizes: 1,2,4,8,16,32...)
-    - vLLM's warmup profiling phase with dummy sequences
-    - PyTorch memory allocator pre-allocation and fragmentation
-    - Fixed-size workspace buffers allocated during engine initialization
-    - FlashAttention workspace buffers (pre-allocated)
-
-    Runtime per-request activation buffers (which DO scale with seq_len) are
-    allocated from the KV cache memory pool, not counted here.
-
-    Empirical validation:
-    - Dense models: 4.76-5.56 GiB (Qwen3-0.6B, Llama-8B, Llama-70B)
-    - MoE models: 7.38 GiB (gpt-oss-20b with 32 experts)
-    - Multimodal models: 2.12 GiB (Mistral-Small-3.2-24B)
-
-    Source: config_explorer/empirical-vllm-memory-results.md
+    Calibrated against vLLM v0.19.0 on H100-80GB (49 runs, 28 models).
+    Source: accuracy/results/v0.19.0/accuracy_report.md
 
     Args:
         config: Model configuration (can be full config or text_config)
-        tp: Tensor parallelism degree (note: empirical data shows activation
-            memory does NOT scale inversely with TP)
+        tp: Tensor parallelism degree (activation is TP-invariant)
 
     Returns:
         float: Estimated peak activation memory in GiB (constant per model type)
@@ -908,7 +909,7 @@ def allocatable_kv_cache_memory(
     cuda_graph_memory = estimate_vllm_cuda_graph_memory() * gpu_count  # Returns 0.0
 
     # Non-torch memory scales with TP due to NCCL/communication overhead
-    non_torch_memory = estimate_vllm_non_torch_memory(tp) * gpu_count
+    non_torch_memory = estimate_vllm_non_torch_memory(tp, pp) * gpu_count
 
     total_consumed = model_size + activation_memory + cuda_graph_memory + non_torch_memory
 
@@ -1415,7 +1416,7 @@ def calculate_capacity(
             estimate_vllm_activation_memory(model_config, tp=tp), 4
         )
         result["cuda_graph_memory_gb"] = round(estimate_vllm_cuda_graph_memory(), 4)
-        result["non_torch_memory_gb"] = round(estimate_vllm_non_torch_memory(tp), 4)
+        result["non_torch_memory_gb"] = round(estimate_vllm_non_torch_memory(tp, pp), 4)
         result["model_memory_gb"] = round(model_memory_req(model_id, model_config, hf_token), 2)
         result["available_gpu_memory_gb"] = round(
             available_gpu_memory(gpu_memory_int, gpu_mem_util), 2
