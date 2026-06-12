@@ -363,9 +363,11 @@ def estimate_vllm_non_torch_memory(tp: int = 1, pp: int = 1) -> float:
     Estimate non-torch memory (CUDA runtime, Python interpreter) in GiB per GPU.
 
     Non-torch memory varies with parallelism strategy:
-    - TP=1, PP=1: minimal overhead (0.27 GiB)
-    - TP=1, PP≥2: P2P send/receive buffers only (0.07 GiB)
-    - TP≥2: NCCL all-reduce buffers dominate (~2.10 GiB)
+    - TP=1, PP=1: minimal overhead
+    - TP=1, PP≥2: P2P send/receive buffers only
+    - TP≥2: NCCL all-reduce buffers dominate
+
+    Actual values are loaded from vllm_memory_constants.json.
 
     Args:
         tp: Tensor parallelism degree
