@@ -13,7 +13,9 @@ configuration, and workload characteristics.
 
 import contextlib
 import io
+import json
 import math
+import os
 import re
 from dataclasses import dataclass
 from enum import StrEnum
@@ -27,39 +29,38 @@ with contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(io.St
     from transformers import AutoConfig
 
 # Memory Overhead Constants (in GiB)
-# Calibrated against vLLM v0.19.0 on H100-80GB (physical 79.19 GiB)
-# Source: accuracy/results/v0.19.0/accuracy_report.md (49 runs, 28 models)
-ACTIVATION_MEMORY_BASE_DENSE_GIB = 2.00  # v0.19.0 observed range: 1.89–3.99 GiB
-ACTIVATION_MEMORY_BASE_MOE_GIB = 2.50  # v0.19.0 observed: Qwen2Moe 2.47, Qwen3Moe 2.68
-ACTIVATION_MEMORY_BASE_MULTIMODAL_GIB = 2.00  # v0.19.0 observed: LlavaNext 0.79, Mistral3 2.10
-VLLM_NON_TORCH_MEMORY_TP1_PP1_GIB = 0.27  # v0.19.0 observed mean at TP=1,PP=1
-VLLM_NON_TORCH_MEMORY_TP1_PPN_GIB = 0.07  # v0.19.0 observed at TP=1,PP≥2 (P2P buffers only)
-VLLM_NON_TORCH_MEMORY_TPN_GIB = 2.10  # v0.19.0 observed mean at TP≥2 (NCCL all-reduce)
-# Legacy aliases for backward compatibility
-VLLM_NON_TORCH_MEMORY_TP1_GIB = VLLM_NON_TORCH_MEMORY_TP1_PP1_GIB
-# Note: CUDA graph memory is included in activation memory profiling, not a separate constant
+# Loaded from data/configuration/vllm_memory_constants.json (calibrated against
+# vLLM v0.19.0 on H100-80GB, 49 runs across 28 models).
+# See docs/accuracy/vllm-v0.19.0-accuracy-report.md for methodology.
+_CONSTANTS_PATH = os.path.join(
+    os.path.dirname(__file__), "..", "..", "data", "configuration", "vllm_memory_constants.json"
+)
 
-# Tier 1: Validated activation profiles from vLLM v0.19.0 measurements on H100-80GB.
-# Key = architecture string from model_config.architectures[0]
-# Value = activation memory in GiB (torch peak memory from vLLM profiling)
-# Source: accuracy/results/v0.19.0/ (run JSONs)
-VALIDATED_ACTIVATION_PROFILES = {
-    "LlamaForCausalLM": 1.89,  # v0.19.0: Llama-3.1-8B 1.89, CodeLlama-7b 0.77
-    "Qwen2ForCausalLM": 2.25,  # v0.19.0: Qwen2.5-7B 2.21, Qwen2.5-7B-TP2 2.29
-    "Qwen3ForCausalLM": 2.21,  # v0.19.0: Qwen3-8B 2.21
-    "Qwen2MoeForCausalLM": 2.47,  # v0.19.0: Qwen1.5-MoE-A2.7B 2.47
-    "Qwen3MoeForCausalLM": 2.68,  # v0.19.0: Qwen3-30B-A3B 2.68
-    "DeepseekV2ForCausalLM": 1.93,  # v0.19.0: DeepSeek-V2-Lite-Chat 1.93
-    "GraniteForCausalLM": 0.85,  # v0.19.0: granite-3.1-8b 0.85, granite-3.1-2b 0.75
-    "Gemma2ForCausalLM": 3.65,  # v0.19.0: Gemma-2-9B 3.65, Gemma-2-27B 3.66, Gemma-2-2B 3.62
-    "Gemma3ForCausalLM": 3.94,  # v0.19.0: Gemma-3-12B 3.94, Gemma-3-27B 3.99, Gemma-3-4B 3.89
-    "GemmaForCausalLM": 3.63,  # v0.19.0: Gemma-7B 3.63
-    "MixtralForCausalLM": 1.21,  # v0.19.0: Mixtral 1.21
-    "Phi3ForCausalLM": 1.52,  # v0.19.0: phi-4 1.52
-    "LlavaNextForConditionalGeneration": 0.79,  # v0.19.0: granite-vision-3.3-2b 0.79
-    "Mistral3ForConditionalGeneration": 2.10,  # v0.19.0: Mistral-Small-3.1-24B 2.03–2.18
-    "PixtralForConditionalGeneration": 2.10,  # Same architecture family as Mistral3
-}
+
+def _load_memory_constants() -> dict[str, Any]:
+    try:
+        with open(_CONSTANTS_PATH) as f:
+            data: dict[str, Any] = json.load(f)
+            return data
+    except (FileNotFoundError, json.JSONDecodeError):
+        return {}
+
+
+_CONSTANTS = _load_memory_constants()
+_ACTIVATION_BASE = _CONSTANTS.get("activation_base_gib", {})
+_NON_TORCH = _CONSTANTS.get("non_torch_overhead_gib", {})
+
+ACTIVATION_MEMORY_BASE_DENSE_GIB: float = _ACTIVATION_BASE.get("dense", 2.00)
+ACTIVATION_MEMORY_BASE_MOE_GIB: float = _ACTIVATION_BASE.get("moe", 2.50)
+ACTIVATION_MEMORY_BASE_MULTIMODAL_GIB: float = _ACTIVATION_BASE.get("multimodal", 2.00)
+VLLM_NON_TORCH_MEMORY_TP1_PP1_GIB: float = _NON_TORCH.get("tp1_pp1", 0.27)
+VLLM_NON_TORCH_MEMORY_TP1_PPN_GIB: float = _NON_TORCH.get("tp1_ppN", 0.07)
+VLLM_NON_TORCH_MEMORY_TPN_GIB: float = _NON_TORCH.get("tpN_pp1", 2.10)
+VLLM_NON_TORCH_MEMORY_TP1_GIB = VLLM_NON_TORCH_MEMORY_TP1_PP1_GIB
+
+# Tier 1: Per-architecture activation profiles loaded from the constants file.
+# Falls back to base constants (dense/moe/multimodal) for unknown architectures.
+VALIDATED_ACTIVATION_PROFILES: dict[str, float] = _CONSTANTS.get("activation_profiles", {})
 
 # Tier 2: Multimodal architectures typically have lower activation memory
 # because the vision encoder does not participate in CUDA graph capture
