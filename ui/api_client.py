@@ -404,7 +404,7 @@ def extract_business_context(user_input: str) -> dict | None:
     return None
 
 
-def deploy_and_generate_yaml(recommendation: dict) -> dict | None:
+def deploy_and_generate_yaml(recommendation: dict, stack: str = "vllm") -> dict | None:
     """Deploy a recommendation and return generated YAML contents.
 
     Returns dict with deployment_id, yaml_contents, and success status, or None on error.
@@ -412,7 +412,7 @@ def deploy_and_generate_yaml(recommendation: dict) -> dict | None:
     try:
         response = requests.post(
             f"{API_BASE_URL}/api/v1/deploy",
-            json={"recommendation": recommendation, "namespace": "default"},
+            json={"recommendation": recommendation, "namespace": "default", "stack": stack},
             timeout=30,
         )
         response.raise_for_status()

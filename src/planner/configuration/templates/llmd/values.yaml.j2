@@ -1,0 +1,48 @@
+# Helm values for llm-d router deployment.
+# Install with:
+#   helm install {{ deployment_id }} \
+#     oci://registry.k8s.io/gateway-api-inference-extension/charts/standalone \
+#     -f scheduler/values.yaml \
+#     -n {{ namespace }}
+# TODO: pin image tag and chart version per llm-d-planner release
+
+inferenceExtension:
+  replicas: 1
+  image:
+    registry: ghcr.io
+    repository: llm-d/llm-d-inference-scheduler
+    tag: v0.8.0
+  flags:
+    v: 2
+  failureMode: "FailOpen"
+  pluginsConfigFile: "{{ deployment_id }}-plugins.yaml"
+  pluginsCustomConfig:
+    {{ deployment_id }}-plugins.yaml: |
+      apiVersion: llm-d.ai/v1alpha1
+      kind: EndpointPickerConfig
+      plugins:
+      - type: prefix-cache-scorer
+      - type: decode-filter
+      - type: max-score-picker
+      - type: single-profile-handler
+      schedulingProfiles:
+      - name: default
+        plugins:
+        - pluginRef: decode-filter
+        - pluginRef: max-score-picker
+        - pluginRef: prefix-cache-scorer
+          weight: 2
+  resources:
+    requests:
+      cpu: "4"
+      memory: 8Gi
+    limits:
+      memory: 16Gi
+
+inferencePool:
+  modelServers:
+    matchLabels:
+      app: "{{ deployment_id }}"
+  targetPorts:
+    - number: 8000
+  appProtocol: http

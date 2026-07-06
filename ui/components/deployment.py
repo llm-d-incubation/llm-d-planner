@@ -63,6 +63,22 @@ def render_deployment_tab():
 
     st.markdown("---")
 
+    # Deployment stack selection
+    prev_stack = st.session_state.get("deployment_stack", "vllm")
+    stack = st.radio(
+        "Deployment Stack",
+        options=["vllm", "llm-d"],
+        format_func=lambda x: "vLLM (standalone)" if x == "vllm" else "llm-d (inference stack)",
+        horizontal=True,
+        key="deployment_stack",
+    )
+    if stack != prev_stack and st.session_state.get("deployment_yaml_generated"):
+        st.session_state.deployment_yaml_generated = False
+        st.session_state.deployment_yaml_files = {}
+        st.session_state.deployment_id = None
+        st.session_state.deployment_error = None
+        st.rerun()
+
     # YAML Generation Section
     if not st.session_state.get("deployment_yaml_generated"):
         st.subheader("Deployment Files")
@@ -71,11 +87,13 @@ def render_deployment_tab():
         if st.button("Generate YAML Files", type="primary", key="generate_yaml_btn"):
             with st.spinner("Generating deployment files..."):
                 try:
+                    stack = st.session_state.get("deployment_stack", "vllm")
                     response = requests.post(
                         f"{API_BASE_URL}/api/v1/deploy",
                         json={
                             "recommendation": selected_config,
                             "namespace": "default",
+                            "stack": stack,
                         },
                         timeout=30,
                     )
@@ -140,20 +158,24 @@ def render_deployment_tab():
                 )
 
         if yaml_files:
-            file_order = ["inferenceservice", "autoscaling", "servicemonitor"]
-            file_labels = {
-                "inferenceservice": "InferenceService (KServe)",
-                "autoscaling": "Autoscaling (HPA)",
-                "servicemonitor": "ServiceMonitor (Prometheus)",
-            }
+            stack = st.session_state.get("deployment_stack", "vllm")
+            if stack == "llm-d":
+                file_order = ["kustomization", "patch_vllm", "helm_values"]
+                file_labels = {
+                    "kustomization": "Kustomization (Model Server)",
+                    "patch_vllm": "vLLM Patch (Model Server)",
+                    "helm_values": "Helm Values (EPP + InferencePool)",
+                }
+            else:
+                file_order = ["inferenceservice", "autoscaling", "servicemonitor"]
+                file_labels = {
+                    "inferenceservice": "InferenceService (KServe)",
+                    "autoscaling": "Autoscaling (HPA)",
+                    "servicemonitor": "ServiceMonitor (Prometheus)",
+                }
 
             for file_key in file_order:
-                matching_content = None
-                for filename, content in yaml_files.items():
-                    if file_key in filename.lower():
-                        matching_content = content
-                        break
-
+                matching_content = yaml_files.get(file_key)
                 if matching_content:
                     label = file_labels.get(file_key, file_key)
                     with st.expander(f"{label}", expanded=False):

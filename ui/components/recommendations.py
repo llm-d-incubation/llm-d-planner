@@ -241,7 +241,8 @@ def _render_category_card(title, recs_list, highlight_field, category_key, col):
                 st.session_state.deployment_id = None
                 st.session_state.deployed_to_cluster = False
 
-                result = deploy_and_generate_yaml(rec)
+                stack = st.session_state.get("deployment_stack", "vllm")
+                result = deploy_and_generate_yaml(rec, stack=stack)
                 if result and result.get("success"):
                     st.session_state.deployment_id = result["deployment_id"]
                     st.session_state.deployment_yaml_files = result["yaml_contents"]

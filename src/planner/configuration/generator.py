@@ -11,6 +11,7 @@ from typing import Any
 
 from jinja2 import Environment, FileSystemLoader
 
+from planner.configuration.utils import generate_deployment_id as _generate_deployment_id
 from planner.knowledge_base.model_catalog import ModelCatalog
 from planner.shared.schemas import DeploymentRecommendation
 
@@ -59,45 +60,8 @@ class DeploymentGenerator:
         )
 
     def generate_deployment_id(self, recommendation: DeploymentRecommendation) -> str:
-        """
-        Generate a unique deployment ID that meets Kubernetes naming requirements:
-        - Must start with a letter
-        - Only lowercase alphanumeric and hyphens
-        - Max 44 characters (KServe adds "-predictor-default" suffix, total must be ≤63)
-
-        Args:
-            recommendation: Deployment recommendation
-
-        Returns:
-            Deployment ID (e.g., "chatbot-mistral-7b-20251003143022")
-        """
-        import re
-
-        timestamp = datetime.now().strftime("%Y%m%d%H%M%S")  # 14 chars: YYYYMMDDHHMMSS
-        use_case = recommendation.intent.use_case.replace("_", "-")
-
-        # Clean model name: remove special chars, keep alphanumeric and hyphens
-        model_name = (recommendation.model_id or "unknown").split("/")[-1].lower()
-        model_name = re.sub(r"[^a-z0-9-]", "-", model_name)
-        # Remove consecutive hyphens
-        model_name = re.sub(r"-+", "-", model_name).strip("-")
-
-        # Build ID
-        deployment_id = f"{use_case}-{model_name}-{timestamp}"
-
-        # KServe creates names like "{deployment_id}-predictor-default" (adds 19 chars)
-        # So deployment_id must be max 44 chars to stay under 63 char DNS limit
-        max_deployment_id_len = 44
-
-        if len(deployment_id) > max_deployment_id_len:
-            # Truncate model name to fit
-            max_model_len = (
-                max_deployment_id_len - len(use_case) - len(timestamp) - 2
-            )  # 2 for hyphens
-            model_name = model_name[:max_model_len].rstrip("-")
-            deployment_id = f"{use_case}-{model_name}-{timestamp}"
-
-        return deployment_id
+        """Generate a unique deployment ID that meets Kubernetes naming requirements."""
+        return _generate_deployment_id(recommendation)
 
     def _prepare_template_context(
         self,

@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: decode
+spec:
+  replicas: {{ replicas }}
+  template:
+    spec:
+      containers:
+        - name: modelserver
+          command: ["vllm", "serve"]
+          args:
+            - "{{ model_id }}"
+            - "--tensor-parallel-size={{ tensor_parallel }}"
+            - "--port=8000"
+          resources:
+            requests:
+              nvidia.com/gpu: "{{ gpus_per_replica }}"
+            limits:
+              nvidia.com/gpu: "{{ gpus_per_replica }}"
+          startupProbe:
+            initialDelaySeconds: 15
+            periodSeconds: 30
+            timeoutSeconds: 5
+            failureThreshold: 120

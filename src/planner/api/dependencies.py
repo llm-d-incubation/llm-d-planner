@@ -15,7 +15,7 @@ from fastapi import FastAPI, HTTPException, Request, status
 from starlette.concurrency import run_in_threadpool
 
 from planner.cluster import KubernetesClusterManager, KubernetesDeploymentError
-from planner.configuration import DeploymentGenerator, YAMLValidator
+from planner.configuration import DeploymentGenerator, LlmdDeploymentGenerator, YAMLValidator
 from planner.knowledge_base.model_catalog import ModelCatalog
 from planner.knowledge_base.slo_templates import SLOTemplateRepository
 from planner.orchestration.workflow import RecommendationWorkflow
@@ -101,6 +101,7 @@ def init_app_state(app: FastAPI) -> None:
     app.state.model_catalog = ModelCatalog()
     app.state.slo_repo = SLOTemplateRepository()
     app.state.deployment_generator = DeploymentGenerator(simulator_mode=False)
+    app.state.llmd_deployment_generator = LlmdDeploymentGenerator()
     app.state.yaml_validator = YAMLValidator()
     app.state.cluster_managers = {}  # dict[str, KubernetesClusterManager]
 
@@ -159,6 +160,11 @@ def get_slo_repo(request: Request) -> SLOTemplateRepository:
 def get_deployment_generator(request: Request) -> DeploymentGenerator:
     """Get the deployment generator singleton."""
     return cast(DeploymentGenerator, request.app.state.deployment_generator)
+
+
+def get_llmd_deployment_generator(request: Request) -> LlmdDeploymentGenerator:
+    """Get the llm-d deployment generator singleton."""
+    return cast(LlmdDeploymentGenerator, request.app.state.llmd_deployment_generator)
 
 
 def get_yaml_validator(request: Request) -> YAMLValidator:

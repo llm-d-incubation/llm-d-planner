@@ -3,7 +3,7 @@
 import logging
 import random
 from datetime import datetime
-from typing import Any
+from typing import Any, Literal
 
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from pydantic import BaseModel
@@ -12,10 +12,13 @@ from starlette.concurrency import run_in_threadpool
 from planner.api.dependencies import (
     get_cluster_manager_or_raise,
     get_deployment_generator,
+    get_llmd_deployment_generator,
     get_yaml_validator,
 )
-from planner.configuration import DeploymentGenerator, YAMLValidator
+from planner.configuration import DeploymentGenerator, LlmdDeploymentGenerator, YAMLValidator
 from planner.shared.schemas import DeploymentMode, DeploymentRecommendation
+
+StackType = Literal["vllm", "llm-d"]
 
 logger = logging.getLogger(__name__)
 
@@ -27,6 +30,7 @@ class DeploymentRequest(BaseModel):
 
     recommendation: DeploymentRecommendation
     namespace: str = "default"
+    stack: StackType = "vllm"
 
 
 class DeploymentResponse(BaseModel):
@@ -78,15 +82,29 @@ async def set_mode(request: DeploymentModeRequest, http_request: Request):
 async def deploy_model(
     request: DeploymentRequest,
     deployment_generator: DeploymentGenerator = Depends(get_deployment_generator),
+    llmd_generator: LlmdDeploymentGenerator = Depends(get_llmd_deployment_generator),
     yaml_validator: YAMLValidator = Depends(get_yaml_validator),
 ):
     """Generate deployment YAML and return contents inline."""
     try:
-        logger.info(f"Generating deployment for model: {request.recommendation.model_name}")
-
-        result = deployment_generator.generate_all(
-            recommendation=request.recommendation, namespace=request.namespace
+        logger.info(
+            f"Generating deployment for model: {request.recommendation.model_name}"
+            f" (stack={request.stack})"
         )
+
+        if request.stack == "llm-d":
+            result = llmd_generator.generate_all(
+                recommendation=request.recommendation, namespace=request.namespace
+            )
+        elif request.stack == "vllm":
+            result = deployment_generator.generate_all(
+                recommendation=request.recommendation, namespace=request.namespace
+            )
+        else:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Unknown stack: {request.stack}",
+            )
 
         try:
             yaml_validator.validate_all(result["files"])
