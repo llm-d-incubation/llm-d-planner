@@ -16,18 +16,7 @@ from planner.capacity_planner import (
     get_text_config,
 )
 from planner.knowledge_base.model_catalog import ModelCatalog
-
-# Mapping from GPU catalog canonical names to llm_optimizer GPU_SPECS keys.
-# Most names match directly; only the A100 variants differ.
-_CATALOG_TO_OPTIMIZER: dict[str, str] = {
-    "A100-80": "A100",
-    "A100-40": "A100-40GB",
-}
-
-
-def _to_optimizer_gpu_name(catalog_name: str) -> str:
-    """Translate a catalog GPU name to the llm_optimizer GPU_SPECS key."""
-    return _CATALOG_TO_OPTIMIZER.get(catalog_name.upper(), catalog_name)
+from planner.shared.utils import catalog_to_optimizer_gpu_name
 
 
 class CostManager:
@@ -180,7 +169,7 @@ class GPURecommender:
             num_gpus = self.max_gpus_per_type.get(gpu_name, self.max_gpus)
 
             # Translate catalog GPU name to llm_optimizer's expected name
-            optimizer_gpu_name = _to_optimizer_gpu_name(gpu_name)
+            optimizer_gpu_name = catalog_to_optimizer_gpu_name(gpu_name)
 
             constraint_parts = []
             if self.max_ttft is not None:

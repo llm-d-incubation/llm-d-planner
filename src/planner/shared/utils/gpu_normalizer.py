@@ -8,6 +8,28 @@ import logging
 import re
 from typing import TYPE_CHECKING
 
+# Mapping from gpu_catalog.json canonical gpu_type to llm_optimizer GPU_SPECS keys.
+# GPUs not in this map are not supported by the roofline model.
+# Most names map 1:1; only the A100 variants differ.
+CATALOG_TO_OPTIMIZER_GPU: dict[str, str] = {
+    "H100": "H100",
+    "H200": "H200",
+    "A100-80": "A100",
+    "A100-40": "A100-40GB",
+    "L40": "L40",
+    "L20": "L20",
+    "B100": "B100",
+    "B200": "B200",
+}
+
+
+def catalog_to_optimizer_gpu_name(catalog_name: str) -> str:
+    """Translate a catalog GPU name to the llm_optimizer GPU_SPECS key.
+
+    Returns the original name unchanged if not in the mapping.
+    """
+    return CATALOG_TO_OPTIMIZER_GPU.get(catalog_name, catalog_name)
+
 if TYPE_CHECKING:
     from planner.knowledge_base.model_catalog import ModelCatalog
 

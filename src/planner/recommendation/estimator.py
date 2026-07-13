@@ -18,21 +18,11 @@ from planner.gpu_recommender import GPURecommender
 from planner.knowledge_base.benchmarks import BenchmarkData, BenchmarkRepository
 from planner.knowledge_base.model_catalog import ModelCatalog
 from planner.shared.schemas import SLOTargets, TrafficProfile
+from planner.shared.utils import CATALOG_TO_OPTIMIZER_GPU
 
 logger = logging.getLogger(__name__)
 
-# Mapping from gpu_catalog.json gpu_type to llm_optimizer GPU_SPECS keys.
-# GPUs not in this map are not supported by the roofline model.
-CATALOG_TO_ROOFLINE_GPU: dict[str, str] = {
-    "H100": "H100",
-    "H200": "H200",
-    "A100-80": "A100",
-    "A100-40": "A100-40GB",
-    "L40": "L40",
-    "L20": "L20",
-    "B100": "B100",
-    "B200": "B200",
-}
+CATALOG_TO_ROOFLINE_GPU = CATALOG_TO_OPTIMIZER_GPU
 
 
 @contextlib.contextmanager
