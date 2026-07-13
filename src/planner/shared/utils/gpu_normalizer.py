@@ -30,6 +30,7 @@ def catalog_to_optimizer_gpu_name(catalog_name: str) -> str:
     """
     return CATALOG_TO_OPTIMIZER_GPU.get(catalog_name, catalog_name)
 
+
 if TYPE_CHECKING:
     from planner.knowledge_base.model_catalog import ModelCatalog
 
