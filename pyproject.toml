@@ -30,7 +30,7 @@ dependencies = [
 [project.optional-dependencies]
 ui = [
     "streamlit==1.59.1",
-    "plotly>=6.3.0",
+    "plotly>=6.9.0",
     "matplotlib>=3.10.9",
 ]
 cluster = [
