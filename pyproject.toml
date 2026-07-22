@@ -31,7 +31,7 @@ dependencies = [
 ui = [
     "streamlit==1.59.2",
     "plotly>=6.3.0",
-    "matplotlib>=3.10.9",
+    "matplotlib>=3.11.1",
 ]
 cluster = [
     "kubernetes>=36.0.2",
