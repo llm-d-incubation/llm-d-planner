@@ -1,6 +1,6 @@
 # Minimal UI dependencies
 streamlit==1.60.0
-pandas==3.0.3
+pandas==3.0.5
 plotly>=6.9.0
 requests==2.34.2
 matplotlib>=3.11.1
