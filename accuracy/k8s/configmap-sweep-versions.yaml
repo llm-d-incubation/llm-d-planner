@@ -1,0 +1,15 @@
+# accuracy/k8s/configmap-sweep-versions.yaml
+# Generated from accuracy/scripts/sweep-versions.yaml.
+# Sync with: kubectl create configmap vllm-mem-sweep-versions \
+#              --from-file=sweep-versions.yaml=accuracy/scripts/sweep-versions.yaml \
+#              --namespace llmdplanner --dry-run=client -o yaml \
+#            | kubectl apply -f -
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: vllm-mem-sweep-versions
+  namespace: llmdplanner
+data:
+  sweep-versions.yaml: |
+    # Contents of accuracy/scripts/sweep-versions.yaml go here.
+    # Use the kubectl command above to generate and keep in sync.

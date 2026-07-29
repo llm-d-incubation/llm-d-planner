@@ -1,0 +1,11 @@
+{
+  "weight_memory_gib": 14.99,
+  "kv_cache_memory_gib": 58.11,
+  "cuda_graph_memory_gib": 0.84,
+  "max_concurrency": 58.11,
+  "kv_cache_tokens": 476000,
+  "vllm_version": "v0.19.0",
+  "vllm_commit": "abc1234ef",
+  "kv_cache_blocks": 29750,
+  "kv_block_size_bytes": 2097315
+}

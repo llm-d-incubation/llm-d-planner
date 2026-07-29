@@ -1,0 +1,46 @@
+# vLLM version sensitivity sweep — activation memory across releases.
+# Goal: measure how activation memory reported by vLLM changes across versions
+# to validate (or recalibrate) the planner's per-architecture activation constants.
+# Model: Qwen/Qwen3-14B — single H100 (tp=1, ~28 GiB bf16 weights).
+# Note: tp=5 is invalid for this model (vocab_size=151936 not divisible by 5).
+#
+# Results land in results/v<X>/; update the corresponding results_pvc or
+# output path in your job template to keep versions separated.
+#
+# Run with: <your job launcher> --sweep sweep-versions.yaml
+
+defaults:
+  gpu: H100-80GB
+  gpu_memory_utilization: "0.95"
+  max_model_len: 8192
+  tp: 1
+  pp: 1
+  dp: 1
+  dtype: auto
+  kv_cache_dtype: auto
+  quantization: null
+  namespace: llmdplanner
+  results_pvc: vllm-mem-data
+  node_selector:
+    nvidia.com/gpu.product: NVIDIA-H100-80GB-HBM3
+
+runs:
+  - model: Qwen/Qwen3-14B
+    vllm_image: vllm/vllm-openai:v0.15.0
+    _label: qwen3-14b-vllm-v0.15.0
+    _sweep_dim: vllm_version
+
+  - model: Qwen/Qwen3-14B
+    vllm_image: vllm/vllm-openai:v0.16.0
+    _label: qwen3-14b-vllm-v0.16.0
+    _sweep_dim: vllm_version
+
+  - model: Qwen/Qwen3-14B
+    vllm_image: vllm/vllm-openai:v0.17.0
+    _label: qwen3-14b-vllm-v0.17.0
+    _sweep_dim: vllm_version
+
+  - model: Qwen/Qwen3-14B
+    vllm_image: vllm/vllm-openai:v0.18.0
+    _label: qwen3-14b-vllm-v0.18.0
+    _sweep_dim: vllm_version

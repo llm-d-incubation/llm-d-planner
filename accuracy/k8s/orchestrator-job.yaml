@@ -1,0 +1,46 @@
+# Submit with: kubectl apply -f accuracy/k8s/orchestrator-job.yaml
+# Monitor with: kubectl logs -f job/vllm-mem-orchestrator -n llmdplanner
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: vllm-mem-orchestrator
+  namespace: llmdplanner
+spec:
+  backoffLimit: 0
+  activeDeadlineSeconds: 86400    # 24-hour hard cap for the full sweep
+  template:
+    spec:
+      serviceAccountName: vllm-mem-orchestrator
+      restartPolicy: Never
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: vllm-mem-data
+        - name: scripts
+          configMap:
+            name: vllm-mem-scripts
+            defaultMode: 0755
+        - name: sweep
+          configMap:
+            name: vllm-mem-sweep
+      containers:
+        - name: orchestrator
+          image: python:3.11-slim
+          command: ["/bin/bash", "-c"]
+          args:
+            - |
+              pip install pyyaml kubernetes --quiet --no-cache-dir &&
+              python /scripts/sweep_runner.py \
+                --config /sweep/sweep.yaml \
+                --results /data/results/
+          volumeMounts:
+            - name: data
+              mountPath: /data
+            - name: scripts
+              mountPath: /scripts
+            - name: sweep
+              mountPath: /sweep
+          resources:
+            requests:
+              cpu: "500m"
+              memory: "512Mi"
