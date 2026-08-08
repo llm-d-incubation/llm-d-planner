@@ -1,6 +1,11 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
+{% if multi_node %}
+# WARNING: TP={{ tensor_parallel }} exceeds {{ gpus_per_node }} GPUs/node.
+# This deployment requires multi-node configuration (e.g., LeaderWorkerSet)
+# which is not yet supported by the generator.
+{% endif %}
 resources:
   # TODO: pin to release tag (e.g. ?ref=v0.1.0) per llm-d-planner release
   - https://github.com/llm-d/llm-d//guides/recipes/modelserver/base/single-host/default

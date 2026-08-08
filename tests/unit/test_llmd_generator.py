@@ -345,3 +345,110 @@ class TestDeployEndpointStack:
         assert response.status_code == 200
         data = response.json()
         assert "inferenceservice" in data["yaml_contents"]
+
+
+@pytest.fixture
+def multi_node_recommendation() -> DeploymentRecommendation:
+    """Recommendation requiring multi-node deployment (TP=16)."""
+    return DeploymentRecommendation(
+        intent=DeploymentIntent(
+            use_case="chatbot_conversational",
+            experience_class="conversational",
+            user_count=100,
+        ),
+        traffic_profile=TrafficProfile(prompt_tokens=512, output_tokens=256, expected_qps=9.0),
+        slo_targets=SLOTargets(
+            ttft_p95_target_ms=150,
+            itl_p95_target_ms=25,
+            e2e_p95_target_ms=7000,
+        ),
+        model_id="meta-llama/Llama-3-70B-Instruct",
+        model_name="Llama-3-70B-Instruct",
+        model_uri=None,
+        meets_slo=True,
+        gpu_config=GPUConfig(
+            gpu_type="NVIDIA-A100-80GB",
+            gpu_count=16,
+            tensor_parallel=16,
+            replicas=1,
+        ),
+        reasoning="test multi-node",
+    )
+
+
+@pytest.mark.unit
+class TestMultiNodeTopology:
+    """Tests for multi-node topology awareness."""
+
+    def test_single_node_when_tp_fits(
+        self,
+        llmd_generator: LlmdDeploymentGenerator,
+        sample_recommendation: DeploymentRecommendation,
+    ) -> None:
+        """TP=2 with gpus_per_node=8 should not trigger multi_node."""
+        result = llmd_generator.generate_all(sample_recommendation, gpus_per_node=8)
+        assert result["multi_node"] is False
+
+    def test_single_node_kustomization_has_no_warning(
+        self,
+        llmd_generator: LlmdDeploymentGenerator,
+        sample_recommendation: DeploymentRecommendation,
+    ) -> None:
+        """Single-node kustomization should not contain multi-node warning."""
+        result = llmd_generator.generate_all(sample_recommendation, gpus_per_node=8)
+        assert "multi-node" not in result["contents"]["kustomization"]
+
+    def test_multi_node_when_tp_exceeds(
+        self,
+        llmd_generator: LlmdDeploymentGenerator,
+        multi_node_recommendation: DeploymentRecommendation,
+    ) -> None:
+        """TP=16 with gpus_per_node=8 should trigger multi_node."""
+        result = llmd_generator.generate_all(multi_node_recommendation, gpus_per_node=8)
+        assert result["multi_node"] is True
+
+    def test_multi_node_kustomization_has_warning(
+        self,
+        llmd_generator: LlmdDeploymentGenerator,
+        multi_node_recommendation: DeploymentRecommendation,
+    ) -> None:
+        """When multi_node is True, kustomization warns about multi-node requirement."""
+        result = llmd_generator.generate_all(multi_node_recommendation, gpus_per_node=8)
+        kustomization_content = result["contents"]["kustomization"]
+        assert "multi-node configuration" in kustomization_content
+        assert "TP=16" in kustomization_content
+
+
+@pytest.mark.unit
+class TestDeployAPINewParams:
+    """Tests for new parameters exposed in the deploy API endpoint."""
+
+    def test_deploy_llmd_with_gpus_per_node(
+        self, client: TestClient, sample_recommendation: DeploymentRecommendation
+    ) -> None:
+        """POST with gpus_per_node=8 should return 200."""
+        response = client.post(
+            "/api/v1/deploy",
+            json={
+                "recommendation": sample_recommendation.model_dump(),
+                "namespace": "test-ns",
+                "stack": "llm-d",
+                "gpus_per_node": 8,
+            },
+        )
+        assert response.status_code == 200
+
+    def test_deploy_llmd_with_invalid_gpus_per_node_returns_422(
+        self, client: TestClient, sample_recommendation: DeploymentRecommendation
+    ) -> None:
+        """POST with gpus_per_node=0 should return 422."""
+        response = client.post(
+            "/api/v1/deploy",
+            json={
+                "recommendation": sample_recommendation.model_dump(),
+                "namespace": "test-ns",
+                "stack": "llm-d",
+                "gpus_per_node": 0,
+            },
+        )
+        assert response.status_code == 422

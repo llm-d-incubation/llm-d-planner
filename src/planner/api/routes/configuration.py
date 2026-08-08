@@ -6,7 +6,7 @@ from datetime import datetime
 from typing import Any, Literal
 
 from fastapi import APIRouter, Depends, HTTPException, Request, status
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from starlette.concurrency import run_in_threadpool
 
 from planner.api.dependencies import (
@@ -31,6 +31,7 @@ class DeploymentRequest(BaseModel):
     recommendation: DeploymentRecommendation
     namespace: str = "default"
     stack: StackType = "vllm"
+    gpus_per_node: int = Field(8, ge=1)
 
 
 class DeploymentResponse(BaseModel):
@@ -41,6 +42,7 @@ class DeploymentResponse(BaseModel):
     yaml_contents: dict[str, Any]
     success: bool = True
     message: str | None = None
+    multi_node: bool | None = None
 
 
 class DeploymentStatusResponse(BaseModel):
@@ -94,7 +96,9 @@ async def deploy_model(
 
         if request.stack == "llm-d":
             result = llmd_generator.generate_all(
-                recommendation=request.recommendation, namespace=request.namespace
+                recommendation=request.recommendation,
+                namespace=request.namespace,
+                gpus_per_node=request.gpus_per_node,
             )
         elif request.stack == "vllm":
             result = deployment_generator.generate_all(
@@ -122,6 +126,7 @@ async def deploy_model(
             yaml_contents=result["contents"],
             success=True,
             message=f"Deployment files generated successfully for {result['deployment_id']}",
+            multi_node=result.get("multi_node"),
         )
 
     except HTTPException:

@@ -72,6 +72,7 @@ class LlmdDeploymentGenerator:
         self,
         recommendation: DeploymentRecommendation,
         namespace: str = "default",
+        gpus_per_node: int = 8,
     ) -> dict[str, Any]:
         """Generate all llm-d deployment files.
 
@@ -79,6 +80,13 @@ class LlmdDeploymentGenerator:
         """
         deployment_id = generate_deployment_id(recommendation)
         context = self._prepare_context(recommendation, deployment_id, namespace)
+
+        # Multi-node topology awareness
+        gpu_config = recommendation.gpu_config
+        tensor_parallel = gpu_config.tensor_parallel if gpu_config else 1
+        multi_node = tensor_parallel > gpus_per_node
+        context["multi_node"] = multi_node
+        context["gpus_per_node"] = gpus_per_node
 
         configs: list[tuple[str, str, str]] = [
             ("kustomization.yaml.j2", "modelserver/kustomization.yaml", "kustomization"),
@@ -108,6 +116,7 @@ class LlmdDeploymentGenerator:
         return {
             "deployment_id": deployment_id,
             "namespace": namespace,
+            "multi_node": multi_node,
             "files": generated_files,
             "contents": generated_contents,
         }

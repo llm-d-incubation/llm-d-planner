@@ -79,6 +79,17 @@ def render_deployment_tab():
         st.session_state.deployment_error = None
         st.rerun()
 
+    # Multi-node topology option (llm-d only)
+    if stack == "llm-d":
+        st.number_input(
+            "GPUs per Node",
+            min_value=1,
+            max_value=16,
+            value=st.session_state.get("gpus_per_node", 8),
+            key="gpus_per_node",
+            help="Number of GPUs per node in your cluster. Used to detect multi-node requirements.",
+        )
+
     # YAML Generation Section
     if not st.session_state.get("deployment_yaml_generated"):
         st.subheader("Deployment Files")
@@ -88,13 +99,16 @@ def render_deployment_tab():
             with st.spinner("Generating deployment files..."):
                 try:
                     stack = st.session_state.get("deployment_stack", "vllm")
+                    payload = {
+                        "recommendation": selected_config,
+                        "namespace": "default",
+                        "stack": stack,
+                    }
+                    if stack == "llm-d":
+                        payload["gpus_per_node"] = st.session_state.get("gpus_per_node", 8)
                     response = requests.post(
                         f"{API_BASE_URL}/api/v1/deploy",
-                        json={
-                            "recommendation": selected_config,
-                            "namespace": "default",
-                            "stack": stack,
-                        },
+                        json=payload,
                         timeout=30,
                     )
                     response.raise_for_status()
@@ -104,6 +118,7 @@ def render_deployment_tab():
                         st.session_state.deployment_id = result.get("deployment_id")
                         st.session_state.deployment_yaml_files = result.get("yaml_contents", {})
                         st.session_state.deployment_yaml_generated = True
+                        st.session_state.deployment_multi_node = result.get("multi_node", False)
                         st.rerun()
                     else:
                         st.session_state.deployment_error = result.get("message", "Unknown error")
@@ -157,6 +172,14 @@ def render_deployment_tab():
                     unsafe_allow_html=True,
                 )
 
+        if st.session_state.get("deployment_multi_node"):
+            st.warning(
+                "⚠️ This configuration requires **multi-node deployment** "
+                "(TP exceeds GPUs per node). Multi-node is not yet supported "
+                "by the generator. Manual configuration (e.g., LeaderWorkerSet) "
+                "is required."
+            )
+
         if yaml_files:
             stack = st.session_state.get("deployment_stack", "vllm")
             if stack == "llm-d":
@@ -187,6 +210,7 @@ def render_deployment_tab():
             st.session_state.deployment_yaml_files = {}
             st.session_state.deployment_id = None
             st.session_state.deployment_error = None
+            st.session_state.deployment_multi_node = None
             st.rerun()
 
 
