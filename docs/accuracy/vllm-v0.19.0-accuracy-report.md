@@ -49,8 +49,8 @@ Covers 49 runs across 28 models using only parameters the planner currently acce
 
 ### Sensitivity: Tensor Parallelism (TP)
 
-| Model | TP | Actual weight (GiB) | Weight err | Actual activ (GiB) | Activation err | Actual non-torch (GiB) | Non-torch err | KV cache err |
-|-------|:--:|:-------------------:|:----------:|:------------------:|:--------------:|:---------------------:|:-------------:|:------------:|
+| Model | TP | Actual weight (GiB) | Weight err | Actual active (GiB) | Activation err | Actual non-torch (GiB) | Non-torch err | KV cache err |
+|-------|:--:|:-------------------:|:----------:|:-------------------:|:--------------:|:---------------------:|:-------------:|:------------:|
 | Llama-3.1-8B-Instruct | 1 | 14.99 | -0.22% | 1.89 | +153.97% | 0.25 | -40.00% | -3.47% |
 | Llama-3.1-8B-Instruct | 2 | 7.51 | -0.42% | 1.89 | +153.97% | 2.07 | -71.01% | +2.76% |
 | Llama-3.1-8B-Instruct | 4 | 3.77 | -0.81% | 1.89 | +153.97% | 2.13 | -71.83% | +4.48% |
@@ -66,16 +66,16 @@ Covers 49 runs across 28 models using only parameters the planner currently acce
 
 **Llama-3.1-8B-Instruct, TP=1, len=8192** (32 layers)
 
-| PP | Actual weight (GiB) | Weight err | Actual activ (GiB) | Activation err | Actual non-torch (GiB) | Non-torch err | KV cache err |
-|:--:|:-------------------:|:----------:|:------------------:|:--------------:|:---------------------:|:-------------:|:------------:|
+| PP | Actual weight (GiB) | Weight err | Actual active (GiB) | Activation err | Actual non-torch (GiB) | Non-torch err | KV cache err |
+|:--:|:-------------------:|:----------:|:-------------------:|:--------------:|:---------------------:|:-------------:|:------------:|
 | 1 | 14.99 | -0.22% | 1.89 | +153.97% | 0.25 | -40.00% | -3.47% |
 | 2 | 7.51 | -0.42% | 1.10 | +336.36% | 0.07 | +114.29% | -0.85% |
 | 4 | 4.26 | -12.22% | 1.05 | +357.14% | 0.07 | +114.29% | +1.59% |
 
 **Qwen3-8B, TP=1, len=8192** (36 layers; PP=3 gives exactly 12 layers per stage)
 
-| PP | Actual weight (GiB) | Weight err | Actual activ (GiB) | Activation err | Actual non-torch (GiB) | Non-torch err | KV cache err |
-|:--:|:-------------------:|:----------:|:------------------:|:--------------:|:---------------------:|:-------------:|:------------:|
+| PP | Actual weight (GiB) | Weight err | Actual active (GiB) | Activation err | Actual non-torch (GiB) | Non-torch err | KV cache err |
+|:--:|:-------------------:|:----------:|:-------------------:|:--------------:|:---------------------:|:-------------:|:------------:|
 | 1 | 15.27 | -0.09% | 2.21 | +153.39% | 0.25 | -40.00% | -4.36% |
 | 3 | 5.48 | -7.20% | 0.96 | +483.33% | 0.07 | +114.29% | +0.74% |
 
