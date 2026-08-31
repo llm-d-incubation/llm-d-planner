@@ -6,7 +6,7 @@ from typing import Any, Literal
 
 import yaml
 from fastapi import APIRouter, Depends, HTTPException, Request, status
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from starlette.concurrency import run_in_threadpool
 
 from planner.api.dependencies import (
@@ -32,6 +32,9 @@ class GenerateDeploymentRequest(BaseModel):
     configuration: DeploymentConfiguration
     namespace: str = "default"
     stack: StackType = "vllm"
+    pd_enabled: bool = False
+    prefill_replicas: int = Field(1, ge=1, le=32)
+    decode_replicas: int = Field(1, ge=1, le=32)
 
 
 class DeploymentModeRequest(BaseModel):
@@ -53,27 +56,21 @@ def _generate_yaml_from_config(
     deployment_generator: DeploymentGenerator,
     llmd_generator: LlmdDeploymentGenerator,
     yaml_validator: YAMLValidator,
+    pd_enabled: bool = False,
+    prefill_replicas: int = 1,
+    decode_replicas: int = 1,
 ) -> dict[str, Any]:
-    """Generate YAML files from a deployment configuration.
-
-    Args:
-        config: Deployment configuration
-        namespace: Kubernetes namespace
-        stack: Deployment stack (vllm or llm-d)
-        deployment_generator: vLLM deployment generator
-        llmd_generator: llm-d deployment generator
-        yaml_validator: YAML validator
-
-    Returns:
-        Dict with deployment_id, namespace, files (file paths), and contents (YAML strings)
-
-    Raises:
-        HTTPException: If stack is unknown or YAML validation fails
-    """
+    """Generate YAML files from a deployment configuration."""
     logger.info(f"Generating deployment for model: {config.model_name} (stack={stack})")
 
     if stack == "llm-d":
-        result = llmd_generator.generate_all(config=config, namespace=namespace)
+        result = llmd_generator.generate_all(
+            config=config,
+            namespace=namespace,
+            pd_enabled=pd_enabled,
+            prefill_replicas=prefill_replicas,
+            decode_replicas=decode_replicas,
+        )
     elif stack == "vllm":
         result = deployment_generator.generate_all(config=config, namespace=namespace)
     else:
@@ -132,6 +129,9 @@ async def generate_deployment(
             deployment_generator,
             llmd_generator,
             yaml_validator,
+            pd_enabled=request.pd_enabled,
+            prefill_replicas=request.prefill_replicas,
+            decode_replicas=request.decode_replicas,
         )
 
         return DeploymentBundle(

@@ -39,4 +39,9 @@ labels:
         create: true
 
 patches:
+{% if pd_enabled %}
+  - path: patch-prefill.yaml
+  - path: patch-decode.yaml
+{% else %}
   - path: patch-vllm.yaml
+{% endif %}

@@ -562,9 +562,16 @@ def deploy_to_cluster(recommendation: dict, namespace: str = "default") -> dict:
 
         stack = recommendation.get("_stack", "vllm")
 
+        payload: dict = {"configuration": config, "namespace": namespace, "stack": stack}
+        if stack == "llm-d":
+            pd_enabled = recommendation.get("_pd_enabled", False)
+            payload["pd_enabled"] = pd_enabled
+            if pd_enabled:
+                payload["prefill_replicas"] = recommendation.get("_prefill_replicas", 1)
+                payload["decode_replicas"] = recommendation.get("_decode_replicas", 1)
         gen_response = requests.post(
             f"{API_BASE_URL}/api/v1/generate-deployment",
-            json={"configuration": config, "namespace": namespace, "stack": stack},
+            json=payload,
             timeout=30,
         )
         if gen_response.status_code != 200:

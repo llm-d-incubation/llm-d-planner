@@ -1,9 +1,9 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: decode
+  name: {{ deployment_name }}
 spec:
-  replicas: {{ replicas }}
+  replicas: {{ replica_count }}
   template:
     spec:
       containers:
@@ -13,6 +13,9 @@ spec:
             - "{{ model_id }}"
             - "--tensor-parallel-size={{ tensor_parallel }}"
             - "--port=8000"
+{% for arg in extra_args %}
+            - "{{ arg }}"
+{% endfor %}
           resources:
             requests:
               nvidia.com/gpu: "{{ gpus_per_replica }}"

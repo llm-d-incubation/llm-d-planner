@@ -79,6 +79,41 @@ def render_deployment_tab():
         st.session_state.deployment_error = None
         st.rerun()
 
+    # P/D disaggregation options (llm-d only)
+    if stack == "llm-d":
+        pd_enabled = st.checkbox(
+            "Enable P/D Disaggregation",
+            value=st.session_state.get("pd_enabled", False),
+            key="pd_enabled",
+            help="Generate separate prefill and decode deployments for latency-sensitive workloads.",
+        )
+        if pd_enabled != st.session_state.get("_prev_pd_enabled", False):
+            st.session_state._prev_pd_enabled = pd_enabled
+            if st.session_state.get("deployment_yaml_generated"):
+                st.session_state.deployment_yaml_generated = False
+                st.session_state.deployment_yaml_files = {}
+                st.session_state.deployment_id = None
+                st.session_state.deployment_error = None
+                st.rerun()
+        if pd_enabled:
+            col1, col2 = st.columns(2)
+            with col1:
+                st.number_input(
+                    "Prefill Replicas",
+                    min_value=1,
+                    max_value=32,
+                    value=st.session_state.get("prefill_replicas", 1),
+                    key="prefill_replicas",
+                )
+            with col2:
+                st.number_input(
+                    "Decode Replicas",
+                    min_value=1,
+                    max_value=32,
+                    value=st.session_state.get("decode_replicas", 1),
+                    key="decode_replicas",
+                )
+
     # YAML Generation Section
     if not st.session_state.get("deployment_yaml_generated"):
         st.subheader("Deployment Files")
@@ -92,13 +127,22 @@ def render_deployment_tab():
                     if not configuration:
                         st.error("Selected configuration is missing deployment configuration data.")
                         return
+                    payload: dict = {
+                        "configuration": configuration,
+                        "namespace": "default",
+                        "stack": stack,
+                    }
+                    if stack == "llm-d":
+                        pd_enabled = st.session_state.get("pd_enabled", False)
+                        payload["pd_enabled"] = pd_enabled
+                        if pd_enabled:
+                            payload["prefill_replicas"] = st.session_state.get(
+                                "prefill_replicas", 1
+                            )
+                            payload["decode_replicas"] = st.session_state.get("decode_replicas", 1)
                     response = requests.post(
                         f"{API_BASE_URL}/api/v1/generate-deployment",
-                        json={
-                            "configuration": configuration,
-                            "namespace": "default",
-                            "stack": stack,
-                        },
+                        json=payload,
                         timeout=30,
                     )
                     response.raise_for_status()
@@ -165,10 +209,18 @@ def render_deployment_tab():
         if yaml_files:
             stack = st.session_state.get("deployment_stack", "vllm")
             if stack == "llm-d":
-                file_order = ["kustomization", "patch_vllm", "helm_values"]
+                file_order = [
+                    "kustomization",
+                    "patch_vllm",
+                    "patch_prefill",
+                    "patch_decode",
+                    "helm_values",
+                ]
                 file_labels = {
                     "kustomization": "Kustomization (Model Server)",
                     "patch_vllm": "vLLM Patch (Model Server)",
+                    "patch_prefill": "Prefill Patch (Model Server)",
+                    "patch_decode": "Decode Patch (Model Server)",
                     "helm_values": "Helm Values (EPP + InferencePool)",
                 }
             else:
@@ -218,8 +270,16 @@ def _render_deploy_to_cluster_button(selected_config: dict):
             )
             return
 
+        deploy_config = dict(selected_config)
+        deploy_config["_stack"] = st.session_state.get("deployment_stack", "vllm")
+        if deploy_config["_stack"] == "llm-d":
+            deploy_config["_pd_enabled"] = st.session_state.get("pd_enabled", False)
+            if deploy_config["_pd_enabled"]:
+                deploy_config["_prefill_replicas"] = st.session_state.get("prefill_replicas", 1)
+                deploy_config["_decode_replicas"] = st.session_state.get("decode_replicas", 1)
+
         with st.spinner("Deploying to Kubernetes cluster..."):
-            result = deploy_to_cluster(selected_config)
+            result = deploy_to_cluster(deploy_config)
 
         if result.get("success") or result.get("deployment_id"):
             st.session_state.deployed_to_cluster = True

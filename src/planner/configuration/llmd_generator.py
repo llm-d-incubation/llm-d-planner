@@ -70,19 +70,82 @@ class LlmdDeploymentGenerator:
         self,
         config: DeploymentConfiguration,
         namespace: str = "default",
+        pd_enabled: bool = False,
+        prefill_replicas: int = 1,
+        decode_replicas: int = 1,
     ) -> dict[str, Any]:
         """Generate all llm-d deployment files.
 
         Returns a dict with: deployment_id, namespace, files, contents.
+
+        When *pd_enabled* is True, separate prefill and decode patches are
+        generated instead of the single ``patch-vllm.yaml``.
         """
+        if not 1 <= prefill_replicas <= 32:
+            msg = f"prefill_replicas must be between 1 and 32, got {prefill_replicas}"
+            raise ValueError(msg)
+        if not 1 <= decode_replicas <= 32:
+            msg = f"decode_replicas must be between 1 and 32, got {decode_replicas}"
+            raise ValueError(msg)
+
         deployment_id = generate_deployment_id(config)
         context = self._prepare_context(config, deployment_id, namespace)
 
-        configs: list[tuple[str, str, str]] = [
-            ("kustomization.yaml.j2", "modelserver/kustomization.yaml", "kustomization"),
-            ("patch-vllm.yaml.j2", "modelserver/patch-vllm.yaml", "patch_vllm"),
-            ("values.yaml.j2", "scheduler/values.yaml", "helm_values"),
+        context["pd_enabled"] = pd_enabled
+
+        # Build the list of (template, output path, key, extra_context) tuples.
+        # All model-server patches use the same unified template with different
+        # deployment_name, replica_count, and extra_args.
+        patch_template = "patch-modelserver.yaml.j2"
+
+        configs: list[tuple[str, str, str, dict[str, Any]]] = [
+            ("kustomization.yaml.j2", "modelserver/kustomization.yaml", "kustomization", {}),
         ]
+
+        if pd_enabled:
+            configs.append(
+                (
+                    patch_template,
+                    "modelserver/patch-prefill.yaml",
+                    "patch_prefill",
+                    {
+                        "deployment_name": "prefill",
+                        "replica_count": prefill_replicas,
+                        "extra_args": [
+                            "--kv-connector=nixlv2",
+                            "--kv-role=kv_producer",
+                            "--enable-chunked-prefill",
+                        ],
+                    },
+                )
+            )
+            configs.append(
+                (
+                    patch_template,
+                    "modelserver/patch-decode.yaml",
+                    "patch_decode",
+                    {
+                        "deployment_name": "decode",
+                        "replica_count": decode_replicas,
+                        "extra_args": ["--kv-connector=nixlv2", "--kv-role=kv_consumer"],
+                    },
+                )
+            )
+        else:
+            configs.append(
+                (
+                    patch_template,
+                    "modelserver/patch-vllm.yaml",
+                    "patch_vllm",
+                    {
+                        "deployment_name": "decode",
+                        "replica_count": context["replicas"],
+                        "extra_args": [],
+                    },
+                )
+            )
+
+        configs.append(("values.yaml.j2", "scheduler/values.yaml", "helm_values", {}))
 
         deployment_dir = self.output_dir / deployment_id
         (deployment_dir / "modelserver").mkdir(parents=True, exist_ok=True)
@@ -91,9 +154,9 @@ class LlmdDeploymentGenerator:
         generated_files: dict[str, str] = {}
         generated_contents: dict[str, str] = {}
 
-        for template_name, output_rel_path, config_type in configs:
+        for template_name, output_rel_path, config_type, extra_ctx in configs:
             template = self.env.get_template(template_name)
-            rendered = template.render(**context)
+            rendered = template.render(**context, **extra_ctx)
 
             output_path = deployment_dir / output_rel_path
             output_path.parent.mkdir(parents=True, exist_ok=True)

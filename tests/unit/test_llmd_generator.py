@@ -348,3 +348,191 @@ class TestGenerateDeploymentEndpointStack:
         assert response.status_code == 200
         data = response.json()
         assert "inferenceservice" in data["files"]
+
+
+@pytest.mark.unit
+class TestPDDisaggregation:
+    """Tests for P/D (prefill/decode) disaggregation output."""
+
+    def test_pd_disabled_produces_single_patch(
+        self,
+        llmd_generator: LlmdDeploymentGenerator,
+        sample_config: DeploymentConfiguration,
+    ) -> None:
+        """Default (pd_enabled=False) has patch_vllm, no patch_prefill/patch_decode."""
+        result = llmd_generator.generate_all(sample_config)
+
+        assert "patch_vllm" in result["contents"]
+        assert "patch_prefill" not in result["contents"]
+        assert "patch_decode" not in result["contents"]
+
+    def test_pd_disabled_patch_targets_decode_deployment(
+        self,
+        llmd_generator: LlmdDeploymentGenerator,
+        sample_config: DeploymentConfiguration,
+    ) -> None:
+        """Non-PD patch must use name 'decode' to match the llm-d base Deployment."""
+        result = llmd_generator.generate_all(sample_config)
+        parsed = yaml.safe_load(result["contents"]["patch_vllm"])
+
+        assert parsed["metadata"]["name"] == "decode"
+
+    def test_pd_enabled_produces_prefill_and_decode_patches(
+        self,
+        llmd_generator: LlmdDeploymentGenerator,
+        sample_config: DeploymentConfiguration,
+    ) -> None:
+        """pd_enabled=True produces patch_prefill and patch_decode, no patch_vllm."""
+        result = llmd_generator.generate_all(sample_config, pd_enabled=True)
+
+        assert "patch_prefill" in result["contents"]
+        assert "patch_decode" in result["contents"]
+        assert "patch_vllm" not in result["contents"]
+
+    def test_pd_prefill_patch_has_correct_replicas(
+        self,
+        llmd_generator: LlmdDeploymentGenerator,
+        sample_config: DeploymentConfiguration,
+    ) -> None:
+        """Prefill patch uses prefill_replicas value."""
+        result = llmd_generator.generate_all(sample_config, pd_enabled=True, prefill_replicas=2)
+        parsed = yaml.safe_load(result["contents"]["patch_prefill"])
+
+        assert parsed["spec"]["replicas"] == 2
+        assert parsed["metadata"]["name"] == "prefill"
+
+    def test_pd_decode_patch_has_correct_replicas(
+        self,
+        llmd_generator: LlmdDeploymentGenerator,
+        sample_config: DeploymentConfiguration,
+    ) -> None:
+        """Decode patch uses decode_replicas value."""
+        result = llmd_generator.generate_all(sample_config, pd_enabled=True, decode_replicas=3)
+        parsed = yaml.safe_load(result["contents"]["patch_decode"])
+
+        assert parsed["spec"]["replicas"] == 3
+        assert parsed["metadata"]["name"] == "decode"
+
+    def test_pd_kustomization_references_both_patches(
+        self,
+        llmd_generator: LlmdDeploymentGenerator,
+        sample_config: DeploymentConfiguration,
+    ) -> None:
+        """Kustomization patches list has patch-prefill.yaml and patch-decode.yaml."""
+        result = llmd_generator.generate_all(sample_config, pd_enabled=True)
+        parsed = yaml.safe_load(result["contents"]["kustomization"])
+
+        patch_paths = [p["path"] for p in parsed["patches"]]
+        assert "patch-prefill.yaml" in patch_paths
+        assert "patch-decode.yaml" in patch_paths
+        assert "patch-vllm.yaml" not in patch_paths
+
+    def test_pd_all_outputs_valid_yaml(
+        self,
+        llmd_generator: LlmdDeploymentGenerator,
+        sample_config: DeploymentConfiguration,
+    ) -> None:
+        """All contents parse as valid YAML when pd_enabled=True."""
+        result = llmd_generator.generate_all(sample_config, pd_enabled=True)
+
+        for key, content in result["contents"].items():
+            parsed = yaml.safe_load(content)
+            assert parsed is not None, f"{key} rendered as empty YAML"
+
+    def test_rejects_zero_prefill_replicas(
+        self,
+        llmd_generator: LlmdDeploymentGenerator,
+        sample_config: DeploymentConfiguration,
+    ) -> None:
+        """generate_all() raises ValueError when prefill_replicas < 1."""
+        with pytest.raises(ValueError, match="must be between 1 and 32"):
+            llmd_generator.generate_all(sample_config, pd_enabled=True, prefill_replicas=0)
+
+    def test_rejects_zero_decode_replicas(
+        self,
+        llmd_generator: LlmdDeploymentGenerator,
+        sample_config: DeploymentConfiguration,
+    ) -> None:
+        """generate_all() raises ValueError when decode_replicas < 1."""
+        with pytest.raises(ValueError, match="must be between 1 and 32"):
+            llmd_generator.generate_all(sample_config, pd_enabled=True, decode_replicas=0)
+
+    def test_rejects_prefill_replicas_above_max(
+        self,
+        llmd_generator: LlmdDeploymentGenerator,
+        sample_config: DeploymentConfiguration,
+    ) -> None:
+        """generate_all() raises ValueError when prefill_replicas > 32."""
+        with pytest.raises(ValueError, match="must be between 1 and 32"):
+            llmd_generator.generate_all(sample_config, pd_enabled=True, prefill_replicas=33)
+
+    def test_rejects_decode_replicas_above_max(
+        self,
+        llmd_generator: LlmdDeploymentGenerator,
+        sample_config: DeploymentConfiguration,
+    ) -> None:
+        """generate_all() raises ValueError when decode_replicas > 32."""
+        with pytest.raises(ValueError, match="must be between 1 and 32"):
+            llmd_generator.generate_all(sample_config, pd_enabled=True, decode_replicas=33)
+
+
+@pytest.mark.unit
+class TestDeployAPINewParams:
+    """Tests for new parameters exposed in the deploy API endpoint."""
+
+    def test_generate_deployment_llmd_with_pd_enabled(
+        self, client: TestClient, sample_config: DeploymentConfiguration
+    ) -> None:
+        """POST with pd_enabled=True should return patch_prefill and patch_decode."""
+        response = client.post(
+            "/api/v1/generate-deployment",
+            json={
+                "configuration": sample_config.model_dump(),
+                "namespace": "test-ns",
+                "stack": "llm-d",
+                "pd_enabled": True,
+            },
+        )
+        assert response.status_code == 200
+        data = response.json()
+        assert "patch_prefill" in data["files"]
+        assert "patch_decode" in data["files"]
+
+    @pytest.mark.parametrize(
+        "field",
+        ["prefill_replicas", "decode_replicas"],
+    )
+    def test_generate_deployment_rejects_zero_replicas(
+        self,
+        client: TestClient,
+        sample_config: DeploymentConfiguration,
+        field: str,
+    ) -> None:
+        """API returns 422 when replica count is < 1."""
+        payload = {
+            "configuration": sample_config.model_dump(),
+            "namespace": "test-ns",
+            "stack": "llm-d",
+            "pd_enabled": True,
+            field: 0,
+        }
+        response = client.post("/api/v1/generate-deployment", json=payload)
+        assert response.status_code == 422
+
+    def test_generate_deployment_rejects_replicas_above_max(
+        self,
+        client: TestClient,
+        sample_config: DeploymentConfiguration,
+    ) -> None:
+        """API returns 422 when replica count exceeds 32."""
+        response = client.post(
+            "/api/v1/generate-deployment",
+            json={
+                "configuration": sample_config.model_dump(),
+                "namespace": "test-ns",
+                "stack": "llm-d",
+                "pd_enabled": True,
+                "prefill_replicas": 33,
+            },
+        )
+        assert response.status_code == 422
