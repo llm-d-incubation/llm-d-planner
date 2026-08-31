@@ -6,7 +6,7 @@ from typing import Any, Literal
 
 import yaml
 from fastapi import APIRouter, Depends, HTTPException, Request, status
-from pydantic import BaseModel
+from pydantic import BaseModel, field_validator
 from starlette.concurrency import run_in_threadpool
 
 from planner.api.dependencies import (
@@ -15,7 +15,12 @@ from planner.api.dependencies import (
     get_llmd_deployment_generator,
     get_yaml_validator,
 )
-from planner.configuration import DeploymentGenerator, LlmdDeploymentGenerator, YAMLValidator
+from planner.configuration import (
+    ROUTING_PROFILES,
+    DeploymentGenerator,
+    LlmdDeploymentGenerator,
+    YAMLValidator,
+)
 from planner.shared.schemas import DeploymentConfiguration, DeploymentMode
 from planner.shared.schemas.recommendation import DeploymentBundle
 
@@ -32,6 +37,15 @@ class GenerateDeploymentRequest(BaseModel):
     configuration: DeploymentConfiguration
     namespace: str = "default"
     stack: StackType = "vllm"
+    routing_profile: str = "default"
+
+    @field_validator("routing_profile")
+    @classmethod
+    def validate_routing_profile(cls, v: str) -> str:
+        if v not in ROUTING_PROFILES:
+            valid = ", ".join(sorted(ROUTING_PROFILES))
+            raise ValueError(f"Unknown routing profile '{v}'. Valid profiles: {valid}")
+        return v
 
 
 class DeploymentModeRequest(BaseModel):
@@ -53,6 +67,7 @@ def _generate_yaml_from_config(
     deployment_generator: DeploymentGenerator,
     llmd_generator: LlmdDeploymentGenerator,
     yaml_validator: YAMLValidator,
+    routing_profile: str = "default",
 ) -> dict[str, Any]:
     """Generate YAML files from a deployment configuration.
 
@@ -63,6 +78,7 @@ def _generate_yaml_from_config(
         deployment_generator: vLLM deployment generator
         llmd_generator: llm-d deployment generator
         yaml_validator: YAML validator
+        routing_profile: Routing profile for llm-d stack
 
     Returns:
         Dict with deployment_id, namespace, files (file paths), and contents (YAML strings)
@@ -73,7 +89,9 @@ def _generate_yaml_from_config(
     logger.info(f"Generating deployment for model: {config.model_name} (stack={stack})")
 
     if stack == "llm-d":
-        result = llmd_generator.generate_all(config=config, namespace=namespace)
+        result = llmd_generator.generate_all(
+            config=config, namespace=namespace, routing_profile=routing_profile
+        )
     elif stack == "vllm":
         result = deployment_generator.generate_all(config=config, namespace=namespace)
     else:
@@ -93,6 +111,12 @@ def _generate_yaml_from_config(
         ) from e
 
     return result
+
+
+@router.get("/routing-profiles")
+async def list_routing_profiles():
+    """Return available routing profiles for llm-d deployments."""
+    return {"profiles": sorted(ROUTING_PROFILES.keys())}
 
 
 @router.get("/deployment-mode")
@@ -132,6 +156,7 @@ async def generate_deployment(
             deployment_generator,
             llmd_generator,
             yaml_validator,
+            routing_profile=request.routing_profile,
         )
 
         return DeploymentBundle(

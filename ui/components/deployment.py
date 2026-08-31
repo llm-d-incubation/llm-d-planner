@@ -79,6 +79,29 @@ def render_deployment_tab():
         st.session_state.deployment_error = None
         st.rerun()
 
+    # Routing profile selection (llm-d only)
+    if stack == "llm-d":
+        prev_profile = st.session_state.get("routing_profile", "default")
+        profiles = _fetch_routing_profiles()
+        profile_labels = {
+            "default": "Default (prefix-cache aware)",
+            "session-affinity": "Session Affinity (conversational/chat)",
+            "throughput-optimized": "Throughput Optimized (batch workloads)",
+        }
+        profile = st.selectbox(
+            "Routing Profile",
+            options=profiles,
+            format_func=lambda x: profile_labels.get(x, x),
+            key="routing_profile",
+            help="Controls how the EPP routes requests across model server replicas.",
+        )
+        if profile != prev_profile and st.session_state.get("deployment_yaml_generated"):
+            st.session_state.deployment_yaml_generated = False
+            st.session_state.deployment_yaml_files = {}
+            st.session_state.deployment_id = None
+            st.session_state.deployment_error = None
+            st.rerun()
+
     # YAML Generation Section
     if not st.session_state.get("deployment_yaml_generated"):
         st.subheader("Deployment Files")
@@ -92,13 +115,18 @@ def render_deployment_tab():
                     if not configuration:
                         st.error("Selected configuration is missing deployment configuration data.")
                         return
+                    payload: dict = {
+                        "configuration": configuration,
+                        "namespace": "default",
+                        "stack": stack,
+                    }
+                    if stack == "llm-d":
+                        payload["routing_profile"] = st.session_state.get(
+                            "routing_profile", "default"
+                        )
                     response = requests.post(
                         f"{API_BASE_URL}/api/v1/generate-deployment",
-                        json={
-                            "configuration": configuration,
-                            "namespace": "default",
-                            "stack": stack,
-                        },
+                        json=payload,
                         timeout=30,
                     )
                     response.raise_for_status()
@@ -193,6 +221,18 @@ def render_deployment_tab():
             st.session_state.deployment_id = None
             st.session_state.deployment_error = None
             st.rerun()
+
+
+@st.cache_data(ttl=300)
+def _fetch_routing_profiles() -> list[str]:
+    """Fetch available routing profiles from the backend API."""
+    try:
+        response = requests.get(f"{API_BASE_URL}/api/v1/routing-profiles", timeout=5)
+        response.raise_for_status()
+        profiles: list[str] = response.json().get("profiles", ["default"])
+        return profiles
+    except Exception:
+        return ["default", "session-affinity", "throughput-optimized"]
 
 
 def _render_deploy_to_cluster_button(selected_config: dict):

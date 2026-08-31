@@ -21,17 +21,18 @@ inferenceExtension:
       apiVersion: llm-d.ai/v1alpha1
       kind: EndpointPickerConfig
       plugins:
-      - type: prefix-cache-scorer
-      - type: decode-filter
-      - type: max-score-picker
-      - type: single-profile-handler
+      {% for plugin in plugins %}
+      - type: {{ plugin.type }}
+      {% endfor %}
       schedulingProfiles:
       - name: default
         plugins:
-        - pluginRef: decode-filter
-        - pluginRef: max-score-picker
-        - pluginRef: prefix-cache-scorer
-          weight: 2
+        {% for sp in scheduling_plugins %}
+        - pluginRef: {{ sp.pluginRef }}
+          {% if sp.weight is defined and sp.weight is not none %}
+          weight: {{ sp.weight }}
+          {% endif %}
+        {% endfor %}
   resources:
     requests:
       cpu: "4"

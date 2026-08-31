@@ -10,7 +10,7 @@ from __future__ import annotations
 
 import logging
 from pathlib import Path
-from typing import Any
+from typing import Any, TypedDict
 
 from jinja2 import Environment, FileSystemLoader
 
@@ -22,6 +22,72 @@ from planner.configuration.utils import (
 from planner.shared.schemas import DeploymentConfiguration
 
 logger = logging.getLogger(__name__)
+
+
+class _PluginDef(TypedDict):
+    type: str
+
+
+class _SchedulingPluginDefBase(TypedDict):
+    pluginRef: str  # noqa: N815  (matches upstream EPP schema)
+
+
+class _SchedulingPluginDef(_SchedulingPluginDefBase, total=False):
+    weight: int
+
+
+class RoutingProfile(TypedDict):
+    plugins: list[_PluginDef]
+    scheduling_plugins: list[_SchedulingPluginDef]
+
+
+# ---------------------------------------------------------------------------
+# Routing profiles – each defines the EPP plugins and scheduling config
+# injected into the Helm values template.
+# ---------------------------------------------------------------------------
+ROUTING_PROFILES: dict[str, RoutingProfile] = {
+    "default": {
+        "plugins": [
+            {"type": "prefix-cache-scorer"},
+            {"type": "decode-filter"},
+            {"type": "max-score-picker"},
+            {"type": "single-profile-handler"},
+        ],
+        "scheduling_plugins": [
+            {"pluginRef": "decode-filter"},
+            {"pluginRef": "max-score-picker"},
+            {"pluginRef": "prefix-cache-scorer", "weight": 2},
+        ],
+    },
+    "session-affinity": {
+        "plugins": [
+            {"type": "prefix-cache-scorer"},
+            {"type": "decode-filter"},
+            {"type": "max-score-picker"},
+            {"type": "single-profile-handler"},
+            {"type": "session-affinity-scorer"},
+        ],
+        "scheduling_plugins": [
+            {"pluginRef": "decode-filter"},
+            {"pluginRef": "max-score-picker"},
+            {"pluginRef": "prefix-cache-scorer", "weight": 2},
+            {"pluginRef": "session-affinity-scorer", "weight": 3},
+        ],
+    },
+    "throughput-optimized": {
+        "plugins": [
+            {"type": "load-aware-scorer"},
+            {"type": "decode-filter"},
+            {"type": "max-score-picker"},
+            {"type": "single-profile-handler"},
+        ],
+        "scheduling_plugins": [
+            {"pluginRef": "decode-filter"},
+            {"pluginRef": "max-score-picker"},
+            {"pluginRef": "load-aware-scorer", "weight": 3},
+        ],
+    },
+}
 
 
 class LlmdDeploymentGenerator:
@@ -70,13 +136,24 @@ class LlmdDeploymentGenerator:
         self,
         config: DeploymentConfiguration,
         namespace: str = "default",
+        routing_profile: str = "default",
     ) -> dict[str, Any]:
         """Generate all llm-d deployment files.
 
         Returns a dict with: deployment_id, namespace, files, contents.
         """
+        if routing_profile not in ROUTING_PROFILES:
+            raise ValueError(
+                f"Unknown routing profile '{routing_profile}'. "
+                f"Valid profiles: {', '.join(sorted(ROUTING_PROFILES))}"
+            )
+
         deployment_id = generate_deployment_id(config)
         context = self._prepare_context(config, deployment_id, namespace)
+
+        profile = ROUTING_PROFILES[routing_profile]
+        context["plugins"] = profile["plugins"]
+        context["scheduling_plugins"] = profile["scheduling_plugins"]
 
         configs: list[tuple[str, str, str]] = [
             ("kustomization.yaml.j2", "modelserver/kustomization.yaml", "kustomization"),
