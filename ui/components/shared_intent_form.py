@@ -5,22 +5,23 @@ and model preferences. Returns a DeploymentIntent dict when the caller submits.
 """
 
 import streamlit as st
-from api_client import fetch_catalog_model_ids, fetch_gpu_types
+from api_client import fetch_catalog_model_ids, fetch_gpu_types, fetch_use_cases
 
-USE_CASE_OPTIONS = {
-    "chatbot_conversational": "Chatbot / Conversational AI",
-    "code_completion": "Code Completion (IDE autocomplete)",
-    "code_generation_detailed": "Code Generation (full implementations)",
-    "document_analysis_rag": "Document RAG / Q&A",
-    "summarization_short": "Short Summarization (<10 pages)",
-    "long_document_summarization": "Long Document Summarization (10+ pages)",
-    "translation": "Translation",
-    "content_generation": "Content Generation",
-    "research_legal_analysis": "Research / Legal Analysis",
-}
-
-USE_CASE_KEYS = list(USE_CASE_OPTIONS.keys())
 PRIORITY_OPTIONS = ["low", "medium", "high"]
+
+# Static fallback when the backend is unreachable.  Keeps the dropdown usable
+# until fetch_use_cases() succeeds and caches a real response.
+_FALLBACK_USE_CASE_KEYS = [
+    "chatbot_conversational",
+    "code_completion",
+    "code_generation_detailed",
+    "translation",
+    "content_generation",
+    "summarization_short",
+    "document_analysis_rag",
+    "long_document_summarization",
+    "research_legal_analysis",
+]
 
 
 def render_intent_fields(
@@ -38,15 +39,26 @@ def render_intent_fields(
     """
     defaults = defaults or {}
 
-    # Use case
+    # Use case — display names from API, with static fallback if backend is down.
+    # The fallback prevents fetch_use_cases()'s cached {} from disabling the dropdown.
+    # See https://github.com/llm-d-incubation/llm-d-planner/issues/356 for the
+    # systemic api_client.py caching problem.
+    use_case_data = fetch_use_cases()
+    if not use_case_data:
+        use_case_data = {
+            k: {"display_name": k.replace("_", " ").title()} for k in _FALLBACK_USE_CASE_KEYS
+        }
+    use_case_keys = list(use_case_data.keys())
+    use_case_display = {k: v.get("display_name", k) for k, v in use_case_data.items()}
+
     current_use_case = defaults.get("use_case", "chatbot_conversational")
-    current_idx = USE_CASE_KEYS.index(current_use_case) if current_use_case in USE_CASE_KEYS else 0
+    current_idx = use_case_keys.index(current_use_case) if current_use_case in use_case_keys else 0
 
     use_case = st.selectbox(
         "Use Case",
-        options=USE_CASE_KEYS,
+        options=use_case_keys,
         index=current_idx,
-        format_func=lambda x: USE_CASE_OPTIONS.get(x, x),
+        format_func=lambda x: use_case_display.get(x, x),
         key=f"{key_prefix}_use_case",
     )
 

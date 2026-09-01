@@ -73,7 +73,7 @@ Planner consists of **five major components**:
 ┌───────────────────────────────────────────────────────────────────────────┐
 │                    Knowledge Base (Data Layer)                            │
 │     Embedded DB: Performance Benchmarks, Quality Data (Arena + AA)        │
-│     JSON Files: SLO Templates, Model Catalog, Quality Weights             │
+│     JSON Files: Use Case Configs, Model Catalog, Quality Weights           │
 └───────────────────────────────────────────────────────────────────────────┘
 ```
 
@@ -460,7 +460,7 @@ components:
 **Technology**: Hybrid storage approach
 
 - **Embedded Database**: Benchmark data and deployment outcomes (SQLite)
-- **JSON files**: Configuration as code (SLO templates, model catalog, hardware
+- **JSON files**: Configuration as code (use case definitions, model catalog, hardware
   profiles)
 - **Data Management**: Benchmark data can be loaded, inspected, and reset via
   CLI, REST API, or UI Configuration tab
@@ -472,7 +472,7 @@ components:
 - **Quality Data**: Model quality scores from dual sources (Arena human
   preferences + Artificial Analysis automated benchmarks), cached in
   `src/quality_scoring/data/` and `.quality_cache/`
-- **Use Case SLO Templates**: Default targets for 9 standard use cases
+- **Use Case Definitions**: Traffic profiles, SLO ranges, and workload parameters for 9 standard use cases
 - **Quality Weights**: Per-use-case category weights for quality scoring
   (e.g., code_generation: 80% coding, 10% overall, 10% math)
 - **Model Catalog**: Curated models with task compatibility metadata
@@ -634,7 +634,7 @@ for different environments and requirements.
 - **Model Catalog**: User-provided or curated model lists
 - **Benchmarks**: Custom performance and quality data (see "Bring Your Own
   Data" above)
-- **SLO Templates**: Custom use case definitions with organization-specific
+- **Use Case Definitions**: Custom use case configurations with organization-specific
   defaults
 
 ### Hardware and Cost Data
@@ -712,6 +712,6 @@ future iterations:
 - **Planner Deployment** - How Planner itself is deployed and scaled
 - **Multi-Tenancy** - User/organization isolation and separate knowledge bases
 - **Data Versioning** - Strategy for updating model catalogs, benchmarks, and
-  SLO templates over time
+  use case definitions over time
 - **Non-Functional Requirements** - System response times, availability targets,
   and operational characteristics

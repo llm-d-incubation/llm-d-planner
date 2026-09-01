@@ -43,7 +43,6 @@ class TestPlannerInit:
         config_dir = tmp_path / "configuration"
         config_dir.mkdir(parents=True)
 
-        (config_dir / "slo_templates.json").write_text('{"use_cases":{}}')
         (config_dir / "model_catalog.json").write_text('{"models":[]}')
         (config_dir / "gpu_catalog.json").write_text('{"gpu_types":[]}')
         (config_dir / "quality_weights.json").write_text("{}")

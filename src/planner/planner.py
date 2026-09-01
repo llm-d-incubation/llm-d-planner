@@ -22,7 +22,6 @@ from planner.data._resolver import data_path
 from planner.errors import PlannerError
 from planner.knowledge_base.benchmarks import BenchmarkRepository
 from planner.knowledge_base.model_catalog import ModelCatalog
-from planner.knowledge_base.slo_templates import SLOTemplateRepository
 from planner.orchestration.workflow import RecommendationWorkflow
 from planner.recommendation.config_finder import ConfigFinder
 from planner.recommendation.quality.scoring import build_scoring_engine, load_quality_weights
@@ -79,7 +78,6 @@ class Planner:
         self._benchmark_repo = BenchmarkRepository(db_path=":memory:")
 
         # Resolve data paths
-        slo_path = data_path("configuration/slo_templates.json", data_dir)
         catalog_path = data_path("configuration/model_catalog.json", data_dir)
         gpu_catalog_path = data_path("configuration/gpu_catalog.json", data_dir)
         quality_weights_path = data_path("configuration/quality_weights.json", data_dir)
@@ -89,7 +87,6 @@ class Planner:
             data_path=catalog_path,
             gpu_catalog_path=gpu_catalog_path,
         )
-        self._slo_repo = SLOTemplateRepository(data_path=slo_path)
         self._spec_service = SpecificationService(data_dir=data_dir)
 
         # Build quality scoring engine

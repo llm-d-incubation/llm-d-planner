@@ -10,7 +10,7 @@ import logging
 from pathlib import Path
 
 from planner.data._resolver import data_path
-from planner.knowledge_base.slo_templates import SLOTemplateRepository
+from planner.knowledge_base.use_cases import UseCaseRepository
 from planner.recommendation.quality.scoring import load_quality_weights
 from planner.shared.schemas import (
     DeploymentIntent,
@@ -34,13 +34,10 @@ class SpecificationService:
         self._data_dir = data_dir
 
         if traffic_gen is None:
-            slo_repo = SLOTemplateRepository(
-                data_path=data_path("configuration/slo_templates.json", data_dir),
+            use_case_repo = UseCaseRepository(
+                data_path=data_path("configuration/usecase_slo_workload.json", data_dir),
             )
-            traffic_gen = TrafficProfileGenerator(
-                slo_repo=slo_repo,
-                usecase_data_path=data_path("configuration/usecase_slo_workload.json", data_dir),
-            )
+            traffic_gen = TrafficProfileGenerator(use_case_repo=use_case_repo)
         self._traffic_gen = traffic_gen
 
         # Cache config data at init — these are static files

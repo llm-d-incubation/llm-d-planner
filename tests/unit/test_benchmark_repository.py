@@ -1,4 +1,4 @@
-"""Tests for benchmark repository and SLO templates.
+"""Tests for benchmark repository and use case definitions.
 
 Uses a temporary SQLite database with static fixture data (see conftest.py).
 
@@ -7,14 +7,14 @@ Tests cover:
 2. Traffic profile exact matching
 3. p95/ITL metric usage
 4. SLO filtering and compliance checking
-5. SLO templates - JSON-based (no database needed)
+5. Use case definitions - JSON-based (no database needed)
 """
 
 import pytest
 
 from planner.knowledge_base.benchmarks import BenchmarkData, BenchmarkRepository
 from planner.knowledge_base.loader import get_db_stats
-from planner.knowledge_base.slo_templates import SLOTemplateRepository
+from planner.knowledge_base.use_cases import UseCaseRepository
 
 
 @pytest.mark.unit
@@ -178,47 +178,51 @@ class TestBenchmarkRepository:
 
 
 @pytest.mark.unit
-class TestSLOTemplates:
-    """Tests for SLO templates with p95/ITL migration."""
+class TestUseCaseRepository:
+    """Tests for use case definitions."""
 
     @pytest.fixture
     def repo(self):
-        """Create SLOTemplateRepository instance."""
-        return SLOTemplateRepository()
+        """Create UseCaseRepository instance."""
+        return UseCaseRepository()
 
-    def test_load_templates(self, repo):
-        """Test loading SLO templates from JSON."""
-        templates = repo.get_all_templates()
+    def test_load_use_cases(self, repo):
+        """Test loading use case definitions from JSON."""
+        use_cases = repo.get_all_use_cases()
 
-        assert len(templates) > 0
-        assert isinstance(templates, dict)
+        assert len(use_cases) > 0
+        assert isinstance(use_cases, dict)
 
-    def test_template_has_traffic_profile(self, repo):
-        """Test that templates include traffic profile."""
-        template = repo.get_template("chatbot_conversational")
+    def test_use_case_has_traffic_profile(self, repo):
+        """Test that use cases include traffic profile."""
+        uc = repo.get_use_case("chatbot_conversational")
 
-        assert template is not None
-        assert hasattr(template, "prompt_tokens")
-        assert hasattr(template, "output_tokens")
-        assert template.prompt_tokens > 0
-        assert template.output_tokens > 0
+        assert uc is not None
+        assert hasattr(uc, "prompt_tokens")
+        assert hasattr(uc, "output_tokens")
+        assert uc.prompt_tokens > 0
+        assert uc.output_tokens > 0
 
-    def test_template_has_p95_slo_targets(self, repo):
-        """Test that SLO templates use p95 targets."""
-        template = repo.get_template("chatbot_conversational")
+    def test_use_case_has_slo_ranges(self, repo):
+        """Test that use cases have SLO min/max ranges."""
+        uc = repo.get_use_case("chatbot_conversational")
 
-        assert template is not None
+        assert uc is not None
+        assert uc.ttft_range.min > 0
+        assert uc.ttft_range.max > uc.ttft_range.min
+        assert uc.itl_range.min > 0
+        assert uc.itl_range.max > uc.itl_range.min
+        assert uc.e2e_range.min > 0
+        assert uc.e2e_range.max > uc.e2e_range.min
 
-        assert hasattr(template, "ttft_p95_target_ms")
-        assert hasattr(template, "itl_p95_target_ms")
-        assert hasattr(template, "e2e_p95_target_ms")
-
-        assert template.ttft_p95_target_ms > 0
-        assert template.itl_p95_target_ms > 0
-        assert template.e2e_p95_target_ms > 0
+    def test_use_case_has_display_name(self, repo):
+        """Test that use cases have display names."""
+        uc = repo.get_use_case("chatbot_conversational")
+        assert uc is not None
+        assert uc.display_name == "Chatbot / Conversational AI"
 
     def test_all_9_use_cases_present(self, repo):
-        """Test that all 9 use cases from traffic_and_slos.md are present."""
+        """Test that all 9 use cases are present."""
         expected_use_cases = [
             "chatbot_conversational",
             "code_completion",
@@ -231,20 +235,20 @@ class TestSLOTemplates:
             "research_legal_analysis",
         ]
 
-        templates = repo.get_all_templates()
+        use_cases = repo.get_all_use_cases()
 
         for use_case in expected_use_cases:
-            assert use_case in templates, f"Missing use case: {use_case}"
+            assert use_case in use_cases, f"Missing use case: {use_case}"
 
     def test_traffic_profiles_match_guidelm(self, repo):
         """Test that traffic profiles match the 4 GuideLLM configurations."""
         expected_profiles = {(512, 256), (1024, 1024), (4096, 512), (10240, 1536)}
 
-        templates = repo.get_all_templates()
+        use_cases = repo.get_all_use_cases()
         actual_profiles = set()
 
-        for template in templates.values():
-            actual_profiles.add((template.prompt_tokens, template.output_tokens))
+        for uc in use_cases.values():
+            actual_profiles.add((uc.prompt_tokens, uc.output_tokens))
 
         for profile in actual_profiles:
             assert profile in expected_profiles, f"Unexpected profile: {profile}"

@@ -1,1 +1,1 @@
-"""Knowledge Base - Component 6: Data access layer for benchmarks, SLO templates, model catalog."""
+"""Knowledge Base - Data access layer for benchmarks, use case definitions, model catalog."""

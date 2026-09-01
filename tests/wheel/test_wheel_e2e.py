@@ -31,7 +31,7 @@ class TestWheelE2E:
         from planner.data._resolver import data_path
 
         # Verify bundled data files exist
-        assert data_path("configuration/slo_templates.json").exists()
+        assert data_path("configuration/usecase_slo_workload.json").exists()
         assert data_path("configuration/model_catalog.json").exists()
         assert data_path("configuration/quality_weights.json").exists()
 

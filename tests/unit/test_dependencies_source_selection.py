@@ -65,7 +65,7 @@ def test_model_catalog_mode_creates_client_and_syncs():
         patch("planner.api.dependencies._sync_model_catalog_async") as mock_sync,
         patch("planner.api.dependencies.RecommendationWorkflow") as mock_wf_cls,
         patch("planner.api.dependencies.ModelCatalog") as mock_mc,
-        patch("planner.api.dependencies.SLOTemplateRepository"),
+        patch("planner.api.dependencies.UseCaseRepository"),
         patch("planner.api.dependencies.DeploymentGenerator"),
         patch("planner.api.dependencies.YAMLValidator"),
         patch(
@@ -107,7 +107,7 @@ def test_database_workflow_uses_defaults():
     with (
         patch("planner.api.dependencies.RecommendationWorkflow") as mock_wf_cls,
         patch("planner.api.dependencies.ModelCatalog") as mock_mc,
-        patch("planner.api.dependencies.SLOTemplateRepository"),
+        patch("planner.api.dependencies.UseCaseRepository"),
         patch("planner.api.dependencies.DeploymentGenerator"),
         patch("planner.api.dependencies.YAMLValidator"),
         patch(
@@ -141,7 +141,7 @@ def test_init_app_state_sets_all_singletons():
     with (
         patch("planner.api.dependencies.RecommendationWorkflow"),
         patch("planner.api.dependencies.ModelCatalog") as mock_mc,
-        patch("planner.api.dependencies.SLOTemplateRepository") as mock_slo,
+        patch("planner.api.dependencies.UseCaseRepository") as mock_ucr,
         patch("planner.api.dependencies.DeploymentGenerator") as mock_dg,
         patch("planner.api.dependencies.YAMLValidator") as mock_yv,
         patch(
@@ -156,7 +156,7 @@ def test_init_app_state_sets_all_singletons():
         deps.init_app_state(app)
 
         assert app.state.model_catalog == mock_mc.return_value
-        assert app.state.slo_repo == mock_slo.return_value
+        assert app.state.use_case_repo == mock_ucr.return_value
         assert app.state.deployment_generator == mock_dg.return_value
         assert app.state.yaml_validator == mock_yv.return_value
         assert app.state.cluster_managers == {}
