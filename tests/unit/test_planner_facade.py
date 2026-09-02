@@ -1,5 +1,6 @@
 """Tests for Planner facade class."""
 
+import logging
 from pathlib import Path
 from unittest.mock import patch
 
@@ -232,3 +233,48 @@ class TestLoadBenchmarks:
         planner.load_benchmarks(bench_file)
 
         assert planner._benchmark_repo.get_stats()["total_benchmarks"] > 0
+
+
+@pytest.mark.unit
+class TestRecommendationsReusePlannerCatalog:
+    """The recommendation path must reuse the Planner's ModelCatalog.
+
+    normalize_gpu_types() inside ConfigFinder.plan_all_capacities() needs
+    a ModelCatalog for GPU alias resolution.  It should use the catalog that
+    Planner already created (and that sync_model_catalog may have enriched),
+    not construct a redundant second instance.
+    """
+
+    def _count_catalog_loads(self, caplog) -> int:
+        return sum(
+            1
+            for r in caplog.records
+            if r.name == "planner.knowledge_base.model_catalog"
+            and "Loaded" in r.message
+        )
+
+    def test_no_redundant_model_catalog_during_recommendations(self, caplog):
+        """ModelCatalog is loaded once at init, not again during recommendations."""
+        # --- Phase 1: Planner() init — expect exactly one catalog load ---
+        with caplog.at_level(logging.INFO):
+            planner = Planner()
+            planner.load_benchmarks(FIXTURES_DIR / "test_benchmarks.json")
+
+        assert self._count_catalog_loads(caplog) == 1
+
+        # --- Phase 2: generate_specification + generate_recommendations ---
+        #     Must NOT produce another catalog load.
+        caplog.clear()
+        with caplog.at_level(logging.INFO):
+            intent = DeploymentIntent(
+                use_case="chatbot_conversational",
+                user_count=100,
+                preferred_gpu_types=["H100"],
+            )
+            spec = planner.generate_specification(intent)
+            planner.generate_recommendations(spec)
+
+        assert self._count_catalog_loads(caplog) == 0, (
+            "normalize_gpu_types() should reuse the Planner's catalog, "
+            "not construct a redundant ModelCatalog"
+        )
