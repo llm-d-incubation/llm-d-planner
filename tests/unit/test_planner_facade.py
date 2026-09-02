@@ -6,6 +6,7 @@ from unittest.mock import patch
 import pytest
 
 from planner import Planner, PlannerConfig, PlannerError
+from planner.knowledge_base.model_catalog_sync import SyncResult
 from planner.shared.schemas import DeploymentIntent
 
 FIXTURES_DIR = Path(__file__).parent.parent / "fixtures"
@@ -232,3 +233,55 @@ class TestLoadBenchmarks:
         planner.load_benchmarks(bench_file)
 
         assert planner._benchmark_repo.get_stats()["total_benchmarks"] > 0
+
+
+@pytest.mark.unit
+class TestSyncModelCatalog:
+    """Test sync_model_catalog facade method."""
+
+    def test_sync_returns_actual_counts_from_sync_result(self):
+        """sync_model_catalog() must surface real counts from SyncResult, not zeros."""
+        fake_result = SyncResult(
+            benchmarks_inserted=42,
+            models_merged=7,
+            quality_scores_loaded=3,
+            errors=["one warning"],
+        )
+
+        planner = Planner()
+
+        with (
+            patch(
+                "planner.knowledge_base.model_catalog_sync.sync_model_catalog",
+                return_value=fake_result,
+            ),
+            patch(
+                "planner.knowledge_base.model_catalog_client.ModelCatalogClient",
+            ),
+        ):
+            result = planner.sync_model_catalog(url="https://example.com")
+
+        assert result["benchmarks_added"] == 42
+        assert result["models_added"] == 7
+        assert result["errors"] == ["one warning"]
+
+    def test_sync_returns_zeros_when_nothing_synced(self):
+        """sync_model_catalog() returns zeros when SyncResult has zero counts."""
+        fake_result = SyncResult()
+
+        planner = Planner()
+
+        with (
+            patch(
+                "planner.knowledge_base.model_catalog_sync.sync_model_catalog",
+                return_value=fake_result,
+            ),
+            patch(
+                "planner.knowledge_base.model_catalog_client.ModelCatalogClient",
+            ),
+        ):
+            result = planner.sync_model_catalog(url="https://example.com")
+
+        assert result["benchmarks_added"] == 0
+        assert result["models_added"] == 0
+        assert result["errors"] == []

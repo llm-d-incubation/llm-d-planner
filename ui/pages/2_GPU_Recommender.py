@@ -718,7 +718,7 @@ if st.session_state.recommendation_results is not None:
                         cost_col1, cost_col2 = st.columns(2)
 
                         num_gpus = result.get("num_gpus", 1) if isinstance(result, dict) else 1
-                        cost = result.get("cost") if isinstance(result, dict) else None
+                        cost = result.get("cost") if isinstance(result, dict) else None  # type: ignore[assignment]
 
                         with cost_col1:
                             if cost is not None:
