@@ -249,8 +249,7 @@ class TestRecommendationsReusePlannerCatalog:
         return sum(
             1
             for r in caplog.records
-            if r.name == "planner.knowledge_base.model_catalog"
-            and "Loaded" in r.message
+            if r.name == "planner.knowledge_base.model_catalog" and "Loaded" in r.message
         )
 
     def test_no_redundant_model_catalog_during_recommendations(self, caplog):

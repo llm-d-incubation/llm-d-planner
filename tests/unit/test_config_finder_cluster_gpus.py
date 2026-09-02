@@ -5,6 +5,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
+from planner.knowledge_base.model_catalog import ModelCatalog
 from planner.recommendation.config_finder import ConfigFinder
 from planner.shared.schemas import DeploymentIntent, GpuPreference, SLOTargets, TrafficProfile
 
@@ -43,9 +44,8 @@ class TestClusterGPUIntersection:
     def setup_method(self):
         self.mock_repo = MagicMock()
         self.mock_repo.find_configurations_meeting_slo.return_value = []
-        self.mock_catalog = MagicMock()
-        self.mock_catalog.get_all_models.return_value = []
-        self.finder = ConfigFinder(benchmark_repo=self.mock_repo, catalog=self.mock_catalog)
+        self.catalog = ModelCatalog()
+        self.finder = ConfigFinder(benchmark_repo=self.mock_repo, catalog=self.catalog)
 
     def _call(self, cluster_gpu_types=None, preferred_gpu_types=None):
         """Helper to call plan_all_capacities and return gpu_types from the first repo call."""

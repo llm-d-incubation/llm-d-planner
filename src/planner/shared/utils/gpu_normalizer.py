@@ -143,7 +143,7 @@ def _fuzzy_resolve(raw: str, catalog: "ModelCatalog") -> list[str]:
     return []
 
 
-def normalize_gpu_types(gpu_types: list) -> list[str]:
+def normalize_gpu_types(gpu_types: list, catalog: "ModelCatalog | None" = None) -> list[str]:
     """
     Normalize GPU types to canonical names using ModelCatalog aliases.
 
@@ -155,6 +155,8 @@ def normalize_gpu_types(gpu_types: list) -> list[str]:
 
     Args:
         gpu_types: List of GPU type strings or GpuPreference objects from user input
+        catalog: ModelCatalog for GPU alias resolution. Falls back to a
+            module-level singleton when not provided.
 
     Returns:
         List of canonical GPU names (uppercase), deduplicated and sorted
@@ -162,7 +164,8 @@ def normalize_gpu_types(gpu_types: list) -> list[str]:
     if not gpu_types:
         return []
 
-    catalog = _get_catalog()
+    if catalog is None:
+        catalog = _get_catalog()
     normalized = set()
 
     for gpu in gpu_types:
@@ -215,7 +218,9 @@ def normalize_gpu_types(gpu_types: list) -> list[str]:
     return sorted(normalized)  # Sorted for consistent ordering
 
 
-def extract_gpu_max_counts(gpu_types: list) -> dict[str, int]:
+def extract_gpu_max_counts(
+    gpu_types: list, catalog: "ModelCatalog | None" = None
+) -> dict[str, int]:
     """Extract max_count limits from GpuPreference objects.
 
     Returns dict mapping normalized GPU type -> max_count.
@@ -223,6 +228,8 @@ def extract_gpu_max_counts(gpu_types: list) -> dict[str, int]:
 
     Args:
         gpu_types: List of GPU type strings or GpuPreference objects
+        catalog: ModelCatalog for GPU alias resolution. Falls back to a
+            module-level singleton when not provided.
 
     Returns:
         Dict mapping normalized GPU type to max_count
@@ -248,7 +255,7 @@ def extract_gpu_max_counts(gpu_types: list) -> dict[str, int]:
 
         if max_count is not None and gpu_str:
             # Normalize the GPU name to match what normalize_gpu_types returns
-            normalized = normalize_gpu_types([gpu_str])
+            normalized = normalize_gpu_types([gpu_str], catalog=catalog)
             for name in normalized:
                 limits[name] = max_count
 
