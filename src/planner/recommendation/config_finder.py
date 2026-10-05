@@ -48,6 +48,7 @@ class ConfigFinder:
         catalog: ModelCatalog | None = None,
         engine: ScoringEngine | None = None,
         quality_weights: dict | None = None,
+        hf_token: str | None = None,
     ):
         """
         Initialize capacity planner.
@@ -57,11 +58,13 @@ class ConfigFinder:
             catalog: Model catalog
             engine: ScoringEngine for quality scoring (from quality_scoring package)
             quality_weights: Use-case category weights dict loaded from quality_weights.json
+            hf_token: HuggingFace token for estimation (defaults to HF_TOKEN)
         """
         self.benchmark_repo = benchmark_repo or BenchmarkRepository()
         self.catalog = catalog or ModelCatalog()
         self._engine = engine
         self._quality_weights = quality_weights or {}
+        self._hf_token = hf_token
 
     def update_engine(self, engine: ScoringEngine, quality_weights: dict | None = None) -> None:
         """Replace the scoring engine and optionally the quality weights."""
@@ -291,6 +294,7 @@ class ConfigFinder:
                 gpu_types=normalized_gpus if normalized_gpus and not gpu_fallback else None,
                 catalog=self.catalog,
                 benchmark_repo=self.benchmark_repo,
+                hf_token=self._hf_token,
             )
             all_warnings.extend(estimation_warnings)
             if estimated_configs:

@@ -148,7 +148,7 @@ p = Planner(config)
 | `quality_auto_update` | `bool` | `False` | Fetch fresh Arena/AA data on init when cache is stale. Cache is written to `quality_cache_dir` (or `.quality_cache/` in CWD). Requires `aa_api_key` for AA data. |
 | `quality_cache_dir` | `Path \| None` | `None` | Directory for runtime quality cache. Default: `.quality_cache/` in current working directory, or `LLM_QUALITY_CACHE_DIR` env var. Only used when `quality_auto_update=True`. |
 | `aa_api_key` | `str \| None` | `None` | Artificial Analysis API key (for quality data refresh). Falls back to `AA_API_KEY` env var. |
-| `hf_token` | `str \| None` | `None` | HuggingFace token (for model config lookups) |
+| `hf_token` | `str \| None` | `None` | HuggingFace token for estimated-performance model lookups; falls back to `HF_TOKEN` when `None` |
 | `model_catalog_url` | `str \| None` | `None` | Model Catalog API URL (for `sync_model_catalog()`) |
 | `model_catalog_token` | `str \| None` | `None` | Auth token for Model Catalog API |
 

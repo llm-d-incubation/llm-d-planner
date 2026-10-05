@@ -111,6 +111,7 @@ class GPURecommender:
         # Cost parameters
         custom_gpu_costs: dict[str, float] | None = None,
         catalog: ModelCatalog | None = None,
+        hf_token: str | None = None,
     ):
         """
         Initialize GPU Recommender.
@@ -129,6 +130,7 @@ class GPURecommender:
             max_latency: Maximum end-to-end latency constraint (s)
             custom_gpu_costs: Optional dict mapping GPU names to custom costs
             catalog: Optional ModelCatalog instance (avoids reloading JSON files)
+            hf_token: HuggingFace token for model lookups (defaults to HF_TOKEN)
 
         Raises:
             ImportError: If llm-optimizer is not installed
@@ -141,8 +143,8 @@ class GPURecommender:
                 "pip install git+https://github.com/bentoml/llm-optimizer.git"
             )
 
-        # Read HF Token from environment variable
-        hf_token = os.getenv("HF_TOKEN", None)
+        if hf_token is None:
+            hf_token = os.getenv("HF_TOKEN")
 
         self.input_len = input_len
         self.output_len = output_len
