@@ -193,6 +193,11 @@ class BenchmarkRepository:
         """Get current database statistics."""
         return get_db_stats(self._conn)
 
+    def check_health(self) -> None:
+        """Verify database access and the benchmark schema without scanning all rows."""
+        cursor = self._conn.execute("SELECT 1 FROM exported_summaries LIMIT 1")
+        cursor.close()
+
     def reset(self) -> None:
         """Delete all benchmark data. Schema is preserved."""
         reset_benchmarks(self._conn)

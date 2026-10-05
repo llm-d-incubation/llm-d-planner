@@ -208,8 +208,13 @@ uvicorn planner.api.main:app --reload --host 0.0.0.0 --port 8000
 **Verify:**
 ```bash
 curl http://localhost:8000/health
-# Should return: {"status":"healthy"}
+# HTTP 200: {"status":"healthy","service":"planner"}
 ```
+
+`/health` checks the active benchmark database connection and schema. It returns
+HTTP 503 with `{"status":"unhealthy","service":"planner"}` when that check
+fails. An empty benchmark database is healthy. LLM provider availability is
+reported separately by `/api/v1/llm-status`.
 
 **API Documentation:**
 - Swagger UI: http://localhost:8000/docs
