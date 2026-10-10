@@ -102,48 +102,42 @@ def get_workload_insights(use_case: str, qps: int, user_count: int) -> list:
 
 
 def _render_slo_targets(slo_defaults):
-    """Render the SLO target inputs (TTFT, ITL, E2E) with percentile selectors."""
+    """Render SLO inputs with one percentile shared by all latency targets."""
     st.write("**SLO Targets**")
 
-    percentile_options = ["P50", "P90", "P95", "P99"]
-    percentile_map = {"P50": "p50", "P90": "p90", "P95": "p95", "P99": "p99"}
-    reverse_map = {"p50": "P50", "p90": "P90", "p95": "P95", "p99": "P99"}
+    prev_percentile = st.session_state.get("_last_slo_percentile")
+    percentile_options = ["p90", "p95", "p99"]
+    st.selectbox(
+        "SLO percentile",
+        percentile_options,
+        index=percentile_options.index(st.session_state.get("slo_percentile", "p95")),
+        key="slo_percentile",
+        format_func=str.upper,
+        help="Use this percentile for TTFT, ITL, and E2E latency comparisons.",
+    )
 
     prev_ttft = st.session_state.get("_last_ttft")
     prev_itl = st.session_state.get("_last_itl")
     prev_e2e = st.session_state.get("_last_e2e")
 
     def render_slo_input(metric: str, label: str, step: int):
-        """Render a single SLO input (value + percentile selector)."""
+        """Render a single latency target."""
         metric_key = {"ttft": "ttft_ms", "itl": "itl_ms", "e2e": "e2e_ms"}[metric]
         val_min = int(slo_defaults[metric_key]["min"])
         val_max = int(slo_defaults[metric_key]["max"])
         input_key = f"input_{metric}"
         custom_key = f"custom_{metric}"
-        pct_key = f"{metric}_percentile"
         if input_key not in st.session_state:
             st.session_state[input_key] = slo_defaults[metric_key]["default"]
         st.write(f"**{label}**")
-        val_col, pct_col = st.columns([2, 1])
-        with val_col:
-            st.number_input(
-                f"{metric.upper()} value",
-                min_value=1,
-                step=step,
-                key=input_key,
-                label_visibility="collapsed",
-            )
-            st.session_state[custom_key] = st.session_state[input_key]
-        with pct_col:
-            pct_display = reverse_map.get(st.session_state[pct_key], "P95")
-            selected_pct = st.selectbox(
-                f"{metric.upper()} percentile",
-                percentile_options,
-                index=percentile_options.index(pct_display),
-                key=f"{metric}_pct_selector",
-                label_visibility="collapsed",
-            )
-            st.session_state[pct_key] = percentile_map[selected_pct]
+        st.number_input(
+            f"{metric.upper()} value",
+            min_value=1,
+            step=step,
+            key=input_key,
+            label_visibility="collapsed",
+        )
+        st.session_state[custom_key] = st.session_state[input_key]
         st.caption(f"Recommended Range: {val_min:,} - {val_max:,} ms")
 
     render_slo_input("ttft", "TTFT (Time to First Token)", step=100)
@@ -154,12 +148,18 @@ def _render_slo_targets(slo_defaults):
     curr_itl = st.session_state.get("custom_itl")
     curr_e2e = st.session_state.get("custom_e2e")
 
-    if curr_ttft != prev_ttft or curr_itl != prev_itl or curr_e2e != prev_e2e:
+    if (
+        curr_ttft != prev_ttft
+        or curr_itl != prev_itl
+        or curr_e2e != prev_e2e
+        or st.session_state.slo_percentile != prev_percentile
+    ):
         if st.session_state.get("recommendation_result"):
             st.session_state.recommendation_result = None
         st.session_state._last_ttft = curr_ttft
         st.session_state._last_itl = curr_itl
         st.session_state._last_e2e = curr_e2e
+        st.session_state._last_slo_percentile = st.session_state.slo_percentile
 
 
 def _render_workload_profile(use_case, workload_profile, estimated_qps, qps, user_count):

@@ -21,9 +21,6 @@ SESSION_DEFAULTS: dict[str, Any] = {
     "custom_e2e": None,
     "custom_qps": None,
     "slo_percentile": "p95",
-    "ttft_percentile": "p95",
-    "itl_percentile": "p95",
-    "e2e_percentile": "p95",
     "include_near_miss": False,
     # Category expansion
     "expanded_categories": set(),

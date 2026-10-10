@@ -196,13 +196,16 @@ make cluster-stop   # Delete cluster (optional)
 2. **Analyze use case** - Click "Analyze Use Case" to extract intent
 3. **Generate specification** - Click "Generate Specification" to create traffic
    profile and SLO targets
-4. **Review specification** - Edit SLO targets, priorities, or constraints if
+4. **Review specification** - Choose a shared P90, P95, or P99 percentile for
+   TTFT, ITL, and E2E latency targets. Edit SLO targets, priorities, or constraints if
    needed
 5. **Generate recommendations** - Click "Generate Recommendations" to find
    recommended configurations
 6. **Select a recommendation** - Review ranked options and click "Select"
 7. **Deploy** - Go to the "Deployment" tab to review, copy, or download
    generated deployment files, or deploy to Kubernetes cluster if connected
+
+![Shared SLO percentile selector](https://raw.githubusercontent.com/llm-d-incubation/llm-d-planner/main/docs/images/slo-percentile.png)
 
 **Capacity Planner** (sidebar page): Enter a HuggingFace model ID and GPU
 configuration to see memory breakdown (model weights, KV cache, activation,
