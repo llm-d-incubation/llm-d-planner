@@ -580,6 +580,11 @@ curl http://localhost:8080/health
 
 The UI entrypoint is `ui/main.py` (navigation); main page content is in `ui/app.py`. Changes auto-reload in the browser.
 
+Reference-data requests in `ui/api_client.py` cache successful results. Failed
+requests display a warning and retry on the next UI interaction. Keep error
+handling outside `st.cache_data` so fallback values do not delay recovery after
+a backend outage.
+
 **Key sections:**
 - `render_chat_interface()` - Chat input/history
 - `render_recommendation()` - Recommendation tabs

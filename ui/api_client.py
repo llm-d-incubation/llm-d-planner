@@ -6,7 +6,9 @@ All HTTP communication with the backend lives here.
 import contextlib
 import logging
 import os
-from typing import Any, cast
+from collections.abc import Callable
+from functools import wraps
+from typing import Any, ParamSpec, TypeVar, cast
 
 import requests
 import streamlit as st
@@ -21,7 +23,35 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
+P = ParamSpec("P")
+T = TypeVar("T")
 
+
+def _handle_fetch_errors(
+    default_factory: Callable[[], Any],
+) -> Callable[[Callable[P, T]], Callable[P, T]]:
+    """Keep error reporting and fallback values outside the data cache."""
+
+    def decorate(fetch: Callable[P, T]) -> Callable[P, T]:
+        @wraps(fetch)
+        def wrapped(*args: P.args, **kwargs: P.kwargs) -> T:
+            try:
+                return fetch(*args, **kwargs)
+            except Exception as e:
+                description = fetch.__name__.removeprefix("fetch_").replace("_", " ")
+                logger.warning("Failed to fetch %s: %s", description, e)
+                st.warning(
+                    f"Cannot load {description} from the backend API. "
+                    "Check that the backend is available and try again."
+                )
+                return cast(T, default_factory())
+
+        return wrapped
+
+    return decorate
+
+
+@_handle_fetch_errors(lambda: None)
 @st.cache_data(ttl=300)
 def fetch_slo_defaults(use_case: str) -> dict | None:
     """Fetch default SLO values for a use case from the backend API.
@@ -29,21 +59,18 @@ def fetch_slo_defaults(use_case: str) -> dict | None:
     Returns dict with ttft_ms, itl_ms, e2e_ms each containing min, max, default.
     Cached for 5 minutes.
     """
-    try:
-        response = requests.get(
-            f"{API_BASE_URL}/api/v1/slo-defaults/{use_case}",
-            timeout=DEFAULT_TIMEOUT,
-        )
-        response.raise_for_status()
-        data = response.json()
-        if data.get("success"):
-            return cast(dict[Any, Any] | None, data.get("slo_defaults"))
-        return None
-    except Exception as e:
-        logger.warning(f"Failed to fetch SLO defaults for {use_case}: {e}")
-        return None
+    response = requests.get(
+        f"{API_BASE_URL}/api/v1/slo-defaults/{use_case}",
+        timeout=DEFAULT_TIMEOUT,
+    )
+    response.raise_for_status()
+    data = response.json()
+    if not data.get("success"):
+        raise ValueError("Backend could not provide SLO defaults")
+    return cast(dict[Any, Any] | None, data.get("slo_defaults"))
 
 
+@_handle_fetch_errors(lambda: None)
 @st.cache_data(ttl=300)
 def fetch_expected_rps(use_case: str, user_count: int) -> dict | None:
     """Fetch expected RPS for a use case from the backend API.
@@ -55,22 +82,19 @@ def fetch_expected_rps(use_case: str, user_count: int) -> dict | None:
 
     Cached for 5 minutes.
     """
-    try:
-        response = requests.get(
-            f"{API_BASE_URL}/api/v1/expected-rps/{use_case}",
-            params={"user_count": user_count},
-            timeout=DEFAULT_TIMEOUT,
-        )
-        response.raise_for_status()
-        data = response.json()
-        if data.get("success"):
-            return cast(dict[Any, Any], data)
-        return None
-    except Exception as e:
-        logger.warning(f"Failed to fetch expected RPS for {use_case}: {e}")
-        return None
+    response = requests.get(
+        f"{API_BASE_URL}/api/v1/expected-rps/{use_case}",
+        params={"user_count": user_count},
+        timeout=DEFAULT_TIMEOUT,
+    )
+    response.raise_for_status()
+    data = response.json()
+    if not data.get("success"):
+        raise ValueError("Backend could not provide expected RPS")
+    return cast(dict[Any, Any], data)
 
 
+@_handle_fetch_errors(lambda: None)
 @st.cache_data(ttl=300)
 def fetch_workload_profile(use_case: str) -> dict | None:
     """Fetch workload profile for a use case from the backend API.
@@ -81,21 +105,18 @@ def fetch_workload_profile(use_case: str) -> dict | None:
 
     Cached for 5 minutes.
     """
-    try:
-        response = requests.get(
-            f"{API_BASE_URL}/api/v1/workload-profile/{use_case}",
-            timeout=DEFAULT_TIMEOUT,
-        )
-        response.raise_for_status()
-        data = response.json()
-        if data.get("success"):
-            return cast(dict[Any, Any] | None, data.get("workload_profile"))
-        return None
-    except Exception as e:
-        logger.warning(f"Failed to fetch workload profile for {use_case}: {e}")
-        return None
+    response = requests.get(
+        f"{API_BASE_URL}/api/v1/workload-profile/{use_case}",
+        timeout=DEFAULT_TIMEOUT,
+    )
+    response.raise_for_status()
+    data = response.json()
+    if not data.get("success"):
+        raise ValueError("Backend could not provide workload profile")
+    return cast(dict[Any, Any] | None, data.get("workload_profile"))
 
 
+@_handle_fetch_errors(lambda: None)
 @st.cache_data(ttl=3600)
 def fetch_priority_weights() -> dict | None:
     """Fetch priority weights configuration from the backend API.
@@ -103,37 +124,31 @@ def fetch_priority_weights() -> dict | None:
     Returns dict with priority_weights mapping and defaults.
     Cached for 1 hour (config rarely changes).
     """
-    try:
-        response = requests.get(
-            f"{API_BASE_URL}/api/v1/priority-weights",
-            timeout=DEFAULT_TIMEOUT,
-        )
-        response.raise_for_status()
-        data = response.json()
-        if data.get("success"):
-            return cast(dict[Any, Any] | None, data.get("priority_weights"))
-        return None
-    except Exception as e:
-        logger.warning(f"Failed to fetch priority weights: {e}")
-        return None
+    response = requests.get(
+        f"{API_BASE_URL}/api/v1/priority-weights",
+        timeout=DEFAULT_TIMEOUT,
+    )
+    response.raise_for_status()
+    data = response.json()
+    if not data.get("success"):
+        raise ValueError("Backend could not provide priority weights")
+    return cast(dict[Any, Any] | None, data.get("priority_weights"))
 
 
+@_handle_fetch_errors(list)
 @st.cache_data(ttl=3600)
 def fetch_catalog_model_ids() -> list[str]:
     """Fetch model IDs from the model catalog API.
 
     Returns sorted list of model_id strings (e.g., "meta-llama/Llama-3.1-8B-Instruct").
     """
-    try:
-        response = requests.get(f"{API_BASE_URL}/api/v1/models", timeout=DEFAULT_TIMEOUT)
-        response.raise_for_status()
-        data = response.json()
-        return sorted(m["model_id"] for m in data.get("models", []) if m.get("model_id"))
-    except Exception as e:
-        logger.warning(f"Failed to fetch catalog models: {e}")
-        return []
+    response = requests.get(f"{API_BASE_URL}/api/v1/models", timeout=DEFAULT_TIMEOUT)
+    response.raise_for_status()
+    data = response.json()
+    return sorted(m["model_id"] for m in data.get("models", []) if m.get("model_id"))
 
 
+@_handle_fetch_errors(dict)
 @st.cache_data(ttl=3600)
 def fetch_gpu_types() -> dict[str, dict]:
     """Fetch all GPU types from the API, keyed by canonical gpu_type name.
@@ -150,14 +165,10 @@ def fetch_gpu_types() -> dict[str, dict]:
     The keys are the same short names used in benchmark data and recommendation results,
     not longer alias strings like "NVIDIA-H100-SXM5-80GB".
     """
-    try:
-        response = requests.get(f"{API_BASE_URL}/api/v1/gpu-types", timeout=DEFAULT_TIMEOUT)
-        response.raise_for_status()
-        data = response.json()
-        return {g["gpu_type"]: g for g in data.get("gpu_types", [])}
-    except Exception as e:
-        logger.warning(f"Failed to fetch GPU types: {e}")
-        return {}
+    response = requests.get(f"{API_BASE_URL}/api/v1/gpu-types", timeout=DEFAULT_TIMEOUT)
+    response.raise_for_status()
+    data = response.json()
+    return {g["gpu_type"]: g for g in data.get("gpu_types", [])}
 
 
 def fetch_capacity_planner_model_info(model_id: str) -> dict | None:
