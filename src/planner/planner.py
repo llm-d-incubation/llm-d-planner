@@ -408,9 +408,9 @@ class Planner:
             model_catalog=self._model_catalog,
         )
 
-        benchmarks_added = getattr(result, "benchmarks_added", 0)
-        models_added = getattr(result, "models_added", 0)
-        errors = getattr(result, "errors", [])
+        benchmarks_added = result.benchmarks_inserted
+        models_added = result.models_merged
+        errors = result.errors
 
         return {
             "benchmarks_added": benchmarks_added,
