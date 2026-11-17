@@ -293,7 +293,7 @@ def get_model_info_from_hf(model_name: str, hf_token: str | None = None) -> Mode
             "HuggingFace Hub integration requires huggingface_hub. "
             "Install with: pip install llm-d-planner[estimation]"
         )
-    api = HfApi(token=hf_token)
+    api = HfApi(token=False if hf_token == "" else hf_token)
     model_info = api.model_info(model_name)
     return model_info
 
@@ -316,7 +316,7 @@ def get_model_config_from_hf(model_name: str, hf_token: str | None = None) -> An
     model_config = AutoConfig.from_pretrained(
         model_name,
         trust_remote_code=True,
-        token=hf_token or None,
+        token=False if hf_token == "" else hf_token,
     )
 
     return model_config
@@ -336,7 +336,7 @@ def _get_safetensors_metadata_cached(
             "HuggingFace Hub integration requires huggingface_hub. "
             "Install with: pip install llm-d-planner[estimation]"
         )
-    api = HfApi(token=hf_token)
+    api = HfApi(token=False if hf_token == "" else hf_token)
     return api.get_safetensors_metadata(model_name)
 
 

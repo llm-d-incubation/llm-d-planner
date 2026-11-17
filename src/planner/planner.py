@@ -106,6 +106,7 @@ class Planner:
             catalog=self._model_catalog,
             engine=self._scoring_engine,
             quality_weights=self._quality_weights,
+            hf_token=config.hf_token,
         )
 
         # Initialize workflow orchestrator
