@@ -34,6 +34,9 @@ uv.lock
 .claude/settings.json
 .claude/settings.local.json
 
+# Local agent instructions
+/AGENTS.md
+
 # IDEs
 .vscode/
 .idea/
