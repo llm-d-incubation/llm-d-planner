@@ -195,10 +195,10 @@ class ConfigFinder:
         percentile = getattr(slo_targets, "percentile", "p95")
 
         # Normalize user's preferred GPU types (handles both str and GpuPreference)
-        normalized_user_gpus = normalize_gpu_types(intent.preferred_gpu_types)
+        normalized_user_gpus = normalize_gpu_types(intent.preferred_gpu_types, catalog=self.catalog)
 
         # Extract max_count limits from GpuPreference objects
-        gpu_max_counts = extract_gpu_max_counts(intent.preferred_gpu_types)
+        gpu_max_counts = extract_gpu_max_counts(intent.preferred_gpu_types, catalog=self.catalog)
 
         # Determine effective GPU filter by intersecting cluster and user preferences
         # cluster_gpu_types semantics:
