@@ -150,6 +150,7 @@ def fetch_use_cases() -> dict[str, dict]:
         return {}
 
 
+@_handle_fetch_errors(list)
 @st.cache_data(ttl=3600)
 def fetch_catalog_model_ids() -> list[str]:
     """Fetch model IDs from the model catalog API.
