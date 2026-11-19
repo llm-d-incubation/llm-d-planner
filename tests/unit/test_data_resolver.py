@@ -38,5 +38,5 @@ class TestDataPath:
     def test_default_returns_path_inside_package(self):
         from planner.data._resolver import data_path
 
-        path = data_path("configuration/slo_templates.json")
+        path = data_path("configuration/usecase_slo_workload.json")
         assert "planner/data" in str(path)

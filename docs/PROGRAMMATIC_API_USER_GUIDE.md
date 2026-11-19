@@ -1059,7 +1059,6 @@ Expected directory structure for custom data:
 ```
 /custom/data/
   configuration/
-    slo_templates.json
     model_catalog.json
     gpu_catalog.json
     usecase_slo_workload.json

@@ -1,9 +1,10 @@
-"""Tests for range-percentile SLO default generation."""
+"""Tests for range-percentile SLO defaults and traffic profile generation."""
 
 from typing import Literal
 
 import pytest
 
+from planner.knowledge_base.use_cases import _format_display_name
 from planner.shared.schemas import DeploymentIntent, SLOTargets
 from planner.specification.traffic_profile import TrafficProfileGenerator
 
@@ -66,3 +67,54 @@ class TestSLORangePercentile:
         slo = gen.generate_slo_targets(intent)
         # TTFT range: 50-200, 25th: 50 + 150*0.25 = 87.5 -> 90
         assert slo.ttft_target_ms == 90
+
+    def test_unknown_use_case_returns_none(self):
+        from planner.knowledge_base.use_cases import UseCaseRepository
+
+        repo = UseCaseRepository()
+        assert repo.get_use_case("nonexistent_use_case") is None
+
+
+@pytest.mark.unit
+class TestTrafficProfileGeneration:
+    def test_chatbot_traffic_profile(self):
+        gen = TrafficProfileGenerator()
+        intent = _make_intent("medium")
+        profile = gen.generate_profile(intent)
+        assert profile.prompt_tokens == 512
+        assert profile.output_tokens == 256
+
+    def test_qps_calculation(self):
+        gen = TrafficProfileGenerator()
+        intent = DeploymentIntent(use_case="chatbot_conversational", user_count=1000)
+        profile = gen.generate_profile(intent)
+        # 1000 * 0.2 active * 0.4 req/min / 60 * 2.0 peak = 2.67
+        assert profile.expected_qps == 2.67
+
+    def test_code_generation_traffic_profile(self):
+        gen = TrafficProfileGenerator()
+        intent = DeploymentIntent(use_case="code_generation_detailed", user_count=100)
+        profile = gen.generate_profile(intent)
+        assert profile.prompt_tokens == 1024
+        assert profile.output_tokens == 1024
+
+    def test_small_user_count_gets_minimum_qps(self):
+        gen = TrafficProfileGenerator()
+        intent = DeploymentIntent(use_case="chatbot_conversational", user_count=1)
+        profile = gen.generate_profile(intent)
+        assert profile.expected_qps == 0.1
+
+
+@pytest.mark.unit
+class TestFormatDisplayName:
+    def test_simple_case(self):
+        assert _format_display_name("chatbot_conversational") == "Chatbot Conversational"
+
+    def test_rag_acronym(self):
+        assert _format_display_name("document_analysis_rag") == "Document Analysis RAG"
+
+    def test_ai_acronym(self):
+        assert _format_display_name("conversational_ai") == "Conversational AI"
+
+    def test_llm_acronym(self):
+        assert _format_display_name("llm_deployment") == "LLM Deployment"

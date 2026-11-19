@@ -5,6 +5,7 @@
   "use_case_slo_workload": {
 
     "chatbot_conversational": {
+      "display_name": "Chatbot / Conversational AI",
       "description": "Real-time conversational chatbots (short prompts, short responses)",
       "workload": {
         "active_fraction": 0.20,
@@ -21,6 +22,7 @@
     },
 
     "code_completion": {
+      "display_name": "Code Completion (IDE autocomplete)",
       "description": "Fast code completion/autocomplete (short prompts, short completions)",
       "workload": {
         "active_fraction": 0.25,
@@ -37,6 +39,7 @@
     },
 
     "code_generation_detailed": {
+      "display_name": "Code Generation (full implementations)",
       "description": "Detailed code generation with explanations (medium prompts, long responses)",
       "workload": {
         "active_fraction": 0.15,
@@ -53,6 +56,7 @@
     },
 
     "translation": {
+      "display_name": "Translation",
       "description": "Document translation (medium prompts, medium responses)",
       "workload": {
         "active_fraction": 0.15,
@@ -69,6 +73,7 @@
     },
 
     "content_generation": {
+      "display_name": "Content Generation",
       "description": "Content creation, marketing copy (medium prompts, medium responses)",
       "workload": {
         "active_fraction": 0.20,
@@ -85,6 +90,7 @@
     },
 
     "summarization_short": {
+      "display_name": "Short Summarization (<10 pages)",
       "description": "Short document summarization (medium prompts, short summaries)",
       "workload": {
         "active_fraction": 0.15,
@@ -101,6 +107,7 @@
     },
 
     "document_analysis_rag": {
+      "display_name": "Document RAG / Q&A",
       "description": "RAG-based document Q&A (long prompts with context, medium responses)",
       "workload": {
         "active_fraction": 0.20,
@@ -117,6 +124,7 @@
     },
 
     "long_document_summarization": {
+      "display_name": "Long Document Summarization (10+ pages)",
       "description": "Long document summarization (very long prompts, medium summaries)",
       "workload": {
         "active_fraction": 0.10,
@@ -133,6 +141,7 @@
     },
 
     "research_legal_analysis": {
+      "display_name": "Research / Legal Analysis",
       "description": "Research/legal document analysis (very long prompts, detailed analysis)",
       "workload": {
         "active_fraction": 0.10,

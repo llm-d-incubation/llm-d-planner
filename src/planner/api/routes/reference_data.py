@@ -6,10 +6,10 @@ from pathlib import Path
 
 from fastapi import APIRouter, Depends, HTTPException, status
 
-from planner.api.dependencies import get_model_catalog, get_slo_repo
+from planner.api.dependencies import get_model_catalog, get_use_case_repo
 from planner.data._resolver import data_path
 from planner.knowledge_base.model_catalog import ModelCatalog
-from planner.knowledge_base.slo_templates import SLOTemplateRepository
+from planner.knowledge_base.use_cases import UseCaseRepository
 
 logger = logging.getLogger(__name__)
 
@@ -44,13 +44,13 @@ async def list_gpu_types(model_catalog: ModelCatalog = Depends(get_model_catalog
 
 
 @router.get("/use-cases")
-async def list_use_cases(slo_repo: SLOTemplateRepository = Depends(get_slo_repo)):
-    """Get list of supported use cases with SLO templates."""
+async def list_use_cases(use_case_repo: UseCaseRepository = Depends(get_use_case_repo)):
+    """Get list of supported use cases with configuration."""
     try:
-        templates = slo_repo.get_all_templates()
+        use_cases = use_case_repo.get_all_use_cases()
         return {
-            "use_cases": {use_case: template.to_dict() for use_case, template in templates.items()},
-            "count": len(templates),
+            "use_cases": {uc_id: uc.to_dict() for uc_id, uc in use_cases.items()},
+            "count": len(use_cases),
         }
     except Exception as e:
         logger.error(f"Failed to list use cases: {e}")

@@ -119,6 +119,20 @@ def fetch_priority_weights() -> dict | None:
 
 
 @st.cache_data(ttl=3600)
+def fetch_use_cases() -> dict[str, dict]:
+    """Fetch use case definitions from the API, keyed by use case ID."""
+    try:
+        response = requests.get(f"{API_BASE_URL}/api/v1/use-cases", timeout=DEFAULT_TIMEOUT)
+        response.raise_for_status()
+        data = response.json()
+        result: dict[str, dict] = data.get("use_cases", {})
+        return result
+    except Exception as e:
+        logger.warning(f"Failed to fetch use cases: {e}")
+        return {}
+
+
+@st.cache_data(ttl=3600)
 def fetch_catalog_model_ids() -> list[str]:
     """Fetch model IDs from the model catalog API.
 

@@ -180,7 +180,7 @@ curl http://localhost:8000/api/v1/use-cases
 python -c "
 from planner.knowledge_base.benchmarks import BenchmarkRepository
 from planner.knowledge_base.model_catalog import ModelCatalog
-from planner.knowledge_base.slo_templates import SLOTemplateRepository
+from planner.knowledge_base.use_cases import UseCaseRepository
 
 # Test benchmarks
 bench_repo = BenchmarkRepository()
@@ -194,12 +194,12 @@ print(f'\nModels for chatbot: {len(models)}')
 for m in models[:3]:
     print(f'  - {m.name}')
 
-# Test SLO templates
-slo_repo = SLOTemplateRepository()
-template = slo_repo.get_template('customer_service')
-print(f'\nCustomer Service SLO:')
-print(f'  TTFT: {template.ttft_p90_target_ms}ms')
-print(f'  TPOT: {template.tpot_p90_target_ms}ms')
+# Test use case definitions
+use_case_repo = UseCaseRepository()
+uc = use_case_repo.get_use_case('chatbot_conversational')
+print(f'\nChatbot Conversational SLO ranges:')
+print(f'  TTFT: {uc.ttft_range}')
+print(f'  ITL: {uc.itl_range}')
 "
 ```
 

@@ -85,11 +85,10 @@ Planner is available as both a **Python library** (`pip install llm-d-planner`) 
     - `aa_dist.json`: AA category metadata and population stats
   - **configuration/**: Runtime configuration files (JSON)
     - `model_catalog.json`: 47 curated models with task/domain metadata
-    - `slo_templates.json`: 9 use case templates with SLO targets
+    - `usecase_slo_workload.json`: 9 use case definitions (traffic profiles, SLO ranges, workload params, display names)
     - `demo_scenarios.json`: 3 test scenarios
     - `priority_weights.json`: Scoring priority weights
     - `quality_weights.json`: Per-use-case category weights for quality scoring
-    - `usecase_slo_workload.json`: Use case SLO and workload profiles
   - `_resolver.py`: Path resolver for bundled data (works in source checkouts and installed wheels)
 
 - **data/**: Runtime data directory (database, not included in wheel)
@@ -157,21 +156,20 @@ Planner is structured as a layered architecture:
 - **API Gateway** (FastAPI) - Coordinates workflow between UI and engines
 - **Knowledge Base** (Data Layer) - Hybrid storage:
   - Database: Benchmarks, deployment outcomes
-  - JSON files: SLO templates, model catalog, hardware profiles
+  - JSON files: Use case definitions, model catalog, hardware profiles
 
 **Development Tools:**
 - **vLLM Simulator** - GPU-free development and testing
 
 ### Critical Data Collections (Knowledge Base)
 - **Model Benchmarks** (Database): TTFT/ITL/E2E/throughput benchmarks for (model, GPU, tensor_parallel) combinations (source: BLIS simulator)
-- **Use Case SLO Templates** (JSON): 9 use cases mapped to 4 GuideLLM traffic profiles with experience-driven SLO targets
+- **Use Case Definitions** (JSON, `usecase_slo_workload.json`): 9 use cases with traffic profiles, SLO ranges (min/max), workload parameters, and display names
 - **Model Catalog** (JSON): 47 curated models with task/domain metadata
 - **Model Quality Scores** (JSON): Dual-source quality data from Arena (human preferences) and Artificial Analysis (automated benchmarks)
   - Arena: Elo ratings across 27 categories with confidence intervals
   - AA: Intelligence/coding/agentic indices
   - Normalized to percentile ranks for compositing
 - **Quality Weights** (JSON): Per-use-case category weights for quality scoring (e.g., code_completion: coding 5, math 3, overall 2, agentic 2, hard_prompts 2)
-- **Use Case Configs** (JSON): Scoring priority weights, SLO targets, and workload profiles per use case
 - **Deployment Outcomes** (Database, future): Actual performance data for feedback loop
 
 ### Solution Ranking System
@@ -421,11 +419,12 @@ See `docs/PROGRAMMATIC_API_USER_GUIDE.md` for complete API pipeline documentatio
 ### Common Editing Patterns
 
 **Adding a new use case template**:
-1. Add corresponding entry to `src/planner/data/configuration/slo_templates.json` (bundled data file)
-2. Add category weights entry to `src/planner/data/configuration/quality_weights.json` (bundled data file)
-3. Update `docs/QUALITY_SCORING_GUIDE.md` with category weighting rationale
-4. Update docs/ARCHITECTURE.md if needed
-5. Test quality scoring with the new use case: `cd src && uv run pytest ../tests/quality_scoring/test_scoring.py -v`
+1. Add corresponding entry to `src/planner/data/configuration/usecase_slo_workload.json` (bundled data file)
+2. Add the new key to the `Literal` type in `src/planner/shared/schemas/intent.py`
+3. Add category weights entry to `src/planner/data/configuration/quality_weights.json` (bundled data file)
+4. Update `docs/QUALITY_SCORING_GUIDE.md` with category weighting rationale
+5. Update docs/ARCHITECTURE.md if needed
+6. Test quality scoring with the new use case: `cd src && uv run pytest ../tests/quality_scoring/test_scoring.py -v`
 
 Note: Data files are now at `src/planner/data/` and are bundled in the Python wheel.
 

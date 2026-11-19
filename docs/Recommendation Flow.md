@@ -4,22 +4,30 @@ This document describes the end-to-end recommendation flow implemented in the Pl
 
 ## Overview
 
-The recommendation flow follows a **configuration-first approach**: rather than pre-filtering models, the system queries all (model, GPU) configurations that meet SLO targets from the benchmark database, then scores each on three criteria.
+The recommendation flow is **SLO-driven**: the system searches all (model, GPU) configurations in the benchmark database that meet the user's SLO targets, then scores each on three criteria (quality, price, latency). This means the search is driven by requirements, not by a pre-selected model.
 
 ```
-User Message
+User describes use case
     ↓
-Intent Extraction (LLM)
+Intent Extraction (LLM or form input)
     ↓
-Traffic Profile + SLO Targets (from templates)
+Generate Specification
+    - Traffic profile (prompt/output tokens, expected QPS)
+    - SLO targets (TTFT, ITL, E2E ranges + defaults)
+    - Quality weights (per-use-case category importance)
+    - Scoring priorities (quality, cost, latency weights)
     ↓
-Query database for SLO-compliant configurations
+User reviews and edits specification
     ↓
-Score each configuration (accuracy, price, latency)
+Query benchmark database for SLO-compliant configurations
     ↓
-Generate 4 ranked lists
+Score each configuration (quality, price, latency)
     ↓
-Return best recommendation or all ranked lists
+Return 4 ranked lists (balanced, quality, cost, latency)
+    ↓
+User selects a configuration
+    ↓
+Generate deployment manifests (YAML)
 ```
 
 ---
@@ -28,10 +36,11 @@ Return best recommendation or all ranked lists
 
 | Endpoint | Purpose | Returns |
 |----------|---------|---------|
-| `POST /api/v1/recommend` | Simple recommendation | Single best config with YAML |
-| `POST /api/v1/ranked-recommend-from-spec` | Multi-criteria ranking | 4 ranked lists (10 configs each) |
-| `POST /api/v1/re-recommend` | Re-run with edited specs | Single best config |
-| `POST /api/v1/regenerate-and-recommend` | Regenerate profile from intent | Single best config |
+| `POST /api/v1/extract-intent` | Extract structured intent from natural language | `DeploymentIntent` |
+| `POST /api/v1/generate-specification` | Generate specification from intent | `DeploymentSpecification` |
+| `POST /api/v1/generate-recommendations` | Multi-criteria ranking from specification | 4 ranked lists |
+| `POST /api/v1/generate-deployment` | Generate Kubernetes YAML from configuration | `DeploymentBundle` |
+| `POST /api/v1/deploy-bundle-to-cluster` | Deploy bundle to Kubernetes cluster | Deployment result |
 
 **Entry Point**: [src/planner/api/routes/](../src/planner/api/routes/)
 
@@ -50,10 +59,12 @@ The `IntentExtractor` uses an LLM (Ollama qwen2.5:7b) to parse the user's natura
 **Output**: `DeploymentIntent` object containing:
 - `use_case`: Mapped to one of 9 supported use cases
 - `user_count`: Number of concurrent users
-- `latency_requirement`: very_high, high, medium, low
-- `budget_constraint`: strict, moderate, flexible, none
+- `quality_priority`: high, medium, low
+- `cost_priority`: high, medium, low
+- `latency_priority`: high, medium, low
+- `preferred_gpu_types`: Optional list of GPU type preferences
+- `preferred_models`: Optional list of preferred model IDs
 - `domain_specialization`: Optional list of domains
-- `experience_class`: instant, conversational, interactive, deferred, batch
 
 **Key Function**:
 ```python
@@ -73,9 +84,9 @@ The `TrafficProfileGenerator` maps the use case to a GuideLLM traffic profile an
 
 **Output**:
 - `TrafficProfile`: prompt_tokens, output_tokens, expected_qps
-- `SLOTargets`: ttft_p95_target_ms, itl_p95_target_ms, e2e_p95_target_ms
+- `SLOTargets`: ttft_target_ms, itl_target_ms, e2e_target_ms
 
-**Data Source**: [data/configuration/slo_templates.json](../data/configuration/slo_templates.json)
+**Data Source**: [src/planner/data/configuration/usecase_slo_workload.json](../src/planner/data/configuration/usecase_slo_workload.json)
 
 **Traffic Profiles** (aligned with GuideLLM):
 | Use Case | Prompt Tokens | Output Tokens |
@@ -83,9 +94,9 @@ The `TrafficProfileGenerator` maps the use case to a GuideLLM traffic profile an
 | chatbot_conversational | 512 | 256 |
 | code_completion | 512 | 256 |
 | code_generation_detailed | 1024 | 1024 |
-| translation | 1024 | 1024 |
+| translation | 512 | 256 |
 | content_generation | 512 | 256 |
-| summarization_short | 512 | 256 |
+| summarization_short | 4096 | 512 |
 | document_analysis_rag | 4096 | 512 |
 | long_document_summarization | 10240 | 1536 |
 | research_legal_analysis | 10240 | 1536 |
@@ -129,7 +140,7 @@ The `ConfigFinder.plan_all_capacities()` method processes each benchmark configu
 **Input**:
 - Traffic profile and SLO targets
 - Deployment intent
-- Model evaluator (for accuracy scoring)
+- ScoringEngine (for quality scoring)
 
 **Output**: List of `DeploymentRecommendation` objects with `ConfigurationScores`
 
@@ -266,13 +277,8 @@ ranked_lists = ranking_service.generate_ranked_lists(
 
 The `RecommendationWorkflow` orchestrates all steps and returns the appropriate response.
 
-**For `/api/v1/recommend`**:
-- Returns single best configuration (highest balanced score)
-- Includes top 3 alternatives
-- Auto-generates YAML files
-
-**For `/api/v1/ranked-recommend-from-spec`**:
-- Returns `RankedRecommendationsResponse` with all 4 ranked lists
+**For `/api/v1/generate-recommendations`**:
+- Returns `RankedRecommendations` with all 4 ranked lists
 - Includes specification (intent, traffic_profile, slo_targets)
 - Reports total configs evaluated and configs after filters
 
@@ -282,10 +288,10 @@ The `RecommendationWorkflow` orchestrates all steps and returns the appropriate 
 
 | File | Description | Used By |
 |------|-------------|---------|
-| [data/configuration/slo_templates.json](../data/configuration/slo_templates.json) | 9 use case templates with SLO targets | TrafficProfileGenerator |
-| [data/configuration/model_catalog.json](../data/configuration/model_catalog.json) | 47 curated models with metadata | ModelCatalog, ModelEvaluator |
-| [data/benchmarks/performance/benchmarks_BLIS.json](../data/benchmarks/performance/benchmarks_BLIS.json) | Latency benchmarks (loaded to database) | BenchmarkRepository |
-| [data/benchmarks/accuracy/weighted_scores/*.csv](../data/benchmarks/accuracy/weighted_scores/) | 9 use-case quality score files | UseCaseQualityScorer |
+| [src/planner/data/configuration/usecase_slo_workload.json](../src/planner/data/configuration/usecase_slo_workload.json) | 9 use case definitions (traffic profiles, SLO ranges, workload params) | UseCaseRepository, TrafficProfileGenerator |
+| [src/planner/data/configuration/model_catalog.json](../src/planner/data/configuration/model_catalog.json) | 47 curated models with metadata | ModelCatalog |
+| [src/planner/data/performance/benchmarks_BLIS.json](../src/planner/data/performance/benchmarks_BLIS.json) | Latency benchmarks (loaded to database) | BenchmarkRepository |
+| [src/quality_scoring/data/](../src/quality_scoring/data/) | Model quality scores (Arena + Artificial Analysis) | ScoringEngine |
 
 ---
 
@@ -299,7 +305,7 @@ The `RecommendationWorkflow` orchestrates all steps and returns the appropriate 
 | `BenchmarkRepository` | knowledge_base/benchmarks.py | Query database for benchmarks |
 | `ConfigFinder` | recommendation/config_finder.py | Find viable configs, calculate scores |
 | `Scorer` | recommendation/scorer.py | Calculate 3 scores |
-| `UseCaseQualityScorer` | recommendation/quality/usecase_scorer.py | Benchmark-based quality scores |
+| `ScoringEngine` | quality_scoring/engine.py | Dual-source quality scores (Arena + AA) |
 | `Analyzer` | recommendation/analyzer.py | Filter and sort into 4 ranked lists |
 | `ModelCatalog` | knowledge_base/model_catalog.py | Model metadata and GPU pricing |
 
@@ -308,63 +314,52 @@ The `RecommendationWorkflow` orchestrates all steps and returns the appropriate 
 ## Sequence Diagram
 
 ```
-User Request
-     │
+Full pipeline (each stage has its own API endpoint):
+
+POST /api/v1/extract-intent
+     │  User message → DeploymentIntent (LLM-powered)
      ▼
-┌─────────────────────┐
-│  API Route Handler  │ (/api/v1/recommend or /api/v1/ranked-recommend-from-spec)
-└──────────┬──────────┘
-           │
-           ▼
-┌─────────────────────┐
-│ RecommendationWorkflow │
-│ .generate_recommendation() or │
-│ .generate_ranked_recommendations() │
-└──────────┬──────────┘
-           │
-           ├──► IntentExtractor.extract_intent()
-           │         └──► Ollama LLM (qwen2.5:7b)
-           │
-           ├──► TrafficProfileGenerator.generate_profile()
-           │         └──► SLOTemplateRepository (slo_templates.json)
-           │
-           ├──► TrafficProfileGenerator.generate_slo_targets()
-           │
-           ▼
-┌─────────────────────┐
-│  CapacityPlanner    │
-│  .plan_all_capacities() │
-└──────────┬──────────┘
-           │
-           ├──► BenchmarkRepository.find_configurations_meeting_slo()
-           │         └──► Database (exported_summaries table)
-           │
-           ├──► For each config:
-           │       ├──► ModelCatalog.get_model() (lookup metadata)
-           │       ├──► ModelEvaluator.score_model() (accuracy)
-           │       │         └──► UseCaseQualityScorer (Artificial Analysis data)
-           │       ├──► SolutionScorer.score_latency()
-           │       └──► ModelCatalog.calculate_gpu_cost()
-           │
-           └──► SolutionScorer.score_price() (after min/max known)
-                SolutionScorer.score_balanced()
-           │
-           ▼
-┌─────────────────────┐
-│   RankingService    │
-│ .generate_ranked_lists() │
-└──────────┬──────────┘
-           │
-           ├──► Apply filters (min_accuracy, max_cost)
-           ├──► Recalculate balanced scores (if custom weights)
-           └──► Sort into 4 ranked views
-           │
-           ▼
-┌─────────────────────┐
-│     API Response    │
-│ (DeploymentRecommendation or │
-│  RankedRecommendationsResponse) │
-└─────────────────────┘
+POST /api/v1/generate-specification
+     │  DeploymentIntent → DeploymentSpecification
+     │    ├── TrafficProfileGenerator.generate_profile()
+     │    │         └── UseCaseRepository (usecase_slo_workload.json)
+     │    ├── TrafficProfileGenerator.generate_slo_targets()
+     │    └── Quality weights + priorities from config files
+     ▼
+User reviews and edits specification (UI Spec Editor)
+     ▼
+POST /api/v1/generate-recommendations
+     │  DeploymentSpecification → RankedRecommendations
+     │
+     │  ┌─────────────────────────────────────────────┐
+     │  │ ConfigFinder.find_configurations()           │
+     │  │   ├── BenchmarkRepository                    │
+     │  │   │     .find_configurations_meeting_slo()   │
+     │  │   │                                          │
+     │  │   ├── For each config:                       │
+     │  │   │     ├── ScoringEngine.score() (quality)  │
+     │  │   │     ├── Scorer.score_latency()           │
+     │  │   │     └── Scorer.score_price()             │
+     │  │   │                                          │
+     │  │   └── Scorer.score_balanced()                │
+     │  └─────────────────────────────────────────────┘
+     │
+     │  ┌─────────────────────────────────────────────┐
+     │  │ Analyzer.generate_ranked_lists()             │
+     │  │   ├── Apply filters (min_quality, max_cost)  │
+     │  │   └── Sort into 4 views (balanced, quality,  │
+     │  │       cost, latency)                         │
+     │  └─────────────────────────────────────────────┘
+     ▼
+User selects a configuration
+     ▼
+POST /api/v1/generate-deployment
+     │  DeploymentConfiguration → DeploymentBundle (YAML files)
+     ▼
+POST /api/v1/deploy-bundle-to-cluster
+     │  DeploymentBundle → deployed to Kubernetes
+     ▼
+Done
 ```
 
 ---
