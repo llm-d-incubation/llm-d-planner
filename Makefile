@@ -406,7 +406,7 @@ cluster-status: ## Show cluster status
 
 cluster-load-simulator: image-build-simulator ## Load simulator image into KIND cluster
 	@printf "$(BLUE)Loading simulator image into KIND cluster...$(NC)\n"
-	kind load docker-image vllm-simulator:latest --name $(KIND_CLUSTER_NAME)
+	kind load docker-image vllm-simulator:latest --name "$${KIND_CLUSTER_NAME:?KIND_CLUSTER_NAME must not be empty}"
 	@printf "$(GREEN)✓ Simulator image loaded$(NC)\n"
 
 clean-deployments: ## Delete all InferenceServices from cluster
