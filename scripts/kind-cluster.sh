@@ -8,7 +8,8 @@
 set -e  # Exit on error
 
 # Configuration
-CLUSTER_NAME="planner"
+CLUSTER_NAME="${KIND_CLUSTER_NAME-planner}"
+: "${CLUSTER_NAME:?KIND_CLUSTER_NAME must not be empty}"
 KSERVE_VERSION="v0.14.0"
 CERT_MANAGER_VERSION="v1.14.4"
 CLUSTER_CONFIG="config/kind-cluster.yaml"
@@ -28,19 +29,19 @@ print_header() {
 }
 
 print_step() {
-    printf "${GREEN}▶ $1${NC}\n"
+    printf "${GREEN}▶ %s${NC}\n" "$1"
 }
 
 print_error() {
-    printf "${RED}✗ ERROR: $1${NC}\n"
+    printf "${RED}✗ ERROR: %s${NC}\n" "$1"
 }
 
 print_warning() {
-    printf "${YELLOW}⚠ WARNING: $1${NC}\n"
+    printf "${YELLOW}⚠ WARNING: %s${NC}\n" "$1"
 }
 
 print_success() {
-    printf "${GREEN}✓ $1${NC}\n"
+    printf "${GREEN}✓ %s${NC}\n" "$1"
 }
 
 # Check prerequisites
@@ -82,7 +83,11 @@ check_prerequisites() {
 
 # Check if cluster exists
 cluster_exists() {
-    kind get clusters 2>/dev/null | grep -q "^${CLUSTER_NAME}$"
+    kind get clusters 2>/dev/null | grep -Fxq -- "$CLUSTER_NAME"
+}
+
+kubectl_for_cluster() {
+    kubectl --context "kind-${CLUSTER_NAME}" "$@"
 }
 
 # Start cluster
@@ -105,7 +110,7 @@ start_cluster() {
 
     # Create KIND cluster
     print_step "Creating KIND cluster with GPU node labels..."
-    kind create cluster --config "$CLUSTER_CONFIG"
+    kind create cluster --name "$CLUSTER_NAME" --config "$CLUSTER_CONFIG"
     print_success "KIND cluster created"
 
     # Wait a moment for cluster to stabilize
@@ -113,10 +118,10 @@ start_cluster() {
 
     # Install cert-manager
     print_step "Installing cert-manager ${CERT_MANAGER_VERSION}..."
-    kubectl apply -f "https://github.com/cert-manager/cert-manager/releases/download/${CERT_MANAGER_VERSION}/cert-manager.yaml"
+    kubectl_for_cluster apply -f "https://github.com/cert-manager/cert-manager/releases/download/${CERT_MANAGER_VERSION}/cert-manager.yaml"
 
     print_step "Waiting for cert-manager to be ready (this may take 2-3 minutes)..."
-    kubectl wait --for=condition=available --timeout=300s \
+    kubectl_for_cluster wait --for=condition=available --timeout=300s \
         -n cert-manager \
         deployment/cert-manager \
         deployment/cert-manager-webhook \
@@ -125,10 +130,10 @@ start_cluster() {
 
     # Install KServe
     print_step "Installing KServe ${KSERVE_VERSION}..."
-    kubectl apply --server-side -f "https://github.com/kserve/kserve/releases/download/${KSERVE_VERSION}/kserve.yaml"
+    kubectl_for_cluster apply --server-side -f "https://github.com/kserve/kserve/releases/download/${KSERVE_VERSION}/kserve.yaml"
 
     print_step "Waiting for KServe controller to be ready (this may take 2-3 minutes)..."
-    kubectl wait --for=condition=available --timeout=300s \
+    kubectl_for_cluster wait --for=condition=available --timeout=300s \
         -n kserve \
         deployment/kserve-controller-manager
     print_success "KServe controller ready"
@@ -136,19 +141,19 @@ start_cluster() {
     # Wait for webhook to be fully functional before applying cluster resources
     print_step "Waiting for KServe webhook to be ready..."
     sleep 10  # Give webhook server time to register
-    kubectl wait --for=condition=ready --timeout=60s \
+    kubectl_for_cluster wait --for=condition=ready --timeout=60s \
         -n kserve \
         pod -l control-plane=kserve-controller-manager 2>/dev/null || true
     print_success "KServe webhook ready"
 
     # Now apply cluster resources (requires webhook to be functional)
     print_step "Installing KServe cluster resources..."
-    kubectl apply --server-side -f "https://github.com/kserve/kserve/releases/download/${KSERVE_VERSION}/kserve-cluster-resources.yaml"
+    kubectl_for_cluster apply --server-side -f "https://github.com/kserve/kserve/releases/download/${KSERVE_VERSION}/kserve-cluster-resources.yaml"
     print_success "KServe cluster resources installed"
 
     # Configure KServe for RawDeployment mode
     print_step "Configuring KServe for RawDeployment mode..."
-    kubectl patch configmap/inferenceservice-config -n kserve --type=strategic \
+    kubectl_for_cluster patch configmap/inferenceservice-config -n kserve --type=strategic \
         -p '{"data": {"deploy": "{\"defaultDeploymentMode\": \"RawDeployment\"}"}}'
     print_success "KServe configured"
 
@@ -226,50 +231,50 @@ show_status() {
     echo ""
 
     # Check cluster connectivity
-    if kubectl cluster-info &> /dev/null; then
+    if kubectl_for_cluster cluster-info &> /dev/null; then
         print_success "kubectl can connect to cluster"
     else
-        print_error "kubectl cannot connect to cluster"
+        print_error "kubectl cannot connect to context kind-${CLUSTER_NAME}"
         echo ""
-        echo "Try: kubectl config use-context kind-${CLUSTER_NAME}"
+        echo "Run 'kind export kubeconfig --name ${CLUSTER_NAME}' to refresh the kubeconfig."
         exit 1
     fi
 
     echo ""
     print_step "Cluster Nodes:"
-    kubectl get nodes
+    kubectl_for_cluster get nodes
 
     echo ""
     print_step "KServe Status:"
-    if kubectl get namespace kserve &> /dev/null; then
-        kubectl get pods -n kserve
+    if kubectl_for_cluster get namespace kserve &> /dev/null; then
+        kubectl_for_cluster get pods -n kserve
         echo ""
         echo "KServe ClusterServingRuntimes:"
-        kubectl get clusterservingruntimes 2>/dev/null | head -5
+        kubectl_for_cluster get clusterservingruntimes 2>/dev/null | head -5
     else
         print_warning "KServe not installed"
     fi
 
     echo ""
     print_step "cert-manager Status:"
-    if kubectl get namespace cert-manager &> /dev/null; then
-        kubectl get pods -n cert-manager
+    if kubectl_for_cluster get namespace cert-manager &> /dev/null; then
+        kubectl_for_cluster get pods -n cert-manager
     else
         print_warning "cert-manager not installed"
     fi
 
     echo ""
     print_step "InferenceServices in default namespace:"
-    local isvc_count=$(kubectl get inferenceservices -n default --no-headers 2>/dev/null | wc -l | tr -d ' ')
+    local isvc_count=$(kubectl_for_cluster get inferenceservices -n default --no-headers 2>/dev/null | wc -l | tr -d ' ')
     if [ "$isvc_count" -eq 0 ]; then
         echo "  (none)"
     else
-        kubectl get inferenceservices -n default
+        kubectl_for_cluster get inferenceservices -n default
     fi
 
     echo ""
     print_step "Cluster Context:"
-    kubectl config current-context
+    echo "kind-${CLUSTER_NAME}"
 
     echo ""
     print_header "Cluster is Ready"

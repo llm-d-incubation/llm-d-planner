@@ -171,6 +171,10 @@ make db-load-blis   # Load BLIS benchmark data
 make cluster-start  # Optional: Create local KIND cluster with vLLM simulator for testing deployments
 ```
 
+Set `KIND_CLUSTER_NAME` to use a custom cluster name, for example
+`make cluster-start KIND_CLUSTER_NAME=planner-dev`. Use the same name for
+`cluster-status`, `cluster-load-simulator`, `cluster-restart`, and `cluster-stop`.
+
 Then open [http://localhost:8501](http://localhost:8501) in your browser.
 
 **Note**: The embedded database (`data/planner.db`) stores benchmark data. All
