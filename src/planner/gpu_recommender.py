@@ -7,9 +7,10 @@ try:
     from llm_optimizer.performance import (
         PerformanceEstimationParams,
         PerformanceEstimationResult,
-        run_performance_estimation,
     )
     from llm_optimizer.predefined.gpus import GPU_SPECS
+
+    from planner.optimizer import get_optimizer_model_config, run_performance_estimation
 
     _LLM_OPTIMIZER_AVAILABLE = True
 except ImportError:
@@ -111,6 +112,7 @@ class GPURecommender:
         # Cost parameters
         custom_gpu_costs: dict[str, float] | None = None,
         catalog: ModelCatalog | None = None,
+        hf_token: str | None = None,
     ):
         """
         Initialize GPU Recommender.
@@ -129,6 +131,7 @@ class GPURecommender:
             max_latency: Maximum end-to-end latency constraint (s)
             custom_gpu_costs: Optional dict mapping GPU names to custom costs
             catalog: Optional ModelCatalog instance (avoids reloading JSON files)
+            hf_token: HuggingFace token for model lookups (defaults to HF_TOKEN)
 
         Raises:
             ImportError: If llm-optimizer is not installed
@@ -141,12 +144,13 @@ class GPURecommender:
                 "pip install git+https://github.com/bentoml/llm-optimizer.git"
             )
 
-        # Read HF Token from environment variable
-        hf_token = os.getenv("HF_TOKEN", None)
+        if hf_token is None:
+            hf_token = os.getenv("HF_TOKEN")
 
         self.input_len = input_len
         self.output_len = output_len
         self.model_id = model_id
+        self.hf_token = hf_token
         self.model_info = get_model_info_from_hf(model_id, hf_token)
         self.model_config = get_model_config_from_hf(model_id, hf_token)
         self.text_config = get_text_config(self.model_config)
@@ -181,6 +185,7 @@ class GPURecommender:
 
         gpu_results = {}
         failed_gpus = {}
+        model_config = None
 
         # Use the gpu_list from instance attribute
         for gpu_name in self.gpu_list:
@@ -211,7 +216,9 @@ class GPURecommender:
             )
 
             try:
-                _, result = run_performance_estimation(params)
+                if model_config is None:
+                    model_config = get_optimizer_model_config(self.model_id, self.hf_token)
+                _, result = run_performance_estimation(params, model_config)
 
                 # check that best_config exists (if not, it means estimation failed due to constraints)
                 _ = (

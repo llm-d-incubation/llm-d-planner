@@ -95,6 +95,7 @@ def generate_estimated_configs(
     catalog: ModelCatalog,
     benchmark_repo: BenchmarkRepository,
     estimate_all_catalog: bool = False,
+    hf_token: str | None = None,
 ) -> tuple[list[BenchmarkData], list[str]]:
     """Generate estimated BenchmarkData for (model, GPU) pairs without benchmarks.
 
@@ -112,6 +113,7 @@ def generate_estimated_configs(
         benchmark_repo: Repository for persisting estimates
         estimate_all_catalog: If True, also estimate for catalog models
                              without benchmarks (not just user-specified)
+        hf_token: HuggingFace token for model lookups (defaults to HF_TOKEN)
 
     Returns:
         Tuple of (list of new BenchmarkData, list of warning messages)
@@ -148,7 +150,8 @@ def generate_estimated_configs(
     timeout_s = int(os.getenv("PLANNER_ESTIMATED_TIMEOUT_S", "60"))
     models_to_estimate = models_to_estimate[:max_models]
 
-    hf_token = os.getenv("HF_TOKEN")
+    if hf_token is None:
+        hf_token = os.getenv("HF_TOKEN")
     new_benchmarks: list[BenchmarkData] = []
     start_time = time.monotonic()
 
@@ -236,6 +239,7 @@ def generate_estimated_configs(
                             max_itl=slo_targets.itl_target_ms,
                             max_latency=slo_targets.e2e_target_ms / 1000,
                             catalog=catalog,
+                            hf_token=hf_token,
                         )
                         gpu_results, failed_gpus = recommender.get_gpu_results()
                 except Exception as e:
