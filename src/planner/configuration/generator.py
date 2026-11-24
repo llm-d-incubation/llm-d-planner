@@ -106,9 +106,12 @@ class DeploymentGenerator:
             memory_request = "32Gi"
             memory_limit = "64Gi"
 
-        # Calculate autoscaling parameters
-        min_replicas = max(1, gpu_config.replicas // 2)
-        max_replicas = gpu_config.replicas * 2
+        # One replica is enough to exercise the local deployment workflow.
+        if self.simulator_mode:
+            min_replicas = max_replicas = 1
+        else:
+            min_replicas = max(1, gpu_config.replicas // 2)
+            max_replicas = gpu_config.replicas * 2
 
         # Determine max model length based on use case
         # Keys must match DeploymentIntent.use_case canonical values
