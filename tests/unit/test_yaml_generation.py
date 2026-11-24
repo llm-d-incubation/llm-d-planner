@@ -8,8 +8,10 @@ This script tests the complete workflow:
 """
 
 import logging
+from pathlib import Path
 
 import pytest
+import yaml
 
 from planner.configuration.generator import DeploymentGenerator
 from planner.configuration.validator import YAMLValidator
@@ -121,3 +123,25 @@ def test_yaml_generation():
     validation_results = validator.validate_all(result["files"])
     for config_type, valid in validation_results.items():
         assert valid, f"YAML validation failed for {config_type}"
+
+
+@pytest.mark.unit
+@pytest.mark.parametrize(
+    ("simulator_mode", "expected_bounds"),
+    [(True, (1, 1)), (False, (50, 200))],
+    ids=["simulator", "production"],
+)
+def test_yaml_generation_replica_bounds(
+    tmp_path: Path, simulator_mode: bool, expected_bounds: tuple[int, int]
+):
+    config = create_test_recommendation().configuration
+    assert config is not None
+    config.gpu_config.replicas = 100
+    generator = DeploymentGenerator(output_dir=str(tmp_path), simulator_mode=simulator_mode)
+
+    manifests = generator.generate_all(config)["contents"]
+
+    predictor = yaml.safe_load(manifests["inferenceservice"])["spec"]["predictor"]
+    autoscaler = next(yaml.safe_load_all(manifests["autoscaling"]))["spec"]
+    assert (predictor["minReplicas"], predictor["maxReplicas"]) == expected_bounds
+    assert (autoscaler["minReplicas"], autoscaler["maxReplicas"]) == expected_bounds

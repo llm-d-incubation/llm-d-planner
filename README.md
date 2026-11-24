@@ -334,6 +334,9 @@ Planner includes a **GPU-free simulator** for local development:
 - **Realistic latency** - Uses benchmark data to simulate TTFT/ITL
 - **Fast deployment** - Pods become Ready in ~10-15 seconds
 
+KServe deployments in simulator mode use one replica regardless of the production
+capacity recommendation.
+
 The deployment mode defaults to **production** (real vLLM with GPUs). Switch
 between production and simulator modes at runtime using the **Configuration**
 tab in the UI, or via the REST API:
