@@ -23,7 +23,11 @@ testing, or future UI features that may need to display available options.
 
 import json
 import logging
+from collections.abc import Iterator
+from contextlib import closing, contextmanager
 from pathlib import Path
+from sqlite3 import Connection, Cursor
+from threading import Lock
 
 from planner.knowledge_base.db import create_connection
 from planner.knowledge_base.loader import (
@@ -144,11 +148,14 @@ class BenchmarkRepository:
             db_path: Database file path (defaults to PLANNER_DB_PATH or data/planner.db)
         """
         self._conn = create_connection(db_path)
+        # REST routes and the Planner facade can share this connection across threads.
+        self._connection_lock = Lock()
         logger.info("Initialized benchmark repository")
 
     def close(self) -> None:
         """Close the underlying database connection."""
-        self._conn.close()
+        with self._connection_lock:
+            self._conn.close()
 
     def __enter__(self) -> "BenchmarkRepository":
         return self
@@ -170,32 +177,54 @@ class BenchmarkRepository:
             A BenchmarkRepository with the data loaded.
         """
         repo = cls(db_path=db_path)
-        for path in json_paths:
-            with open(path) as f:
-                data = json.load(f)
-            benchmarks = data.get("benchmarks", [])
-            if not benchmarks:
-                continue
-            meta = extract_metadata(data)
-            source = meta["source"] or "local"
-            confidence_level = meta["confidence_level"] or "estimated"
-            _insert_benchmarks(
-                repo._conn, benchmarks, source=source, confidence_level=confidence_level
-            )
-        repo._conn.commit()
+        try:
+            with repo._write_transaction() as conn:
+                for path in json_paths:
+                    with open(path) as f:
+                        data = json.load(f)
+                    benchmarks = data.get("benchmarks", [])
+                    if not benchmarks:
+                        continue
+                    meta = extract_metadata(data)
+                    source = meta["source"] or "local"
+                    confidence_level = meta["confidence_level"] or "estimated"
+                    _insert_benchmarks(
+                        conn, benchmarks, source=source, confidence_level=confidence_level
+                    )
+        except BaseException:
+            repo.close()
+            raise
         return repo
 
-    def _get_connection(self):
+    def _get_connection(self) -> Connection:
         """Get the database connection."""
         return self._conn
 
+    @contextmanager
+    def _cursor(self) -> Iterator[Cursor]:
+        with self._connection_lock, closing(self._get_connection().cursor()) as cursor:
+            yield cursor
+
+    @contextmanager
+    def _write_transaction(self) -> Iterator[Connection]:
+        with self._connection_lock:
+            conn = self._get_connection()
+            try:
+                yield conn
+                conn.commit()
+            except BaseException:
+                conn.rollback()
+                raise
+
     def get_stats(self) -> dict:
         """Get current database statistics."""
-        return get_db_stats(self._conn)
+        with self._connection_lock:
+            return get_db_stats(self._conn)
 
     def reset(self) -> None:
         """Delete all benchmark data. Schema is preserved."""
-        reset_benchmarks(self._conn)
+        with self._connection_lock:
+            reset_benchmarks(self._conn)
 
     def load_benchmarks(
         self,
@@ -215,15 +244,10 @@ class BenchmarkRepository:
         Returns:
             Dict with database stats after the operation.
         """
-        try:
-            stats = _insert_benchmarks(
-                self._conn, benchmarks, source=source, confidence_level=confidence_level
+        with self._write_transaction() as conn:
+            return _insert_benchmarks(
+                conn, benchmarks, source=source, confidence_level=confidence_level
             )
-            self._conn.commit()
-            return stats
-        except Exception:
-            self._conn.rollback()
-            raise
 
     def replace_benchmarks(
         self,
@@ -245,19 +269,12 @@ class BenchmarkRepository:
         Returns:
             Dict with database stats after the operation.
         """
-        conn = self._conn
-        try:
-            cursor = conn.cursor()
-            cursor.execute("DELETE FROM exported_summaries WHERE source = ?", (source,))
-            cursor.close()
-            stats = _insert_benchmarks(
+        with self._write_transaction() as conn:
+            with closing(conn.cursor()) as cursor:
+                cursor.execute("DELETE FROM exported_summaries WHERE source = ?", (source,))
+            return _insert_benchmarks(
                 conn, benchmarks, source=source, confidence_level=confidence_level
             )
-            conn.commit()
-            return stats
-        except Exception:
-            conn.rollback()
-            raise
 
     def save_benchmarks(
         self,
@@ -275,22 +292,16 @@ class BenchmarkRepository:
         Raises:
             Exception: If the DB write fails.
         """
-        # Prepare data before opening connection to fail fast and keep
-        # the connection short-lived.
+        # Prepare data before taking the connection lock.
         benchmark_dicts = [b.to_dict() for b in benchmarks]
         for d in benchmark_dicts:
             d.setdefault("prompt_tokens", d.get("mean_input_tokens"))
             d.setdefault("output_tokens", d.get("mean_output_tokens"))
 
-        conn = self._get_connection()
-        try:
+        with self._write_transaction() as conn:
             _insert_benchmarks(
                 conn, benchmark_dicts, source=source, confidence_level=confidence_level
             )
-            conn.commit()
-        except Exception:
-            conn.rollback()
-            raise
 
     def get_benchmark(
         self,
@@ -329,13 +340,11 @@ class BenchmarkRepository:
             LIMIT 1
         """
 
-        conn = self._get_connection()
-        cursor = conn.cursor()
-        cursor.execute(
-            query, (model_hf_repo, hardware, hardware_count, prompt_tokens, output_tokens)
-        )
-        row = cursor.fetchone()
-        cursor.close()
+        with self._cursor() as cursor:
+            cursor.execute(
+                query, (model_hf_repo, hardware, hardware_count, prompt_tokens, output_tokens)
+            )
+            row = cursor.fetchone()
 
         if row:
             return BenchmarkData(dict(row))
@@ -374,13 +383,11 @@ class BenchmarkRepository:
               AND output_tokens = ?
         """
 
-        conn = self._get_connection()
-        cursor = conn.cursor()
-        cursor.execute(
-            query, (model_hf_repo, hardware, hardware_count, prompt_tokens, output_tokens)
-        )
-        rows = cursor.fetchall()
-        cursor.close()
+        with self._cursor() as cursor:
+            cursor.execute(
+                query, (model_hf_repo, hardware, hardware_count, prompt_tokens, output_tokens)
+            )
+            rows = cursor.fetchall()
 
         return [BenchmarkData(dict(row)) for row in rows]
 
@@ -400,11 +407,9 @@ class BenchmarkRepository:
             ORDER BY hardware, hardware_count, prompt_tokens, output_tokens
         """
 
-        conn = self._get_connection()
-        cursor = conn.cursor()
-        cursor.execute(query, (model_hf_repo,))
-        rows = cursor.fetchall()
-        cursor.close()
+        with self._cursor() as cursor:
+            cursor.execute(query, (model_hf_repo,))
+            rows = cursor.fetchall()
 
         return [BenchmarkData(dict(row)) for row in rows]
 
@@ -424,11 +429,9 @@ class BenchmarkRepository:
             ORDER BY model_hf_repo, hardware_count, prompt_tokens, output_tokens
         """
 
-        conn = self._get_connection()
-        cursor = conn.cursor()
-        cursor.execute(query, (hardware,))
-        rows = cursor.fetchall()
-        cursor.close()
+        with self._cursor() as cursor:
+            cursor.execute(query, (hardware,))
+            rows = cursor.fetchall()
 
         return [BenchmarkData(dict(row)) for row in rows]
 
@@ -534,11 +537,9 @@ class BenchmarkRepository:
         if gpu_types:
             params.extend(gpu_types)
 
-        conn = self._get_connection()
-        cursor = conn.cursor()
-        cursor.execute(query, params)
-        rows = cursor.fetchall()
-        cursor.close()
+        with self._cursor() as cursor:
+            cursor.execute(query, params)
+            rows = cursor.fetchall()
 
         results = [BenchmarkData(dict(row)) for row in rows]
         logger.info(f"Found {len(results)} benchmarks meeting SLO criteria")
@@ -548,11 +549,9 @@ class BenchmarkRepository:
         """Get list of all available models in the database."""
         query = "SELECT DISTINCT model_hf_repo FROM exported_summaries ORDER BY model_hf_repo"
 
-        conn = self._get_connection()
-        cursor = conn.cursor()
-        cursor.execute(query)
-        rows = cursor.fetchall()
-        cursor.close()
+        with self._cursor() as cursor:
+            cursor.execute(query)
+            rows = cursor.fetchall()
 
         return [row["model_hf_repo"] for row in rows]
 
@@ -560,11 +559,9 @@ class BenchmarkRepository:
         """Get list of all available hardware types in the database."""
         query = "SELECT DISTINCT hardware FROM exported_summaries ORDER BY hardware"
 
-        conn = self._get_connection()
-        cursor = conn.cursor()
-        cursor.execute(query)
-        rows = cursor.fetchall()
-        cursor.close()
+        with self._cursor() as cursor:
+            cursor.execute(query)
+            rows = cursor.fetchall()
 
         return [row["hardware"] for row in rows]
 
@@ -576,11 +573,9 @@ class BenchmarkRepository:
             ORDER BY prompt_tokens, output_tokens
         """
 
-        conn = self._get_connection()
-        cursor = conn.cursor()
-        cursor.execute(query)
-        rows = cursor.fetchall()
-        cursor.close()
+        with self._cursor() as cursor:
+            cursor.execute(query)
+            rows = cursor.fetchall()
 
         return [(row["prompt_tokens"], row["output_tokens"]) for row in rows]
 
@@ -595,10 +590,8 @@ class BenchmarkRepository:
             ORDER BY model_hf_repo, hardware, hardware_count, prompt_tokens, output_tokens
         """
 
-        conn = self._get_connection()
-        cursor = conn.cursor()
-        cursor.execute(query)
-        rows = cursor.fetchall()
-        cursor.close()
+        with self._cursor() as cursor:
+            cursor.execute(query)
+            rows = cursor.fetchall()
 
         return [BenchmarkData(dict(row)) for row in rows]

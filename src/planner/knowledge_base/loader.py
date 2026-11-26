@@ -8,6 +8,7 @@ Used by both the scripts/load_benchmarks.py CLI tool and the
 import hashlib
 import logging
 import uuid
+from contextlib import closing
 from datetime import datetime
 
 logger = logging.getLogger(__name__)
@@ -220,8 +221,6 @@ def _insert_benchmarks(
     Returns:
         Dict with insertion stats: {inserted, total_in_db, stats}
     """
-    cursor = conn.cursor()
-
     prepared_benchmarks = [
         prepare_benchmark_for_insert(b, source=source, confidence_level=confidence_level)
         for b in benchmarks
@@ -230,13 +229,12 @@ def _insert_benchmarks(
     rows = [tuple(p[col] for col in _INSERT_COLUMNS) for p in prepared_benchmarks]
 
     logger.info(f"Inserting {len(rows)} benchmark records...")
-    cursor.executemany(_INSERT_QUERY, rows)
+    with closing(conn.cursor()) as cursor:
+        cursor.executemany(_INSERT_QUERY, rows)
 
     logger.info(f"Successfully processed {len(benchmarks)} benchmarks")
 
-    stats = get_db_stats(conn)
-    cursor.close()
-    return stats
+    return get_db_stats(conn)
 
 
 def get_db_stats(conn) -> dict:
@@ -249,55 +247,53 @@ def get_db_stats(conn) -> dict:
         Dict with total_benchmarks, num_models, num_hardware_types,
         num_traffic_profiles, traffic_distribution
     """
-    cursor = conn.cursor()
+    with closing(conn.cursor()) as cursor:
+        cursor.execute("""
+            SELECT
+                COUNT(DISTINCT model_hf_repo) as num_models,
+                COUNT(DISTINCT hardware) as num_hardware_types,
+                (SELECT COUNT(*) FROM (
+                    SELECT DISTINCT prompt_tokens, output_tokens FROM exported_summaries
+                )) as num_traffic_profiles,
+                COUNT(*) as total_benchmarks
+            FROM exported_summaries
+        """)
+        row = cursor.fetchone()
 
-    cursor.execute("""
-        SELECT
-            COUNT(DISTINCT model_hf_repo) as num_models,
-            COUNT(DISTINCT hardware) as num_hardware_types,
-            (SELECT COUNT(*) FROM (
-                SELECT DISTINCT prompt_tokens, output_tokens FROM exported_summaries
-            )) as num_traffic_profiles,
-            COUNT(*) as total_benchmarks
-        FROM exported_summaries
-    """)
-    row = cursor.fetchone()
-
-    stats = {
-        "num_models": row["num_models"] if row else 0,
-        "num_hardware_types": row["num_hardware_types"] if row else 0,
-        "num_traffic_profiles": row["num_traffic_profiles"] if row else 0,
-        "total_benchmarks": row["total_benchmarks"] if row else 0,
-    }
-
-    cursor.execute("""
-        SELECT prompt_tokens, output_tokens, COUNT(*) as num_benchmarks
-        FROM exported_summaries
-        GROUP BY prompt_tokens, output_tokens
-        ORDER BY prompt_tokens, output_tokens
-    """)
-    stats["traffic_distribution"] = [
-        {
-            "prompt_tokens": r["prompt_tokens"],
-            "output_tokens": r["output_tokens"],
-            "count": r["num_benchmarks"],
+        stats = {
+            "num_models": row["num_models"] if row else 0,
+            "num_hardware_types": row["num_hardware_types"] if row else 0,
+            "num_traffic_profiles": row["num_traffic_profiles"] if row else 0,
+            "total_benchmarks": row["total_benchmarks"] if row else 0,
         }
-        for r in cursor.fetchall()
-    ]
 
-    # Get benchmark source breakdown
-    cursor.execute("""
-        SELECT source, confidence_level, COUNT(*) as count
-        FROM exported_summaries
-        GROUP BY source, confidence_level
-        ORDER BY count DESC;
-    """)
-    stats["benchmark_sources"] = [
-        {"source": r["source"], "confidence_level": r["confidence_level"], "count": r["count"]}
-        for r in cursor.fetchall()
-    ]
+        cursor.execute("""
+            SELECT prompt_tokens, output_tokens, COUNT(*) as num_benchmarks
+            FROM exported_summaries
+            GROUP BY prompt_tokens, output_tokens
+            ORDER BY prompt_tokens, output_tokens
+        """)
+        stats["traffic_distribution"] = [
+            {
+                "prompt_tokens": r["prompt_tokens"],
+                "output_tokens": r["output_tokens"],
+                "count": r["num_benchmarks"],
+            }
+            for r in cursor.fetchall()
+        ]
 
-    cursor.close()
+        # Get benchmark source breakdown
+        cursor.execute("""
+            SELECT source, confidence_level, COUNT(*) as count
+            FROM exported_summaries
+            GROUP BY source, confidence_level
+            ORDER BY count DESC;
+        """)
+        stats["benchmark_sources"] = [
+            {"source": r["source"], "confidence_level": r["confidence_level"], "count": r["count"]}
+            for r in cursor.fetchall()
+        ]
+
     return stats
 
 
@@ -310,8 +306,6 @@ def reset_benchmarks(conn) -> None:
     Args:
         conn: sqlite3 connection
     """
-    cursor = conn.cursor()
-    cursor.execute("DELETE FROM exported_summaries")
-    conn.commit()
-    cursor.close()
+    with conn, closing(conn.cursor()) as cursor:
+        cursor.execute("DELETE FROM exported_summaries")
     logger.info("Benchmark database reset complete")

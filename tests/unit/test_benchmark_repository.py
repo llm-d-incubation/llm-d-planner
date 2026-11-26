@@ -10,6 +10,10 @@ Tests cover:
 5. Use case definitions - JSON-based (no database needed)
 """
 
+from concurrent.futures import ThreadPoolExecutor
+from threading import Event, Lock
+from unittest.mock import Mock
+
 import pytest
 
 from planner.knowledge_base.benchmarks import BenchmarkData, BenchmarkRepository
@@ -30,6 +34,58 @@ class TestBenchmarkRepository:
         """Test that we can connect to the database."""
         assert repo is not None
         assert repo._conn is not None
+
+    def test_concurrent_reads_wait_for_cursor_to_close(self, repo, monkeypatch):
+        fetching = Event()
+        contending = Event()
+        resume_fetch = Event()
+        first_closed = Event()
+        first_cursor = Mock()
+        second_cursor = Mock()
+        connection = Mock()
+        lock = getattr(repo, "_connection_lock", Lock())
+
+        class ObservedLock:
+            def __enter__(self):
+                if fetching.is_set():
+                    contending.set()
+                lock.acquire()
+
+            def __exit__(self, *exc):
+                lock.release()
+
+        def fetch_models():
+            fetching.set()
+            assert resume_fetch.wait(timeout=5)
+            return [{"model_hf_repo": "example/model"}]
+
+        def open_cursor():
+            if not fetching.is_set():
+                return first_cursor
+            # With no repository lock, the second read reaches SQLite itself.
+            cursor_still_open = not first_closed.is_set()
+            contending.set()
+            assert not cursor_still_open, "second query opened before the first cursor closed"
+            return second_cursor
+
+        first_cursor.fetchall.side_effect = fetch_models
+        first_cursor.close.side_effect = first_closed.set
+        second_cursor.fetchall.return_value = [{"hardware": "H100"}]
+        connection.cursor.side_effect = open_cursor
+        monkeypatch.setattr(repo, "_get_connection", lambda: connection)
+        monkeypatch.setattr(repo, "_connection_lock", ObservedLock(), raising=False)
+
+        with ThreadPoolExecutor(max_workers=2) as executor:
+            models = executor.submit(repo.get_available_models)
+            try:
+                assert fetching.wait(timeout=5)
+                hardware = executor.submit(repo.get_available_hardware_types)
+                assert contending.wait(timeout=5)
+            finally:
+                resume_fetch.set()
+
+            assert models.result(timeout=5) == ["example/model"]
+            assert hardware.result(timeout=5) == ["H100"]
 
     def test_db_stats_include_benchmark_sources(self, repo):
         """Test that get_db_stats returns benchmark_sources from real data."""
